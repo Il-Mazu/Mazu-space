@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MY CORNER — v0.2</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=VT323&family=Share+Tech+Mono&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- Boot sequence -->
+  <div id="boot">
+    <div id="boot-terminal">
+      <pre class="ascii-art">
+   /'\_/`\                                                                              
+  /\      \     __     ____    __  __             ____  _____      __      ___     __   
+  \ \ \__\ \  /'__`\  /\_ ,`\ /\ \/\ \  _______  /',__\/\ '__`\  /'__`\   /'___\ /'__`\ 
+   \ \ \_/\ \/\ \L\.\_\/_/  /_\ \ \_\ \/\______\/\__, `\ \ \L\ \/\ \L\.\_/\ \__//\  __/ 
+    \ \_\\ \_\ \__/.\_\ /\____\\ \____/\/______/\/\____/\ \ ,__/\ \__/.\_\ \____\ \____\
+     \/_/ \/_/\/__/\/_/ \/____/ \/___/           \/___/  \ \ \/  \/__/\/_/\/____/\/____/
+                                                           \ \_\                         
+                                                            \/_/                         
+      </pre>
+      <div class="boot-status" id="boot-status"></div>
+      <span class="boot-cursor" id="boot-cursor">_</span>
+    </div>
+  </div>
+
+  <!-- CRT scanlines + vignette -->
+  <div id="crt"></div>
+
+  <!-- Noise overlay -->
+  <div id="noise"></div>
+
+  <!-- Notification -->
+  <div id="notif">// function not implemented</div>
+
+  <!-- DESKTOP -->
+  <div id="desktop">
+
+    <!-- Wallpaper GIF (centered, behind everything) -->
+    <div id="wallpaper">
+      <img src="assets/SnapInsta.to_AQP6ityFpUZrqTmrQLvEfDJDLAQZ4IymuY53NRO4PN-QJhqHphA2zinPKk_myDBZjalUVKln64QGcWrenJJqa8UqeibABN51CJXzfv4.gif" alt="wallpaper">
+    </div>
+
+    <!-- Desktop icons (top-right) -->
+    <div id="desktop-icons">
+      <div class="desk-icon" onclick="openWindow('win-about')">
+        <div class="desk-icon-img">[SYS]</div>
+        <div class="desk-icon-label">about.txt</div>
+      </div>
+      <div class="desk-icon" onclick="openWindow('win-blog')">
+        <div class="desk-icon-img">[LOG]</div>
+        <div class="desk-icon-label">blog.txt</div>
+      </div>
+      <div class="desk-icon" onclick="openWindow('win-music')">
+        <div class="desk-icon-img">[MP3]</div>
+        <div class="desk-icon-label">player.exe</div>
+      </div>
+      <div class="desk-icon" onclick="openWindow('win-dump')">
+        <div class="desk-icon-img">[BIN]</div>
+        <div class="desk-icon-label">dump/</div>
+      </div>
+      <div class="desk-icon" onclick="openWindow('win-links')">
+        <div class="desk-icon-img">[NET]</div>
+        <div class="desk-icon-label">links.ini</div>
+      </div>
+      <div class="desk-icon" onclick="openWindow('win-term')">
+        <div class="desk-icon-img">[$]</div>
+        <div class="desk-icon-label">cmd.exe</div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: ABOUT                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window focused" id="win-about" style="left:40px; top:28px; width:380px;">
+      <div class="titlebar" data-win="win-about">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">about.txt — MY CORNER</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-about">_</div>
+          <div class="win-btn maximize" data-action="max" data-win="win-about">□</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-about">×</div>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item" onclick="showNotif()">File</span>
+        <span class="menu-item" onclick="showNotif()">Edit</span>
+        <span class="menu-item" onclick="showNotif()">View</span>
+      </div>
+      <div class="win-content">
+        <div class="ascii-art">
+  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  █                          █
+  █     ╔══════════════╗      █
+  █     ║   ╔══╗ ╔══╗  ║      █
+  █     ║   ║  ║ ║  ║  ║      █
+  █     ║   ║  ║ ║  ║  ║      █
+  █     ║   ╚══╝ ╚══╝  ║      █
+  █     ╚══════════════╝       █
+  █                          █
+  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+        </div>
+        <br>
+        <span class="c-accent">C:\MYCORNER&gt;</span> whoami<br><br>
+        <span class="c-green">// hi. welcome to my corner.</span><br>
+        <span class="c-dim">// this space exists outside the algorithm.<br>
+        // just signal. no noise.</span><br><br>
+        <span class="c-amber">│ handle</span> <span class="c-accent2">__________</span><br>
+        <span class="c-amber">│ node</span>  <span class="c-dim">somewhere online</span><br>
+        <span class="c-amber">│ link</span>  <span class="c-green">CONNECTED ●</span><br>
+        <span class="c-amber">│ mem</span>   <span class="c-dim">compiling...</span><br>
+        <span class="c-amber">│ pkgs</span>  <span class="c-accent2">music, code, glitch</span><br><br>
+        <div style="border-top: 1px solid #1a1a1a; padding-top:10px;">
+          <span class="c-dim">─────────────────────────────────</span><br>
+          a personal archive of thoughts,<br>
+          sound files, strange links,<br>
+          and unfinished systems.<br><br>
+          <span class="glitch-heavy" data-text="HIGH TECH // LOW LIFE">HIGH TECH // LOW LIFE</span><br><br>
+          <span class="c-dim">ACiD / iCE / 1997 / noise</span><br><br>
+          <div class="project-exe">[ PROJECT.EXE ] — the spark is a file</div><br>
+          <span class="cursor"></span>
+        </div>
+      </div>
+      <div class="statusbar">
+        <span class="status-seg c-green">ONLINE</span>
+        <span class="status-seg">v0.2.0</span>
+        <span>UTF-8</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: BLOG                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window" id="win-blog" style="left:440px; top:28px; width:330px; display:none;">
+      <div class="titlebar" data-win="win-blog">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">blog.txt — THOUGHTS</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-blog">_</div>
+          <div class="win-btn maximize" data-action="max" data-win="win-blog">□</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-blog">×</div>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item" onclick="showNotif('// new post: not implemented')">New Post</span>
+        <span class="menu-item" onclick="showNotif()">Archive</span>
+        <span class="menu-item" onclick="showNotif()">Tags</span>
+      </div>
+      <div class="win-content" style="padding:8px 12px;">
+        <span class="c-dim">── latest entries ──────────────</span><br><br>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.06.07</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> on machines dreaming</div>
+          <div class="entry-tags">[#thoughts] [#glitch]</div>
+        </div>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.05.31</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> glitch as language</div>
+          <div class="entry-tags">[#art] [#aesthetics]</div>
+        </div>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.05.18</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> bbs nostalgia</div>
+          <div class="entry-tags">[#retro] [#protocol]</div>
+        </div>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.04.29</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> high tech, low life</div>
+          <div class="entry-tags">[#cyberpunk] [#manifesto]</div>
+        </div>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.04.12</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> the city as circuit</div>
+          <div class="entry-tags">[#urban] [#code]</div>
+        </div>
+        <div class="blog-entry" onclick="showNotif('// post not written yet')">
+          <div class="entry-date">2025.03.04</div>
+          <div class="entry-title"><span class="entry-arrow">»</span> why i still use winamp</div>
+          <div class="entry-tags">[#music] [#tools]</div>
+        </div>
+      </div>
+      <div class="statusbar">
+        <span class="status-seg">6 posts</span>
+        <span class="status-seg">read_only: false</span>
+        <span>latest: 2025.06.07</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: MUSIC PLAYER                        -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window" id="win-music" style="left:440px; top:300px; width:330px; display:none;">
+      <div class="titlebar" data-win="win-music">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">player.exe — MEDIA</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-music">_</div>
+          <div class="win-btn maximize" data-action="max" data-win="win-music">□</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-music">×</div>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item" onclick="showNotif()">File</span>
+        <span class="menu-item" onclick="showNotif()">Playlist</span>
+        <span class="menu-item" onclick="showNotif()">Vis</span>
+      </div>
+      <div class="win-content">
+        <span class="c-dim">now playing ─────────────────</span><br>
+        <span class="c-green">▶ </span><span class="c-accent" id="now-playing-title">burial — archangel</span><br>
+        <span class="c-dim" id="now-playing-time">  02:14 / 04:18</span><br>
+        <div class="progress">
+          <div class="progress-fill" id="progress-fill" style="width:52%"></div>
+        </div>
+        <span class="c-dim">
+          <span style="cursor:pointer" onclick="prevTrack()">|◄◄</span>
+          &nbsp;
+          <span style="cursor:pointer" id="play-btn" onclick="togglePlay()">▶▶|</span>
+          &nbsp;
+          <span style="cursor:pointer" onclick="showNotif('// stop')">■</span>
+          &nbsp;
+          <span style="cursor:pointer" onclick="showNotif('// shuffle on')">⇄</span>
+          &nbsp;
+          <span style="cursor:pointer" onclick="showNotif('// repeat on')">↻</span>
+        </span><br><br>
+        <div class="hr"></div>
+        <span class="c-dim">── queue ───────────────────</span><br>
+        <div id="playlist"></div>
+      </div>
+      <div class="statusbar">
+        <span class="status-seg c-green">PLAYING</span>
+        <span class="status-seg">4 tracks</span>
+        <span>vol: 80%</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: DUMP                                -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window" id="win-dump" style="left:40px; top:340px; width:260px; display:none;">
+      <div class="titlebar" data-win="win-dump">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">dump/ — BIN</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-dump">_</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-dump">×</div>
+        </div>
+      </div>
+      <div class="win-content" style="font-size:16px; line-height:1.7;">
+        <span class="c-dim">// random things that don't fit</span><br><br>
+        <span class="c-amber">► movies recently</span><br>
+        <span class="c-dim">  — ghost in the shell (1995)</span><br>
+        <span class="c-dim">  — videodrome</span><br>
+        <span class="c-dim">  — strange days</span><br><br>
+        <span class="c-amber">► want to build</span><br>
+        <span class="c-dim">  — this site (in progress)</span><br>
+        <span class="c-dim">  — audio visualizer</span><br>
+        <span class="c-dim">  — zine generator</span><br><br>
+        <span class="c-amber">► currently reading</span><br>
+        <span class="c-dim">  — neuromancer // gibson</span><br>
+        <span class="c-dim">  — hakim bey — TAZ</span><br><br>
+        <span class="c-dim">// more soon...</span>
+        <span class="cursor"></span>
+      </div>
+      <div class="statusbar">
+        <span>3 categories</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: LINKS                               -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window" id="win-links" style="left:320px; top:340px; width:240px; display:none;">
+      <div class="titlebar" data-win="win-links">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">links.ini — NET</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-links">_</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-links">×</div>
+        </div>
+      </div>
+      <div class="win-menubar">
+        <span class="menu-item" onclick="showNotif()">Add</span>
+        <span class="menu-item" onclick="showNotif()">Sort</span>
+      </div>
+      <div class="win-content" style="font-size:16px; line-height:1.4;">
+        <span class="c-dim">// [art & design]</span><br>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://archive.org" target="_blank">archive.org</a>
+        </div>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://brutalistwebsites.com" target="_blank">brutalistwebsites.com</a>
+        </div>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://glitchet.com" target="_blank">glitchet.com</a>
+        </div>
+        <br>
+        <span class="c-dim">// [tech]</span><br>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://neocities.org" target="_blank">neocities.org</a>
+        </div>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://low-tech-magazine.com" target="_blank">low←tech mag</a>
+        </div>
+        <br>
+        <span class="c-dim">// [music]</span><br>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://bandcamp.com" target="_blank">bandcamp.com</a>
+        </div>
+        <div class="link-item">
+          <span class="c-accent2">»</span>
+          <a href="https://freemusicarchive.org" target="_blank">freemusicarchive</a>
+        </div>
+      </div>
+      <div class="statusbar">
+        <span>7 links</span>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════ -->
+    <!-- WINDOW: TERMINAL                            -->
+    <!-- ═══════════════════════════════════════════ -->
+    <div class="window" id="win-term" style="left:780px; top:28px; width:240px; display:none;">
+      <div class="titlebar" data-win="win-term">
+        <div class="titlebar-icon"></div>
+        <span class="titlebar-title">cmd.exe</span>
+        <div class="win-buttons">
+          <div class="win-btn minimize" data-action="min" data-win="win-term">_</div>
+          <div class="win-btn close"   data-action="cls" data-win="win-term">×</div>
+        </div>
+      </div>
+      <div class="win-content" id="terminal-output" style="font-size:15px; line-height:1.8; height:220px; overflow-y:auto;">
+        <span class="c-dim">MY CORNER OS [v0.2.0]</span><br>
+        <span class="c-dim">© 2025 __________</span><br><br>
+        <span class="c-accent">C:\&gt;</span> ping vibes<br>
+        <span class="c-dim">Pinging vibe.net...</span><br>
+        <span class="c-green">Reply: TTL=∞  ms=0</span><br>
+        <span class="c-green">Reply: TTL=∞  ms=0</span><br><br>
+        <span class="c-accent">C:\&gt;</span> <span class="cursor"></span>
+      </div>
+      <div style="border-top:1px solid #1a1a1a; display:flex; align-items:center;">
+        <span class="c-accent" style="padding:4px 8px; font-family:'VT323',monospace; font-size:16px; flex-shrink:0;">C:\&gt;</span>
+        <input id="term-input" type="text"
+          style="flex:1; background:transparent; border:none; outline:none; color:var(--text-primary); font-family:'VT323',monospace; font-size:16px; padding:4px 4px 4px 0;"
+          placeholder="type here..."
+          onkeydown="handleTermCmd(event)">
+      </div>
+    </div>
+
+  </div><!-- /desktop -->
+
+  <!-- START MENU -->
+  <div id="start-menu">
+    <div class="smenu-header">MY CORNER v0.2</div>
+    <div class="smenu-item" onclick="openWindow('win-about');  closeStartMenu()">[SYS] about.txt</div>
+    <div class="smenu-item" onclick="openWindow('win-blog');   closeStartMenu()">[LOG] blog.txt</div>
+    <div class="smenu-item" onclick="openWindow('win-music');  closeStartMenu()">[MP3] player.exe</div>
+    <div class="smenu-item" onclick="openWindow('win-dump');   closeStartMenu()">[BIN] dump/</div>
+    <div class="smenu-item" onclick="openWindow('win-links');  closeStartMenu()">[NET] links.ini</div>
+    <div class="smenu-item" onclick="openWindow('win-term');   closeStartMenu()">[$] cmd.exe</div>
+    <div class="smenu-sep"></div>
+    <div class="smenu-item" onclick="showNotif('// shutdown: access denied'); closeStartMenu()">[x] shut down</div>
+  </div>
+
+  <!-- TASKBAR -->
+  <div id="taskbar">
+    <div id="start-btn" onclick="toggleStartMenu()">
+      <div class="start-gem"></div>
+      START
+    </div>
+    <div id="taskbar-tasks">
+      <div class="task-btn active" id="task-win-about"   onclick="openWindow('win-about')"><div class="task-dot"></div>about.txt</div>
+      <div class="task-btn"       id="task-win-blog"     onclick="openWindow('win-blog')"><div class="task-dot"></div>blog.txt</div>
+      <div class="task-btn"       id="task-win-music"    onclick="openWindow('win-music')"><div class="task-dot"></div>player.exe</div>
+      <div class="task-btn"       id="task-win-dump"     onclick="openWindow('win-dump')"><div class="task-dot"></div>dump/</div>
+      <div class="task-btn"       id="task-win-links"    onclick="openWindow('win-links')"><div class="task-dot"></div>links.ini</div>
+      <div class="task-btn"       id="task-win-term"     onclick="openWindow('win-term')"><div class="task-dot"></div>cmd.exe</div>
+    </div>
+    <div id="sys-tray">
+      <span title="network">[~]</span>
+      <span title="sound">[♪]</span>
+      <span id="clock">--:--</span>
+    </div>
+  </div>
+
+  <!-- Script -->
+  <script src="js/script.js"></script>
+
+</body>
+</html>

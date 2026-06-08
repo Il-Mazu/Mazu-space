@@ -1,0 +1,28 @@
+# OS and IDE
+.DS_Store
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Node modules (if using build tools)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build outputs
+dist/
+build/
+.parcel-cache
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+npm-debug.log
+yarn-error.log
+
+# OS files
+Thumbs.db

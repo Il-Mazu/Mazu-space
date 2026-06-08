@@ -1,0 +1,21 @@
+{
+  "name": "mycorner-portfolio",
+  "version": "0.1.0",
+  "description": "A retro-themed personal portfolio website with Windows 95 aesthetic",
+  "type": "module",
+  "scripts": {
+    "dev": "python -m http.server 8000",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "echo 'Deploy to your hosting service'"
+  },
+  "keywords": [
+    "portfolio",
+    "retro",
+    "windows-95",
+    "interactive",
+    "personal-site"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {}
+}
