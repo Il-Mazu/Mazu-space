@@ -25,7 +25,7 @@
   --cursor-color:     #ffffff;
 }
 
-html, body {
+html, body, #root {
   width: 100%;
   height: 100%;
   overflow: hidden;
@@ -601,8 +601,6 @@ html, body {
   border-bottom: 2px solid #444;
 }
 
-
-
 /* ── NOTIFICATION ────────────────────────── */
 #notif {
   position: fixed;
@@ -618,6 +616,7 @@ html, body {
   display: none;
   animation: slidein 0.2s ease;
 }
+#notif.visible { display: block; }
 @keyframes slidein { from { transform: translateY(20px); opacity:0; } to { transform: none; opacity:1; } }
 
 /* ── BOOT SCREEN ─────────────────────────── */
@@ -656,7 +655,6 @@ html, body {
   pointer-events: none;
 }
 
-/* power-on CRT flicker */
 @keyframes boot-power-on {
   0%   { opacity: 0; transform: scaleY(1.02) scaleX(1.01); filter: brightness(3); }
   10%  { opacity: 0.3; transform: scaleY(1.005) scaleX(1.002); filter: brightness(1.5); }
@@ -679,9 +677,6 @@ html, body {
   color: #aaa;
   font-family: 'Share Tech Mono', monospace;
   text-align: left;
-  display: flex;
-  flex-direction: column;
-  gap: 0;
   line-height: 1.7;
   white-space: nowrap;
   min-height: 16px;
@@ -696,7 +691,6 @@ html, body {
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* typing cursor */
 .boot-cursor {
   display: inline-block;
   color: #aaa;
@@ -729,4 +723,16 @@ html, body {
   border-color: #fff;
   color: #fff;
   transform: rotate(0deg) scale(1.05);
+}
+
+/* ── SHAKE KEYFRAMES (injected by JS in original, always here now) ── */
+@keyframes shake {
+  0%, 100% { transform: translate(0); }
+  20% { transform: translate(-2px, 1px); }
+  40% { transform: translate(2px, -1px); }
+  60% { transform: translate(-1px, 2px); }
+  80% { transform: translate(1px, -2px); }
+}
+.shake {
+  animation: shake 0.15s ease-out;
 }

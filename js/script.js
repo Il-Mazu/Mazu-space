@@ -4,7 +4,7 @@ const bootMsgs = [
   { text: '[ BIOS ] POST: OK',                     delay: 200 },
   { text: '[ BIOS ] Si va: a letto',               delay: 300 },
   { text: '[ BIOS ] loading kernel...',            delay: 350 },
-  { text: '[ SYS  ] MarcOSS v0.2.0',               delay: 200 },
+  { text: '[ SYS  ] mazu/OS v0.2.0',                delay: 200 },
   { text: '[ SYS  ] Per: forza',                   delay: 200 },
   { text: '[ NET  ] interface: loopback only',     delay: 300 },
   { text: '[ SYS  ] entering desktop...',          delay: 600 },
@@ -194,6 +194,96 @@ document.querySelectorAll('.window').forEach(win => {
   document.addEventListener('mouseup', () => { dragging = false; });
 });
 
+/* ── RESIZE (edge-based) ──────────────────── */
+const RESIZE_MARGIN = 6;
+
+document.querySelectorAll('.window').forEach(win => {
+  let resizing = false;
+  let resizeSides = {};
+  let startX, startY, startW, startH, startL, startT;
+
+  function getEdge(e) {
+    const rect = win.getBoundingClientRect();
+    const x = e.clientX, y = e.clientY;
+    return {
+      top:    y - rect.top <= RESIZE_MARGIN,
+      bottom: rect.bottom - y <= RESIZE_MARGIN,
+      left:   x - rect.left <= RESIZE_MARGIN,
+      right:  rect.right - x <= RESIZE_MARGIN,
+    };
+  }
+
+  function edgeCursor(sides) {
+    if (sides.top && sides.left)   return 'nwse-resize';
+    if (sides.top && sides.right)  return 'nesw-resize';
+    if (sides.bottom && sides.left) return 'nesw-resize';
+    if (sides.bottom && sides.right) return 'nwse-resize';
+    if (sides.top || sides.bottom) return 'ns-resize';
+    if (sides.left || sides.right)  return 'ew-resize';
+    return '';
+  }
+
+  win.addEventListener('mousemove', e => {
+    if (resizing) return;
+    const sides = getEdge(e);
+    win.style.cursor = edgeCursor(sides) || '';
+  });
+
+  win.addEventListener('mouseleave', () => {
+    if (!resizing) win.style.cursor = '';
+  });
+
+  win.addEventListener('mousedown', e => {
+    if (e.target.closest('.titlebar') || e.target.closest('.win-btn')) return;
+    const sides = getEdge(e);
+    if (!sides.top && !sides.bottom && !sides.left && !sides.right) return;
+
+    resizing = true;
+    resizeSides = sides;
+    startX = e.clientX;
+    startY = e.clientY;
+    startW = win.offsetWidth;
+    startH = win.offsetHeight;
+    startL = win.offsetLeft;
+    startT = win.offsetTop;
+    e.preventDefault();
+    bringToFront(win);
+  });
+
+  document.addEventListener('mousemove', e => {
+    if (!resizing) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    let newL = startL, newT = startT, newW = startW, newH = startH;
+
+    if (resizeSides.left)   { newL = startL + dx; newW = startW - dx; }
+    if (resizeSides.right)  { newW = startW + dx; }
+    if (resizeSides.top)    { newT = startT + dy; newH = startH - dy; }
+    if (resizeSides.bottom) { newH = startH + dy; }
+
+    const MIN_W = 200, MIN_H = 120;
+    if (newW < MIN_W) {
+      if (resizeSides.left) newL = startL + startW - MIN_W;
+      newW = MIN_W;
+    }
+    if (newH < MIN_H) {
+      if (resizeSides.top) newT = startT + startH - MIN_H;
+      newH = MIN_H;
+    }
+    newL = Math.max(0, newL);
+    newT = Math.max(0, newT);
+
+    win.style.left = newL + 'px';
+    win.style.top = newT + 'px';
+    win.style.width = newW + 'px';
+    win.style.height = newH + 'px';
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (resizing) { resizing = false; win.style.cursor = ''; }
+  });
+});
+
 /* ── START MENU ───────────────────────────── */
 function toggleStartMenu() {
   document.getElementById('start-menu').classList.toggle('open');
@@ -255,12 +345,12 @@ updatePlayer();
 /* ── TERMINAL ─────────────────────────────── */
 const termCmds = {
   help:    '// available: help, about, ls, date, clear, echo [text], glitch, sysinfo',
-  about:   '// hi. this is my corner of the internet.',
+  about:   '// mazu-space — my little corner of the internet.',
   ls:      'about.txt\nblog.txt\nplayer.exe\ndump/\nlinks.ini',
   date:    '// ' + new Date().toLocaleDateString('en-GB'),
   clear:   '__CLEAR__',
   glitch:  '// glitching the matrix...',
-  sysinfo: `// MY CORNER OS v0.2.0\n// arch: x86\n// mem: 64MB\n// net: loopback\n// uptime: unknown`,
+  sysinfo: `// mazu-space OS v0.2.0\n// arch: x86\n// mem: 64MB\n// net: loopback\n// uptime: unknown`,
 };
 
 function handleTermCmd(e) {
