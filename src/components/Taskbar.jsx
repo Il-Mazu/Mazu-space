@@ -5,7 +5,6 @@ const LABELS = {
   'win-blog': 'blog.txt',
   'win-music': 'player.exe',
   'win-dump': 'dump/',
-  'win-links': 'links.ini',
   'win-term': 'cmd.exe',
 };
 

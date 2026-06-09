@@ -8,14 +8,24 @@ import AboutWindow from './components/AboutWindow';
 import BlogWindow from './components/BlogWindow';
 import MusicWindow from './components/MusicWindow';
 import DumpWindow from './components/DumpWindow';
-import LinksWindow from './components/LinksWindow';
 import TerminalWindow from './components/TerminalWindow';
+import OscilloscopeWindow from './components/OscilloscopeWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
 import ambientSound from '../assets/ASMR - Alien： Isolation - Nap Time near a Computer Console - Ambient Sounds - NO Aliens Aboard! [rPMG0PLmh9s].mp3';
 import macSound from '../assets/Mac OS startup sound Big Sur [coxK3eWG20c].mp3';
 import { fadeIn, fadeOut } from './utils/audio';
+import track0 from '../assets/Musica/00 - AKIBA - カガミ.flac';
+import track1 from '../assets/Musica/00 - Goreshit - Fine Night.flac';
+import track2 from '../assets/Musica/00 - Machine Girl - Ghost.flac';
+import track3 from '../assets/Musica/00 - Machine Girl - うずまき.flac';
+import track4 from '../assets/Musica/00 - Sewerslvt - Mr. Kill Myself.flac';
+import cover0 from '../assets/covers/00 - AKIBA - カガミ.jpg';
+import cover1 from '../assets/covers/00 - Goreshit - Fine Night.jpg';
+import cover2 from '../assets/covers/00 - Machine Girl - Ghost.jpg';
+import cover3 from '../assets/covers/00 - Machine Girl - うずまき.jpg';
+import cover4 from '../assets/covers/00 - Sewerslvt - Mr. Kill Myself.jpg';
 
 const AMBIENT_VOL = 0.06;
 
@@ -24,15 +34,16 @@ const AMBIENT_VOL = 0.06;
     'win-blog':  { open: false, visible: false, focused: false, zIndex: 1,  x: 440, y: 28,  w: 330, h: null },
     'win-music': { open: false, visible: false, focused: false, zIndex: 1,  x: 440, y: 300, w: 480, h: null },
     'win-dump':  { open: false, visible: false, focused: false, zIndex: 1,  x: 620, y: 390, w: 480, h: 360 },
-    'win-links': { open: false, visible: false, focused: false, zIndex: 1,  x: 320, y: 340, w: 240, h: null },
     'win-term':  { open: false, visible: false, focused: false, zIndex: 1,  x: 780, y: 28,  w: 240, h: null },
+    'win-scope': { open: false, visible: false, focused: false, zIndex: 1,  x: 580, y: 540, w: 560, h: 186 },
   };
 
 const TRACKS = [
-  { title: 'burial — archangel',       time: '04:18', progress: 52 },
-  { title: 'actress — raven',          time: '05:34', progress: 0  },
-  { title: 'arca — coraje',            time: '03:12', progress: 0  },
-  { title: 'raime — exist in repeat',  time: '06:47', progress: 0  },
+  { title: 'カガミ', artist: 'AKIBA',        src: track0, cover: cover0, duration: 138 },
+  { title: 'Fine Night', artist: 'Goreshit',   src: track1, cover: cover1, duration: 316 },
+  { title: 'Ghost', artist: 'Machine Girl',    src: track2, cover: cover2, duration: 185 },
+  { title: 'うずまき', artist: 'Machine Girl', src: track3, cover: cover3, duration: 232 },
+  { title: 'Mr. Kill Myself', artist: 'Sewerslvt', src: track4, cover: cover4, duration: 471 },
 ];
 
 let zCounter = 10;
@@ -43,9 +54,15 @@ export default function App() {
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [notif, setNotif] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(0);
-  const [playing, setPlaying] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const notifTimer = useRef(null);
   const [initialAnimDone, setInitialAnimDone] = useState(false);
+  const audioRef = useRef(null);
+  const [progress, setProgress] = useState(0);
+  const [currentAudioTime, setCurrentAudioTime] = useState('00:00');
+  const [volume, setVolume] = useState(0.8);
+  const [shuffle, setShuffle] = useState(false);
+  const [loopMode, setLoopMode] = useState(0); // 0=off, 1=repeat all, 2=repeat one
 
   const getResponsiveSizes = useCallback(() => ({
     aboutW: Math.min(420, Math.round(window.innerWidth * 0.32)),
@@ -56,6 +73,10 @@ export default function App() {
     termY: Math.round(window.innerHeight * 0.02),
     termW: Math.round(window.innerWidth * 0.32),
     termH: Math.round(window.innerHeight * 0.3),
+    scopeW: Math.min(560, Math.round(window.innerWidth * 0.42)),
+    scopeX: Math.round(window.innerWidth * 0.30),
+    scopeY: Math.round(window.innerHeight * 0.68),
+    scopeH: 186,
   }), []);
 
   const showNotif = useCallback((msg) => {
@@ -153,15 +174,47 @@ export default function App() {
   }, []);
 
   // ── Music player ──
+  const pickNextTrack = useCallback((prev) => {
+    if (shuffle) {
+      let next;
+      do { next = Math.floor(Math.random() * TRACKS.length); }
+      while (next === prev && TRACKS.length > 1);
+      return next;
+    }
+    return (prev + 1) % TRACKS.length;
+  }, [shuffle]);
+
+  const pickPrevTrack = useCallback((prev) => {
+    if (shuffle) {
+      let next;
+      do { next = Math.floor(Math.random() * TRACKS.length); }
+      while (next === prev && TRACKS.length > 1);
+      return next;
+    }
+    return (prev - 1 + TRACKS.length) % TRACKS.length;
+  }, [shuffle]);
+
   const prevTrack = useCallback(() => {
-    setCurrentTrack(prev => (prev - 1 + TRACKS.length) % TRACKS.length);
-  }, []);
+    setCurrentTrack(prev => pickPrevTrack(prev));
+    setProgress(0);
+    setCurrentAudioTime('00:00');
+  }, [pickPrevTrack]);
   const nextTrack = useCallback(() => {
-    setCurrentTrack(prev => (prev + 1) % TRACKS.length);
-  }, []);
+    setCurrentTrack(prev => pickNextTrack(prev));
+    setProgress(0);
+    setCurrentAudioTime('00:00');
+  }, [pickNextTrack]);
   const togglePlay = useCallback(() => setPlaying(prev => !prev), []);
+  const handleVolumeChange = useCallback((v) => {
+    setVolume(v);
+    if (audioRef.current) audioRef.current.volume = v;
+  }, []);
+  const toggleShuffle = useCallback(() => setShuffle(prev => !prev), []);
+  const cycleLoop = useCallback(() => setLoopMode(prev => (prev + 1) % 3), []);
   const selectTrack = useCallback((i) => {
     setCurrentTrack(i);
+    setProgress(0);
+    setCurrentAudioTime('00:00');
     setPlaying(true);
   }, []);
 
@@ -217,7 +270,7 @@ export default function App() {
   // Open about and dump windows with CRT power-on after boot sequence completes
   useEffect(() => {
     if (bootDone) {
-      const { dumpW, dumpH, termX, termY, termW, termH } = getResponsiveSizes();
+      const { dumpW, dumpH, termX, termY, termW, termH, scopeX, scopeY, scopeW, scopeH } = getResponsiveSizes();
       const bigW = Math.min(600, Math.round(dumpW * 1.25));
       const bigH = Math.min(450, Math.round(dumpH * 1.25));
       const dx = Math.max(0, window.innerWidth - bigW - 20 - Math.round(window.innerWidth * 0.045));
@@ -246,6 +299,10 @@ export default function App() {
         next['win-term'] = {
           ...prev['win-term'], open: true, visible: true, focused: false,
           zIndex: ++zCounter, x: termX, y: termY, w: termW, h: termH,
+        };
+        next['win-scope'] = {
+          ...prev['win-scope'], open: true, visible: true, focused: false,
+          zIndex: ++zCounter, x: scopeX, y: scopeY, w: scopeW, h: scopeH,
         };
         return next;
       });
@@ -294,6 +351,52 @@ export default function App() {
     };
   }, [bootDone]);
 
+  // ── Music track audio ──
+  useEffect(() => {
+    if (!bootDone) return;
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const track = TRACKS[currentTrack];
+    if (!track) return;
+
+    audio.src = track.src;
+    audio.volume = volume;
+    audio.load();
+
+    if (playing) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+
+    const onTimeUpdate = () => {
+      if (audio.duration) {
+        setProgress((audio.currentTime / audio.duration) * 100);
+        const m = Math.floor(audio.currentTime / 60);
+        const s = Math.floor(audio.currentTime % 60);
+        setCurrentAudioTime(`${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+      }
+    };
+
+    const onEnded = () => {
+      if (loopMode === 2) {
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+        return;
+      }
+      setCurrentTrack(prev => pickNextTrack(prev));
+    };
+
+    audio.addEventListener('timeupdate', onTimeUpdate);
+    audio.addEventListener('ended', onEnded);
+
+    return () => {
+      audio.removeEventListener('timeupdate', onTimeUpdate);
+      audio.removeEventListener('ended', onEnded);
+    };
+  }, [bootDone, currentTrack, playing, loopMode, pickNextTrack]);
+
   // ── Responsive sizing ──
   useEffect(() => {
     const updateSizes = () => {
@@ -319,6 +422,13 @@ export default function App() {
           w: Math.round(window.innerWidth * 0.32),
           h: Math.round(window.innerHeight * 0.3),
         },
+        'win-scope': {
+          ...prev['win-scope'],
+          x: Math.round(window.innerWidth * 0.30),
+          y: Math.round(window.innerHeight * 0.68),
+          w: Math.min(560, Math.round(window.innerWidth * 0.42)),
+          h: 186,
+        },
       }));
     };
 
@@ -341,10 +451,6 @@ export default function App() {
         { label: 'Tags',      onClick: () => showNotif() },
       ],
       'win-music': null,
-      'win-links': [
-        { label: 'Add',  onClick: () => showNotif() },
-        { label: 'Sort', onClick: () => showNotif() },
-      ],
     };
     return menus[id] || null;
   };
@@ -363,12 +469,9 @@ export default function App() {
         { text: 'latest: 2025.06.07' },
       ],
       'win-music': [
-        { text: 'PLAYING', className: 'status-seg c-red' },
-        { text: '4 tracks', className: 'status-seg' },
-        { text: 'vol: 80%' },
-      ],
-      'win-links': [
-        { text: '7 links' },
+        { text: playing ? 'PLAYING' : 'PAUSED', className: 'status-seg c-red' },
+        { text: `${TRACKS.length} tracks`, className: 'status-seg' },
+        { text: `vol: ${Math.round(volume * 100)}%` },
       ],
     };
     return statuses[id] || null;
@@ -452,12 +555,21 @@ export default function App() {
             tracks={TRACKS}
             currentTrack={currentTrack}
             playing={playing}
+            progress={progress}
+            currentAudioTime={currentAudioTime}
+            volume={volume}
+            shuffle={shuffle}
+            loopMode={loopMode}
             onPrev={prevTrack}
             onNext={nextTrack}
             onTogglePlay={togglePlay}
+            onToggleShuffle={toggleShuffle}
+            onCycleLoop={cycleLoop}
+            onVolumeChange={handleVolumeChange}
             onSelectTrack={selectTrack}
             onNotif={showNotif}
           />
+          <audio ref={audioRef} preload="auto" />
         </Window>
 
         <DumpWindow
@@ -474,23 +586,7 @@ export default function App() {
           onResize={resizeWindow}
         />
 
-        <Window
-          id="win-links" title="links.ini — NET"
-          x={w['win-links'].x} y={w['win-links'].y}
-          width={w['win-links'].w} height={w['win-links'].h}
-          visible={w['win-links'].visible}
-          focused={w['win-links'].focused}
-          zIndex={w['win-links'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-          menubar={menuFor('win-links')}
-          statusbar={statusFor('win-links')}
-        >
-          <LinksWindow />
-        </Window>
+
 
         <Window
           id="win-term" title="cmd.exe"
@@ -527,6 +623,22 @@ export default function App() {
             }}
           />
         </Window>
+
+        <OscilloscopeWindow
+          id="win-scope"
+          x={w['win-scope'].x} y={w['win-scope'].y}
+          width={w['win-scope'].w} height={w['win-scope'].h}
+          visible={w['win-scope'].visible}
+          focused={w['win-scope'].focused}
+          zIndex={w['win-scope'].zIndex}
+          powerOn={!initialAnimDone}
+          onFocus={focusWindow}
+          onClose={closeWindow}
+          onMove={moveWindow}
+          onResize={resizeWindow}
+          audioElement={audioRef.current}
+          trackKey={currentTrack}
+        />
 
         <Notification message={notif} />
       </div>

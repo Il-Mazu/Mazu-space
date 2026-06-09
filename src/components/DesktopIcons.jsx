@@ -3,8 +3,8 @@ const icons = [
   { id: 'win-blog', img: '[LOG]', label: 'blog.txt' },
   { id: 'win-music', img: '[MP3]', label: 'player.exe' },
   { id: 'win-dump', img: '[BIN]', label: 'dump/' },
-  { id: 'win-links', img: '[NET]', label: 'links.ini' },
   { id: 'win-term', img: '[$]', label: 'cmd.exe' },
+  { id: 'win-scope', img: '[~]', label: 'scope.exe' },
 ];
 
 export default function DesktopIcons({ onOpen }) {

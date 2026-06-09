@@ -3,7 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 const termCmds = {
   help:    '// available: help, about, ls, date, clear, echo [text], glitch, sysinfo, fastfetch, cmatrix',
   about:   '// mazu-space \u2014 my little corner of the internet.',
-  ls:      'about.txt\nblog.txt\nplayer.exe\ndump/\nlinks.ini',
+  ls:      'about.txt\nblog.txt\nplayer.exe\ndump/',
   sysinfo: `// mazu-space OS v0.2.0\n// arch: x86\n// mem: 64MB\n// net: loopback\n// uptime: unknown`,
 };
 
@@ -12,7 +12,7 @@ const fileMap = {
   'blog.txt': 'win-blog',
   'player.exe': 'win-music',
   'dump/': 'win-dump',
-  'links.ini': 'win-links',
+  'scope.exe': 'win-scope',
 };
 
 function buildFastfetch() {

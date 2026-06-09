@@ -3,7 +3,6 @@ const items = [
   { id: 'win-blog', label: '[LOG] blog.txt' },
   { id: 'win-music', label: '[MP3] player.exe' },
   { id: 'win-dump', label: '[BIN] dump/' },
-  { id: 'win-links', label: '[NET] links.ini' },
   { id: 'win-term', label: '[$] cmd.exe' },
 ];
 
