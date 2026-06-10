@@ -13,30 +13,49 @@ import OscilloscopeWindow from './components/OscilloscopeWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
+import HomeWindow from './components/HomeWindow';
+import { commits, remote, buildDate } from 'virtual:git-info';
+import { posts } from './components/BlogWindow';
 import ambientSound from '../assets/ASMR - Alien： Isolation - Nap Time near a Computer Console - Ambient Sounds - NO Aliens Aboard! [rPMG0PLmh9s].mp3';
 import macSound from '../assets/Mac OS startup sound Big Sur [coxK3eWG20c].mp3';
 import { fadeIn, fadeOut } from './utils/audio';
-import track0 from '../assets/Musica/00 - AKIBA - カガミ.flac';
-import track1 from '../assets/Musica/00 - Goreshit - Fine Night.flac';
-import track2 from '../assets/Musica/00 - Machine Girl - Ghost.flac';
-import track3 from '../assets/Musica/00 - Machine Girl - うずまき.flac';
-import track4 from '../assets/Musica/00 - Sewerslvt - Mr. Kill Myself.flac';
+import track0 from '../assets/Musica/00 - AKIBA - カガミ.mp3';
+import track1 from '../assets/Musica/00 - Goreshit - Fine Night.mp3';
+import track2 from '../assets/Musica/00 - Machine Girl - Ghost.mp3';
+import track3 from '../assets/Musica/00 - Machine Girl - うずまき.mp3';
+import track4 from '../assets/Musica/00 - Sewerslvt - Mr. Kill Myself.mp3';
 import cover0 from '../assets/covers/00 - AKIBA - カガミ.jpg';
 import cover1 from '../assets/covers/00 - Goreshit - Fine Night.jpg';
 import cover2 from '../assets/covers/00 - Machine Girl - Ghost.jpg';
 import cover3 from '../assets/covers/00 - Machine Girl - うずまき.jpg';
 import cover4 from '../assets/covers/00 - Sewerslvt - Mr. Kill Myself.jpg';
 
+const TASKBAR_H = 40;
 const AMBIENT_VOL = 0.06;
 
-  const INITIAL_WINDOWS = {
-    'win-about': { open: false, visible: false, focused: false, zIndex: 1,  x: 80,  y: 0,   w: 380, h: null },
-    'win-blog':  { open: false, visible: false, focused: false, zIndex: 1,  x: 440, y: 28,  w: 330, h: null },
-    'win-music': { open: false, visible: false, focused: false, zIndex: 1,  x: 440, y: 300, w: 480, h: null },
-    'win-dump':  { open: false, visible: false, focused: false, zIndex: 1,  x: 620, y: 390, w: 480, h: 360 },
-    'win-term':  { open: false, visible: false, focused: false, zIndex: 1,  x: 780, y: 28,  w: 240, h: null },
-    'win-scope': { open: false, visible: false, focused: false, zIndex: 1,  x: 580, y: 540, w: 560, h: 186 },
+function calcLayout(vw, vh) {
+  const avh = vh - TASKBAR_H;
+  return {
+    'win-about': { x: 0,                       y: 0,                       w: Math.round(vw * 0.25), h: avh },
+    'win-term':  { x: Math.round(vw * 0.26),   y: Math.round(avh * 0.02),  w: Math.round(vw * 0.30), h: Math.round(avh * 0.32) },
+    'win-music': { x: Math.round(vw * 0.62),   y: Math.round(avh * 0.02),  w: Math.round(vw * 0.28), h: Math.round(avh * 0.26) },
+    'win-home':  { x: Math.round(vw * 0.65),   y: Math.round(avh * 0.34),  w: Math.round(vw * 0.28), h: Math.round(avh * 0.27) },
+    'win-scope': { x: Math.round(vw * 0.30),   y: Math.round(avh * 0.78),  w: Math.round(vw * 0.28), h: Math.round(avh * 0.16) },
+    'win-dump':  { x: Math.round(vw * 0.62),   y: Math.round(avh * 0.64),  w: Math.round(vw * 0.36), h: Math.round(avh * 0.35) },
+    'win-blog':  { x: Math.round(vw * 0.56),   y: Math.round(avh * 0.32),  w: Math.round(vw * 0.26), h: Math.round(avh * 0.26) },
   };
+}
+
+const WIN_IDS = ['win-home', 'win-about', 'win-blog', 'win-music', 'win-dump', 'win-term', 'win-scope'];
+
+function buildInitialWindows() {
+  const l = calcLayout(window.innerWidth, window.innerHeight);
+  const result = {};
+  for (const id of WIN_IDS) {
+    result[id] = { open: false, visible: false, focused: false, zIndex: 1, x: l[id].x, y: l[id].y, w: l[id].w, h: l[id].h };
+  }
+  return result;
+}
 
 const TRACKS = [
   { title: 'カガミ', artist: 'AKIBA',        src: track0, cover: cover0, duration: 138 },
@@ -50,7 +69,7 @@ let zCounter = 10;
 
 export default function App() {
   const [bootDone, setBootDone] = useState(false);
-  const [windows, setWindows] = useState(INITIAL_WINDOWS);
+  const [windows, setWindows] = useState(buildInitialWindows);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [notif, setNotif] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(0);
@@ -63,21 +82,6 @@ export default function App() {
   const [volume, setVolume] = useState(0.8);
   const [shuffle, setShuffle] = useState(false);
   const [loopMode, setLoopMode] = useState(0); // 0=off, 1=repeat all, 2=repeat one
-
-  const getResponsiveSizes = useCallback(() => ({
-    aboutW: Math.min(420, Math.round(window.innerWidth * 0.32)),
-    aboutH: window.innerHeight - 32,
-    dumpW: Math.min(480, Math.round(window.innerWidth * 0.264)),
-    dumpH: Math.min(360, Math.round(window.innerHeight * 0.288)),
-    termX: Math.round(window.innerWidth * 0.28),
-    termY: Math.round(window.innerHeight * 0.02),
-    termW: Math.round(window.innerWidth * 0.32),
-    termH: Math.round(window.innerHeight * 0.3),
-    scopeW: Math.min(560, Math.round(window.innerWidth * 0.42)),
-    scopeX: Math.round(window.innerWidth * 0.30),
-    scopeY: Math.round(window.innerHeight * 0.68),
-    scopeH: 186,
-  }), []);
 
   const showNotif = useCallback((msg) => {
     setNotif(msg);
@@ -126,7 +130,7 @@ export default function App() {
         ny = cur.y + 30;
         if (overlaps(nx, ny)) {
           const maxX = window.innerWidth - 180;
-          const maxY = window.innerHeight - 32 - 100;
+          const maxY = window.innerHeight - TASKBAR_H - 100;
           let found = false;
           for (let gy = 0; gy <= maxY && !found; gy += 40) {
             for (let gx = 0; gx <= maxX && !found; gx += 40) {
@@ -207,7 +211,6 @@ export default function App() {
   const togglePlay = useCallback(() => setPlaying(prev => !prev), []);
   const handleVolumeChange = useCallback((v) => {
     setVolume(v);
-    if (audioRef.current) audioRef.current.volume = v;
   }, []);
   const toggleShuffle = useCallback(() => setShuffle(prev => !prev), []);
   const cycleLoop = useCallback(() => setLoopMode(prev => (prev + 1) % 3), []);
@@ -267,49 +270,35 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Open about and dump windows with CRT power-on after boot sequence completes
+  // Open windows with CRT power-on after boot sequence completes
   useEffect(() => {
     if (bootDone) {
-      const { dumpW, dumpH, termX, termY, termW, termH, scopeX, scopeY, scopeW, scopeH } = getResponsiveSizes();
-      const bigW = Math.min(600, Math.round(dumpW * 1.25));
-      const bigH = Math.min(450, Math.round(dumpH * 1.25));
-      const dx = Math.max(0, window.innerWidth - bigW - 20 - Math.round(window.innerWidth * 0.045));
-      const dy = Math.max(0, window.innerHeight - 32 - bigH - 20);
+      const l = calcLayout(window.innerWidth, window.innerHeight);
+      const homeZ = ++zCounter;
       const aboutZ = ++zCounter;
+      const blogZ = ++zCounter;
+      const musicZ = ++zCounter;
       const dumpZ = ++zCounter;
+      const termZ = ++zCounter;
+      const scopeZ = ++zCounter;
       setWindows(prev => {
         const next = {};
         for (const key of Object.keys(prev)) {
-          next[key] = { ...prev[key], focused: key === 'win-dump' };
+          next[key] = { ...prev[key], focused: false };
         }
-        next['win-about'] = {
-          ...prev['win-about'], open: true, visible: true, focused: false,
-          zIndex: aboutZ,
-        };
-        next['win-dump'] = {
-          ...prev['win-dump'], open: true, visible: true, focused: true,
-          zIndex: dumpZ, x: dx, y: dy, w: bigW, h: bigH,
-        };
-        const musicW = 480;
-        const musicX = Math.max(0, window.innerWidth - musicW - 16 - 80 - 16 - Math.round(window.innerWidth * 0.045));
-        next['win-music'] = {
-          ...prev['win-music'], open: true, visible: true, focused: false,
-          zIndex: ++zCounter, x: musicX, y: 16,
-        };
-        next['win-term'] = {
-          ...prev['win-term'], open: true, visible: true, focused: false,
-          zIndex: ++zCounter, x: termX, y: termY, w: termW, h: termH,
-        };
-        next['win-scope'] = {
-          ...prev['win-scope'], open: true, visible: true, focused: false,
-          zIndex: ++zCounter, x: scopeX, y: scopeY, w: scopeW, h: scopeH,
-        };
+        next['win-about'] = { ...prev['win-about'], ...l['win-about'], open: true, visible: true, focused: false, zIndex: aboutZ };
+        next['win-dump']  = { ...prev['win-dump'],  ...l['win-dump'],  open: true, visible: true, focused: false, zIndex: dumpZ };
+        next['win-music'] = { ...prev['win-music'], ...l['win-music'], open: true, visible: true, focused: false, zIndex: musicZ };
+        next['win-term']  = { ...prev['win-term'],  ...l['win-term'],  open: true, visible: true, focused: false, zIndex: termZ };
+        next['win-scope'] = { ...prev['win-scope'], ...l['win-scope'], open: true, visible: true, focused: false, zIndex: scopeZ };
+        next['win-home']  = { ...prev['win-home'],  ...l['win-home'],  open: true, visible: true, focused: true,  zIndex: homeZ };
+        next['win-blog']  = { ...prev['win-blog'],  ...l['win-blog'],  open: false, visible: false, focused: false, zIndex: blogZ };
         return next;
       });
       setStartMenuOpen(false);
       setTimeout(() => setInitialAnimDone(true), 1200);
     }
-  }, [bootDone, getResponsiveSizes]);
+  }, [bootDone]);
 
   // Play Mac startup sound then crossfade to ambient background after boot
   useEffect(() => {
@@ -397,49 +386,42 @@ export default function App() {
     };
   }, [bootDone, currentTrack, playing, loopMode, pickNextTrack]);
 
+  // ── Sync volume to audio element ──
+  useEffect(() => {
+    if (audioRef.current) audioRef.current.volume = volume;
+  }, [volume]);
+
   // ── Responsive sizing ──
   useEffect(() => {
     const updateSizes = () => {
-      const { aboutW, aboutH, dumpW, dumpH } = getResponsiveSizes();
-      setWindows(prev => ({
-        ...prev,
-        'win-about': {
-          ...prev['win-about'],
-          x: 80,
-          y: 0,
-          w: aboutW,
-          h: aboutH,
-        },
-        'win-dump': {
-          ...prev['win-dump'],
-          x: Math.min(prev['win-dump'].x, Math.max(0, window.innerWidth - (prev['win-dump'].w || dumpW) - 20 - Math.round(window.innerWidth * 0.045))),
-          y: Math.min(prev['win-dump'].y, Math.max(0, window.innerHeight - 32 - (prev['win-dump'].h || dumpH) - 20)),
-        },
-        'win-term': {
-          ...prev['win-term'],
-          x: Math.round(window.innerWidth * 0.28),
-          y: Math.round(window.innerHeight * 0.02),
-          w: Math.round(window.innerWidth * 0.32),
-          h: Math.round(window.innerHeight * 0.3),
-        },
-        'win-scope': {
-          ...prev['win-scope'],
-          x: Math.round(window.innerWidth * 0.30),
-          y: Math.round(window.innerHeight * 0.68),
-          w: Math.min(560, Math.round(window.innerWidth * 0.42)),
-          h: 186,
-        },
-      }));
+      const l = calcLayout(window.innerWidth, window.innerHeight);
+      setWindows(prev => {
+        const next = {};
+        for (const key of Object.keys(prev)) {
+          next[key] = { ...prev[key] };
+        }
+        for (const id of WIN_IDS) {
+          if (next[id].visible) {
+            next[id] = { ...next[id], x: l[id].x, y: l[id].y, w: l[id].w, h: l[id].h };
+          }
+        }
+        return next;
+      });
     };
 
     updateSizes();
     window.addEventListener('resize', updateSizes);
     return () => window.removeEventListener('resize', updateSizes);
-  }, [getResponsiveSizes]);
+  }, []);
 
   // ── Window menubar configurations ──
   const menuFor = (id) => {
     const menus = {
+      'win-home': [
+        { label: 'File', onClick: () => showNotif() },
+        { label: 'Edit', onClick: () => showNotif() },
+        { label: 'View', onClick: () => showNotif() },
+      ],
       'win-about': [
         { label: 'File', onClick: () => showNotif() },
         { label: 'Edit', onClick: () => showNotif() },
@@ -458,6 +440,11 @@ export default function App() {
   // ── Statusbar configurations ──
   const statusFor = (id) => {
     const statuses = {
+      'win-home': [
+        { text: 'ONLINE', className: 'status-seg c-accent' },
+        { text: 'v0.2.0', className: 'status-seg' },
+        { text: `source: ${remote.replace(/^git@/, '').replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(':', '/')}` },
+      ],
       'win-about': [
         { text: 'ONLINE', className: 'status-seg c-accent' },
         { text: 'v0.2.0', className: 'status-seg' },
@@ -487,6 +474,13 @@ export default function App() {
       <CrtOverlay />
       <NoiseOverlay />
 
+      <div id="mobile-block">
+        <div className="mb-icon">⊞</div>
+        <div>mazu-space</div>
+        <div className="c-dim">This desktop experience requires a wider screen.</div>
+        <div className="c-dim">Open on a desktop computer for the full effect.</div>
+      </div>
+
       <div id="desktop" onClick={handleDesktopClick}>
         <div id="wallpaper">
           <img
@@ -497,6 +491,31 @@ export default function App() {
         </div>
 
         <DesktopIcons onOpen={openWindow} />
+
+        <Window
+          id="win-home" title="home.txt — MAZU-SPACE"
+          x={w['win-home'].x} y={w['win-home'].y}
+          width={w['win-home'].w} height={w['win-home'].h}
+          visible={w['win-home'].visible}
+          focused={w['win-home'].focused}
+          zIndex={w['win-home'].zIndex}
+          powerOn={!initialAnimDone}
+          onFocus={focusWindow}
+          onClose={closeWindow}
+          onMinimize={minimizeWindow}
+          onMove={moveWindow}
+          onResize={resizeWindow}
+          menubar={menuFor('win-home')}
+          statusbar={statusFor('win-home')}
+        >
+          <HomeWindow
+            commits={commits}
+            remote={remote}
+            buildDate={buildDate}
+            blogCount={posts.length}
+            tracksCount={TRACKS.length}
+          />
+        </Window>
 
         <Window
           id="win-about" title="about.txt — mazu-space"

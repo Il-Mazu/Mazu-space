@@ -1,4 +1,4 @@
-const posts = [
+export const posts = [
   { date: '2025.06.07', title: 'on machines dreaming', tags: '[#thoughts] [#glitch]' },
   { date: '2025.05.31', title: 'glitch as language', tags: '[#art] [#aesthetics]' },
   { date: '2025.05.18', title: 'bbs nostalgia', tags: '[#retro] [#protocol]' },

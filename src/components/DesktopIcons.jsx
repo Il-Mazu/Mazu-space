@@ -1,4 +1,5 @@
 const icons = [
+  { id: 'win-home', img: '[~]', label: 'home.txt' },
   { id: 'win-about', img: '[SYS]', label: 'about.txt' },
   { id: 'win-blog', img: '[LOG]', label: 'blog.txt' },
   { id: 'win-music', img: '[MP3]', label: 'player.exe' },

@@ -36,7 +36,7 @@ export default function Window({
       if (!dragRef.current) return;
       const { ox, oy } = dragRef.current;
       const nx = Math.max(0, Math.min(window.innerWidth - 180, e.clientX - ox));
-      const ny = Math.max(0, Math.min(window.innerHeight - 32 - 100, e.clientY - oy));
+      const ny = Math.max(0, Math.min(window.innerHeight - 40 - 100, e.clientY - oy));
       onMove(id, nx, ny);
     };
     const handleMouseUp = () => {

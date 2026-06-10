@@ -56,9 +56,9 @@ export default function MusicWindow({
             type="range"
             min="0"
             max="1"
-            step="0.01"
+            step="any"
             value={volume}
-            onChange={(e) => onVolumeChange(parseFloat(e.target.value))}
+            onChange={(e) => onVolumeChange(e.target.valueAsNumber)}
           />
         </div>
 
