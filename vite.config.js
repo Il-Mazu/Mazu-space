@@ -1,6 +1,8 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
+import fs from 'fs';
+import path from 'path';
 
 function gitInfoPlugin() {
   const VIRTUAL_ID = 'virtual:git-info';
@@ -37,7 +39,54 @@ function gitInfoPlugin() {
   };
 }
 
+function dumpImagesPlugin() {
+  const VIRTUAL_ID = 'virtual:dump-images';
+  const RESOLVED_ID = '\0' + VIRTUAL_ID;
+  const dumpDir = path.resolve(__dirname, 'assets/Dump');
+  const exts = ['.jpeg', '.jpg', '.png', '.gif', '.webp'];
+
+  function scanImages() {
+    let files = [];
+    try {
+      files = fs.readdirSync(dumpDir);
+    } catch (e) {
+      return [];
+    }
+    return files
+      .filter(f => exts.includes(path.extname(f).toLowerCase()))
+      .sort()
+      .map(f => `/assets/Dump/${f}`);
+  }
+
+  return {
+    name: 'dump-images',
+    resolveId(id) {
+      if (id === VIRTUAL_ID) return RESOLVED_ID;
+    },
+    load(id) {
+      if (id === RESOLVED_ID) {
+        const images = scanImages();
+        return `export const images = ${JSON.stringify(images)};\nexport const count = ${images.length};`;
+      }
+    },
+    configureServer(server) {
+      server.watcher.add(dumpDir);
+      const handler = (filePath) => {
+        if (filePath.startsWith(dumpDir)) {
+          const mod = server.moduleGraph.getModuleById(RESOLVED_ID);
+          if (mod) {
+            server.moduleGraph.invalidateModule(mod);
+          }
+          server.ws.send({ type: 'full-reload' });
+        }
+      };
+      server.watcher.on('add', handler);
+      server.watcher.on('unlink', handler);
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [react(), gitInfoPlugin()],
+  plugins: [react(), gitInfoPlugin(), dumpImagesPlugin()],
   assetsInclude: ['**/*.gif', '**/*.mp3', '**/*.jpg'],
 });

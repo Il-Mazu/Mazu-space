@@ -1,7 +1,6 @@
 import { useMemo } from 'react';
-
-const dumpModules = import.meta.glob('/assets/Dump/*.jpeg', { eager: true, query: '?url' });
-const dumpCount = Object.keys(dumpModules).length;
+import { count as dumpCount } from 'virtual:dump-images';
+import { gamesCount } from './GamesWindow';
 
 function formatRemote(url) {
   if (!url) return 'github.com';
@@ -10,16 +9,70 @@ function formatRemote(url) {
   return clean;
 }
 
-export default function HomeWindow({ commits, remote, buildDate, blogCount, tracksCount }) {
+const STATUS_COLORS = { online: '#1D9E75', idle: '#BA7517', dnd: '#A32D2D', offline: '#888780' };
+
+function avatarUrl(user) {
+  if (!user?.id || !user?.avatar) return null;
+  const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}`;
+}
+
+const WING_ART = `⠀⠀⠀⠀⢀⣴⢿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⢀⡾⠁⡞⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⢠⢺⠃⢸⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢠⠏⢸⡄⠈⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⢸⡀⢸⡄⠀⠹⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢀⡜⡇⠈⣿⡀⠀⠙⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⢸⠀⢳⠄⠹⣿⡄⠀⠈⢦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⣸⠆⢸⣧⡄⢸⣿⣶⠀⢠⠙⢦⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠷⡀⠹⣷⣄⣻⣿⡟⠺⣷⡀⠉⠓⢤⡀⠀⠀⠀⠀⠀⠀⠀⠀
+⢧⠀⣶⣄⡘⢿⣦⣽⣿⣄⠈⢱⡦⠀⠀⠉⠓⢤⡀⠀⠀⠀⠀⠀
+⠘⣇⠈⠻⣷⡜⢻⣧⠉⠻⣄⠈⢻⣶⣴⠶⡄⠀⠙⡆⠀⠀⠀⠀
+⠀⢻⠉⣄⠈⢿⣿⣿⣷⠀⠀⣶⣤⣀⣷⣀⠀⠀⠀⣸⠀⠀⠀⠀
+⠀⠀⢧⡈⢿⣥⣍⣿⠉⠉⠃⢶⣦⣿⠀⠀⠀⠀⡚⠋⠀⠀⠀⠀
+⠀⠀⠈⠳⣤⣈⠛⠻⢷⣦⣤⡄⣶⣾⣿⠃⠀⠀⠛⢦⡄⠀⠀⠀
+⠀⠀⠀⠀⠀⠉⠒⠒⣾⠋⠁⠀⣈⣽⣿⣷⡆⠀⠀⠀⠘⡄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠹⠦⢴⠋⠁⠀⠹⣿⣿⣿⠀⠀⠀⠙⣄⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⢤⠴⠋⠀⡀⠛⠿⠟⡇⠠⠤⠤⠷
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠤⠴⣇⣠⣏⣰⠁⠀⠀⠀⠀`;
+
+export default function HomeWindow({ commits, remote, buildDate, blogCount, tracksCount, lanyard }) {
+  const statusColor = STATUS_COLORS[lanyard?.discord_status] || '#888780';
+  const user = lanyard?.discord_user;
+  const avatarSrc = avatarUrl(user);
   const repoUrl = useMemo(() => formatRemote(remote), [remote]);
 
   return (
     <>
-      <pre className="ascii-art" style={{ textAlign: 'center', marginBottom: 20 }}>
-{`╭────── · · ♰ · · ──────╮
-│  C:\\mazu-space> home   │
-╰────── · · ♰ · · ──────╯`}
-      </pre>
+      <div className="discord-card">
+        <div className="discord-card-inner">
+          {lanyard ? (
+            <>
+              <div className="discord-wing-panel">
+                <pre className="discord-wing">{WING_ART}</pre>
+              </div>
+              <div className="discord-card-center">
+                <div className="discord-card-avatar">
+                  {avatarSrc ? (
+                    <img className="discord-avatar" src={avatarSrc} alt="avatar" />
+                  ) : (
+                    <div className="discord-avatar-placeholder" />
+                  )}
+                </div>
+                <div className="discord-card-info">
+                  <div className="discord-card-name">{user?.username || 'mazu'}</div>
+                  <div className="discord-card-status" style={{ color: statusColor }}>● {lanyard.discord_status}</div>
+                </div>
+              </div>
+              <div className="discord-wing-panel discord-wing-right">
+                <pre className="discord-wing">{WING_ART}</pre>
+              </div>
+            </>
+          ) : (
+            <div className="discord-card-loading">discord: loading...</div>
+          )}
+        </div>
+      </div>
 
       <div className="home-dashboard">
         <div className="home-panel">
@@ -27,6 +80,7 @@ export default function HomeWindow({ commits, remote, buildDate, blogCount, trac
           <div className="home-stat"><span className="c-red">♰</span> blog:  <span className="c-accent2">{blogCount}</span></div>
           <div className="home-stat"><span className="c-red">♰</span> music: <span className="c-accent2">{tracksCount}</span></div>
           <div className="home-stat"><span className="c-red">♰</span> dump:  <span className="c-accent2">{dumpCount}</span></div>
+          <div className="home-stat"><span className="c-red">♰</span> games:  <span className="c-accent2">{gamesCount}</span></div>
         </div>
 
         <div className="home-panel">
@@ -52,11 +106,11 @@ export default function HomeWindow({ commits, remote, buildDate, blogCount, trac
             <span className="c-red">&gt;</span>
             <span>github</span>
           </a>
-          <a href="https://www.instagram.com/ilmazu_?igsh=djYzMG9paXM5MTk0" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <a href="https://www.instagram.com/ilmazu_" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
             <span className="c-red">&gt;</span>
             <span>instagram</span>
           </a>
-          <a href="https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj?si=badddd480e8c479c" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <a href="https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
             <span className="c-red">&gt;</span>
             <span>spotify</span>
           </a>

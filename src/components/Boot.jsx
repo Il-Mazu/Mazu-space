@@ -221,7 +221,7 @@ export default function Boot({ onComplete }) {
           right: 12,
           zIndex: 10001,
           background: '#111',
-          color: '#666',
+          color: '#999',
           border: '1px solid #333',
           padding: '4px 12px',
           fontFamily: "'Share Tech Mono', monospace",
@@ -230,7 +230,7 @@ export default function Boot({ onComplete }) {
           opacity: 0.5,
         }}
         onMouseEnter={e => { e.target.style.opacity = 1; e.target.style.color = '#aaa'; }}
-        onMouseLeave={e => { e.target.style.opacity = 0.5; e.target.style.color = '#666'; }}
+        onMouseLeave={e => { e.target.style.opacity = 0.5; e.target.style.color = '#999'; }}
       >
         SKIP &gt;&gt;
       </button>

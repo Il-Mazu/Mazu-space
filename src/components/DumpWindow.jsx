@@ -1,8 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Window from './Window';
-
-const imageModules = import.meta.glob('/assets/Dump/*.jpeg', { eager: true, query: '?url' });
-const imageList = Object.values(imageModules).map(m => m.default || m);
+import { images as imageList } from 'virtual:dump-images';
 
 export default function DumpWindow({
   id, x, y, width, height,
@@ -10,6 +8,7 @@ export default function DumpWindow({
   onFocus, onClose, onMinimize, onMove, onResize,
 }) {
   const [currentIndex, setCurrentIndex] = useState(null);
+  const [showGrid, setShowGrid] = useState(false);
 
   useEffect(() => {
     if (imageList.length > 0) {
@@ -17,15 +16,35 @@ export default function DumpWindow({
     }
   }, []);
 
-  if (currentIndex === null) return null;
+  useEffect(() => {
+    if (!focused || showGrid) return;
+    const handleKey = (e) => {
+      if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setCurrentIndex(p => (p - 1 + imageList.length) % imageList.length);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setCurrentIndex(p => (p + 1) % imageList.length);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [focused, showGrid, imageList.length]);
 
-  const prev = () => {
+  const prev = useCallback(() => {
     setCurrentIndex(p => (p - 1 + imageList.length) % imageList.length);
-  };
+  }, []);
 
-  const next = () => {
+  const next = useCallback(() => {
     setCurrentIndex(p => (p + 1) % imageList.length);
-  };
+  }, []);
+
+  const goTo = useCallback((index) => {
+    setCurrentIndex(index);
+    setShowGrid(false);
+  }, []);
+
+  if (currentIndex === null) return null;
 
   return (
     <Window
@@ -35,18 +54,36 @@ export default function DumpWindow({
       onFocus={onFocus} onClose={onClose} onMinimize={onMinimize}
       onMove={onMove} onResize={onResize}
     >
-      <div className="dump-content">
-        <img
-          src={imageList[currentIndex]}
-          alt={`dump ${currentIndex + 1}`}
-          className="gallery-img"
-          draggable={false}
-        />
-      </div>
+      {showGrid ? (
+        <div className="dump-grid">
+          {imageList.map((src, i) => (
+            <div
+              key={i}
+              className="dump-grid-item"
+              onClick={() => goTo(i)}
+            >
+              <img src={src} alt={`dump ${i + 1}`} draggable={false} />
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="dump-content">
+          <img
+            src={imageList[currentIndex]}
+            alt={`dump ${currentIndex + 1}`}
+            className="gallery-img"
+            draggable={false}
+          />
+        </div>
+      )}
       <div className="gallery-nav">
         <span className="gallery-btn" onClick={prev}>◀</span>
         <span className="gallery-counter">{currentIndex + 1}/{imageList.length}</span>
         <span className="gallery-btn" onClick={next}>▶</span>
+        <span className="gallery-sep">|</span>
+        <span className="gallery-btn" onClick={() => setShowGrid(p => !p)}>
+          {showGrid ? 'View' : 'Grid'}
+        </span>
       </div>
     </Window>
   );

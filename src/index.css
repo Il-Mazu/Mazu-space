@@ -14,10 +14,10 @@ img { -webkit-user-drag: none; user-drag: none; }
   --win-border-light: #444444;
   --win-bg:           #030303;
   --text-primary:     #aaaaaa;
-  --text-dim:         #333333;
+  --text-dim:         #666666;
   --text-bright:      #eeeeee;
   --accent:           #ffffff;
-  --accent2:          #777777;
+  --accent2:          #999999;
   --scanline:         rgba(255,255,255,0.025);
   --green:            #33ff55;
   --red:              #ff3333;
@@ -191,7 +191,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #555;
+  color: #888;
   cursor: pointer;
   font-family: 'Share Tech Mono', monospace;
   line-height: 1;
@@ -421,6 +421,49 @@ html, body, #root {
   font-size: 12px;
   font-family: 'Share Tech Mono', monospace;
 }
+.gallery-sep {
+  color: var(--win-border);
+  font-size: 12px;
+  user-select: none;
+}
+
+#win-dump .win-content {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dump-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-auto-rows: 105px;
+  gap: 8px;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+.dump-grid-item {
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--win-border);
+  transition: border-color 0.15s, opacity 0.15s;
+}
+
+.dump-grid-item:hover {
+  border-color: var(--accent);
+  opacity: 0.8;
+}
+
+.dump-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+}
 
 /* ── BLOG ENTRIES ────────────────────────── */
 .blog-entry {
@@ -627,6 +670,24 @@ html, body, #root {
 }
 .next-up {
   font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.spotify-live {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 0.5px solid var(--win-border);
+}
+.spotify-live-sep {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.spotify-live-row {
+  font-size: 15px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1036,9 +1097,12 @@ html, body, #root {
   image-rendering: auto;
 }
 .desk-icon-png.home-icon {
-  width: 40px;
-  height: 40px;
   filter: invert(1) brightness(1.25);
+}
+.desk-icon-svg {
+  width: 32px;
+  height: 32px;
+  color: var(--accent);
 }
 .desk-icon-label {
   font-family: 'VT323', monospace;
@@ -1057,6 +1121,90 @@ html, body, #root {
   color: var(--accent2);
   white-space: pre;
   letter-spacing: 0;
+}
+
+/* ── DISCORD PROFILE CARD ─────────────────── */
+.discord-card {
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 0.5px solid var(--win-border);
+}
+.discord-card-inner {
+  display: flex;
+  align-items: center;
+}
+.discord-card-center {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  flex: 1;
+  justify-content: center;
+}
+.discord-card-avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0.5px solid var(--win-border-light);
+  background: var(--surface2);
+}
+.discord-avatar {
+  width: 48px;
+  height: 48px;
+  display: block;
+  image-rendering: auto;
+}
+.discord-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  background: var(--surface2);
+}
+.discord-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.discord-card-name {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 16px;
+  color: var(--accent);
+  line-height: 1.3;
+}
+.discord-card-status {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  line-height: 1.3;
+}
+.discord-card-loading {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 10px 14px;
+}
+
+/* ── DISCORD WINGS ───────────────────────── */
+.discord-wing-panel {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.discord-wing {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 4.5px;
+  line-height: 1.05;
+  color: var(--accent2);
+  white-space: pre;
+  letter-spacing: 0;
+  margin: 0;
+  opacity: 0.65;
+}
+.discord-wing-right {
+  transform: scaleX(-1);
 }
 
 /* ── RESIZE HANDLE ────────────────────────── */
@@ -1117,7 +1265,7 @@ html, body, #root {
 }
 #mobile-block .mb-icon {
   font-size: 36px;
-  color: #333;
+  color: #666;
   margin-bottom: 8px;
 }
 @media (max-width: 900px) {
@@ -1171,7 +1319,7 @@ html, body, #root {
 }
 
 #boot .ascii-art {
-  color: #777;
+  color: #999;
   font-size: 10px;
   text-align: center;
   margin-bottom: 22px;
@@ -1327,7 +1475,7 @@ html, body, #root {
   color: #cc2222;
 }
 .scope-idle {
-  color: #555;
+  color: #888;
 }
 
 /* ── DESKTOP REVEAL (opens from the center like a curtain) ── */
@@ -1460,4 +1608,191 @@ html, body, #root {
 @keyframes lb-fadein {
   0%   { opacity: 0; }
   100% { opacity: 1; }
+}
+
+/* ── GAMES LIBRARY ────────────────────────── */
+.games-win {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 100%;
+}
+.games-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.games-section-icon {
+  color: var(--red);
+}
+.games-section-line {
+  flex: 1;
+  height: 1px;
+  background: repeating-linear-gradient(90deg, var(--win-border), var(--win-border) 4px, transparent 4px, transparent 8px);
+}
+.games-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 10px;
+}
+.game-card {
+  background: var(--surface2);
+  border: 1px solid var(--win-border);
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  display: flex;
+  flex-direction: column;
+}
+.game-card:hover {
+  border-color: var(--accent2);
+  box-shadow: 0 0 12px rgba(255,255,255,0.03);
+}
+.game-card-cover {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--surface);
+  position: relative;
+}
+.game-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: filter 0.2s;
+}
+.game-card:hover .game-card-cover img {
+  filter: brightness(1.15);
+}
+.game-card-info {
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
+}
+.game-card-title {
+  font-family: 'VT323', monospace;
+  font-size: 17px;
+  color: var(--text-bright);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.game-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-family: 'Share Tech Mono', monospace;
+}
+.game-card-year {
+  font-size: 12px;
+}
+.game-card-vote {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.vote-value {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  color: var(--accent2);
+  line-height: 1;
+}
+.game-card-vote:hover .vote-value {
+  color: var(--text-bright);
+}
+.game-card-genres {
+  font-size: 11px;
+  font-family: 'Share Tech Mono', monospace;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
+.game-card-loading {
+  aspect-ratio: 3 / 4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+.game-card-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--win-border);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: game-spin 0.8s linear infinite;
+}
+@keyframes game-spin {
+  to { transform: rotate(360deg); }
+}
+.games-loading {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 40px;
+}
+.games-loading-spinner {
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--win-border);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: game-spin 0.8s linear infinite;
+}
+.games-attribution {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 10px;
+  padding: 8px 0 2px;
+  text-align: center;
+  border-top: 1px solid var(--win-border);
+}
+.games-attribution a {
+  color: var(--accent2);
+  text-decoration: none;
+  transition: color 0.1s;
+}
+.games-attribution a:hover {
+  color: var(--accent);
+}
+.games-disclaimer {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  padding: 8px 0 12px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--win-border);
+  color: var(--text-bright);
+}
+.games-ascii {
+  font-size: 7px;
+  line-height: 1.1;
+  color: var(--accent2);
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  user-select: none;
+  text-align: center;
+}
+
+#win-games .win-content {
+  padding: 12px 14px;
+  overflow-y: auto;
 }

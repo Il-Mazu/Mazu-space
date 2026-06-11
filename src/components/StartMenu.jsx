@@ -5,6 +5,7 @@ const items = [
   { id: 'win-music', label: '[MP3] player.exe' },
   { id: 'win-dump', label: '[BIN] dump/' },
   { id: 'win-term', label: '[$] cmd.exe' },
+  { id: 'win-games', label: '[GAME] games.exe' },
 ];
 
 export default function StartMenu({ open, onOpen, onNotif }) {

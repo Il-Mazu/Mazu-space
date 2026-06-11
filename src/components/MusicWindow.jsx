@@ -4,7 +4,7 @@ export default function MusicWindow({
   tracks, currentTrack, playing, progress, currentAudioTime, volume,
   shuffle, loopMode,
   onPrev, onNext, onTogglePlay, onToggleShuffle, onCycleLoop,
-  onVolumeChange, onSelectTrack, onNotif,
+  onVolumeChange, onSelectTrack, onNotif, lanyard,
 }) {
   const current = tracks[currentTrack];
   const nextIx = (currentTrack + 1) % tracks.length;
@@ -72,6 +72,17 @@ export default function MusicWindow({
             {next.artist} — {next.title}
           </span>
         </div>
+
+        {lanyard?.listening_to_spotify && lanyard.spotify && (
+          <div className="spotify-live">
+            <div className="spotify-live-sep c-dim">── live ──</div>
+            <div className="spotify-live-row">
+              <span className="c-dim">♪ i'm currently listening to:</span>
+              <span className="c-accent2"> {lanyard.spotify.song}</span>
+              <span className="c-dim"> — {lanyard.spotify.artist}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

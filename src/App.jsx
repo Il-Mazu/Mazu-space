@@ -1,21 +1,23 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react';
 import Boot from './components/Boot';
 import CrtOverlay from './components/CrtOverlay';
 import NoiseOverlay from './components/NoiseOverlay';
 import DesktopIcons from './components/DesktopIcons';
 import Window from './components/Window';
 import AboutWindow from './components/AboutWindow';
-import BlogWindow from './components/BlogWindow';
+const BlogWindow = lazy(() => import('./components/BlogWindow'));
 import MusicWindow from './components/MusicWindow';
 import DumpWindow from './components/DumpWindow';
 import TerminalWindow from './components/TerminalWindow';
 import OscilloscopeWindow from './components/OscilloscopeWindow';
+import GamesWindow from './components/GamesWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
 import HomeWindow from './components/HomeWindow';
+import useLanyard from './hooks/useLanyard';
 import { commits, remote, buildDate } from 'virtual:git-info';
-import { posts } from './components/BlogWindow';
+import { posts } from './blog/posts';
 import ambientSound from '../assets/ASMR - Alien： Isolation - Nap Time near a Computer Console - Ambient Sounds - NO Aliens Aboard! [rPMG0PLmh9s].mp3';
 import macSound from '../assets/Mac OS startup sound Big Sur [coxK3eWG20c].mp3';
 import { fadeIn, fadeOut } from './utils/audio';
@@ -33,7 +35,7 @@ import cover4 from '../assets/covers/00 - Sewerslvt - Mr. Kill Myself.jpg';
 const TASKBAR_H = 40;
 const AMBIENT_VOL = 0.06;
 
-const WIN_IDS = ['win-home', 'win-about', 'win-blog', 'win-music', 'win-dump', 'win-term', 'win-scope'];
+const WIN_IDS = ['win-home', 'win-about', 'win-blog', 'win-music', 'win-dump', 'win-term', 'win-scope', 'win-games'];
 
 const DEFAULT_SIZES = {
   'win-home':  { w: 500, h: 350 },
@@ -43,6 +45,7 @@ const DEFAULT_SIZES = {
   'win-dump':  { w: 500, h: 400 },
   'win-term':  { w: 640, h: 350 },
   'win-scope': { w: 420, h: 300 },
+  'win-games': { w: 660, h: 480 },
 };
 
 function buildInitialWindows() {
@@ -81,6 +84,7 @@ export default function App() {
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [lightMode, setLightMode] = useState(false);
   const [allMinimized, setAllMinimized] = useState(false);
+  const lanyard = useLanyard();
   const savedVisible = useRef(null);
   const [progress, setProgress] = useState(0);
   const [currentAudioTime, setCurrentAudioTime] = useState('00:00');
@@ -437,21 +441,24 @@ export default function App() {
   const menuFor = (id) => {
     const menus = {
       'win-home': [
-        { label: 'File', onClick: () => showNotif() },
-        { label: 'Edit', onClick: () => showNotif() },
-        { label: 'View', onClick: () => showNotif() },
+        { label: 'File', onClick: () => showNotif('feature coming soon') },
+        { label: 'Edit', onClick: () => showNotif('feature coming soon') },
+        { label: 'View', onClick: () => showNotif('feature coming soon') },
       ],
       'win-about': [
-        { label: 'File', onClick: () => showNotif() },
-        { label: 'Edit', onClick: () => showNotif() },
-        { label: 'View', onClick: () => showNotif() },
+        { label: 'File', onClick: () => showNotif('feature coming soon') },
+        { label: 'Edit', onClick: () => showNotif('feature coming soon') },
+        { label: 'View', onClick: () => showNotif('feature coming soon') },
       ],
       'win-blog': [
-        { label: 'New Post',  onClick: () => showNotif('// create a .md file in src/blog/ to publish') },
-        { label: 'Archive',   onClick: () => showNotif('// showing all posts (sorted by date)') },
-        { label: 'Tags',      onClick: () => showNotif('// click a tag in the list to filter') },
+        { label: 'New Post',  onClick: () => showNotif('create a .md file in src/blog/ to publish') },
+        { label: 'Archive',   onClick: () => showNotif('showing all posts (sorted by date)') },
+        { label: 'Tags',      onClick: () => showNotif('click a tag in the list to filter') },
       ],
       'win-music': null,
+      'win-games': [
+        { label: 'Sort', onClick: () => window.dispatchEvent(new CustomEvent('mazu-notif', { detail: 'use the menubar in the games window' })) },
+      ],
     };
     return menus[id] || null;
   };
@@ -460,7 +467,6 @@ export default function App() {
   const statusFor = (id) => {
     const statuses = {
       'win-home': [
-        { text: 'ONLINE', className: 'status-seg c-accent' },
         { text: 'v0.2.0', className: 'status-seg' },
         { text: `source: ${remote.replace(/^git@/, '').replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(':', '/')}` },
       ],
@@ -479,6 +485,11 @@ export default function App() {
         { text: playing ? 'PLAYING' : 'PAUSED', className: 'status-seg c-red' },
         { text: `${TRACKS.length} tracks`, className: 'status-seg' },
         { text: `vol: ${Math.round(volume * 100)}%` },
+      ],
+      'win-games': [
+        { text: 'GAME LIBRARY', className: 'status-seg c-accent' },
+        { text: 'data: RAWG.io', className: 'status-seg' },
+        { text: 'v0.2.0', className: '' },
       ],
     };
     return statuses[id] || null;
@@ -502,6 +513,7 @@ export default function App() {
       </div>
 
       <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
+        <Suspense fallback={null}>
         <div id="wallpaper">
           <img
             src="/assets/SnapInsta.to_AQP6ityFpUZrqTmrQLvEfDJDLAQZ4IymuY53NRO4PN-QJhqHphA2zinPKk_myDBZjalUVKln64QGcWrenJJqa8UqeibABN51CJXzfv4.gif"
@@ -533,6 +545,7 @@ export default function App() {
             buildDate={buildDate}
             blogCount={posts.length}
             tracksCount={TRACKS.length}
+            lanyard={lanyard}
           />
         </Window>
 
@@ -604,6 +617,7 @@ export default function App() {
             onVolumeChange={handleVolumeChange}
             onSelectTrack={selectTrack}
             onNotif={showNotif}
+            lanyard={lanyard}
           />
           <audio ref={audioRef} preload="auto" />
         </Window>
@@ -638,7 +652,6 @@ export default function App() {
           onResize={resizeWindow}
         >
           <TerminalWindow
-            startupCmd="cmatrix"
             onOpen={openWindow}
             onGlitch={() => {
               const el = document.querySelector('.window.focused');
@@ -675,7 +688,22 @@ export default function App() {
           trackKey={currentTrack}
         />
 
+        <GamesWindow
+          id="win-games"
+          x={w['win-games'].x} y={w['win-games'].y}
+          width={w['win-games'].w} height={w['win-games'].h}
+          visible={w['win-games'].visible}
+          focused={w['win-games'].focused}
+          zIndex={w['win-games'].zIndex}
+          onFocus={focusWindow}
+          onClose={closeWindow}
+          onMinimize={minimizeWindow}
+          onMove={moveWindow}
+          onResize={resizeWindow}
+        />
+
         <Notification message={notif} />
+      </Suspense>
       </div>
 
       <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
