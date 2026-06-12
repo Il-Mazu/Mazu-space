@@ -10,7 +10,7 @@ import MusicWindow from './components/MusicWindow';
 import DumpWindow from './components/DumpWindow';
 import TerminalWindow from './components/TerminalWindow';
 import OscilloscopeWindow from './components/OscilloscopeWindow';
-import GamesWindow from './components/GamesWindow';
+import GamesWindow, { preloadGamesCache } from './components/GamesWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
@@ -19,6 +19,7 @@ import useLanyard from './hooks/useLanyard';
 import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
 import { commits, remote, buildDate } from 'virtual:git-info';
+import { images as dumpImages } from 'virtual:dump-images';
 import { posts } from './blog/posts';
 import ambientSound from '../assets/ASMR - Alien： Isolation - Nap Time near a Computer Console - Ambient Sounds - NO Aliens Aboard! [rPMG0PLmh9s].mp3';
 import macSound from '../assets/Mac OS startup sound Big Sur [coxK3eWG20c].mp3';
@@ -90,6 +91,13 @@ export default function App() {
   const lanyard = useLanyard();
   const mode = useScreenMode();
   const savedVisible = useRef(null);
+
+  // Preload content during boot sequence
+  useEffect(() => {
+    preloadGamesCache();
+    import('./components/BlogWindow');
+    dumpImages.forEach(src => { const img = new Image(); img.src = src; });
+  }, []);
   const [progress, setProgress] = useState(0);
   const [currentAudioTime, setCurrentAudioTime] = useState('00:00');
   const [volume, setVolume] = useState(0.8);

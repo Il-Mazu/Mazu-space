@@ -119,6 +119,41 @@ const GAMES_LIST = [
 
 export const gamesCount = GAMES_LIST.length;
 
+export async function preloadGamesCache() {
+  let cache = {};
+  try {
+    const stored = localStorage.getItem(CACHE_KEY);
+    if (stored) cache = JSON.parse(stored);
+  } catch {}
+
+  const allEntries = [...new Map(GAMES_LIST.map(g => [g.name, g])).values()];
+  const toFetch = allEntries.filter(g => !cache[g.name]);
+  if (toFetch.length === 0) return;
+
+  const fetches = toFetch.map(async (g) => {
+    try {
+      const searchTerm = g.search || g.name;
+      const res = await fetch(
+        `${RAWG_URL}?key=${API_KEY}&search=${encodeURIComponent(searchTerm)}&page_size=1`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      const found = data.results?.[0];
+      if (found) cache[g.name] = found;
+    } catch {}
+  });
+
+  await Promise.allSettled(fetches);
+
+  try {
+    const toStore = {};
+    for (const [k, v] of Object.entries(cache)) {
+      if (v) toStore[k] = v;
+    }
+    localStorage.setItem(CACHE_KEY, JSON.stringify(toStore));
+  } catch {}
+}
+
 const CATEGORIES = [
   { key: 'favorites', label: 'FAVORITES', icon: '★' },
   { key: 'playing', label: 'PLAYING', icon: '▶' },
