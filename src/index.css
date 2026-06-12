@@ -1303,7 +1303,7 @@ html, body, #root {
   z-index: 1;
   flex: 1;
   overflow-y: auto;
-  padding: 12px 16px 80px;
+  padding: 12px 16px 24px;
   display: flex;
   flex-direction: column;
   -webkit-overflow-scrolling: touch;
@@ -1446,104 +1446,6 @@ html, body, #root {
   background: rgba(255,255,255,0.2);
 }
 
-/* ── SYSTEM NAV (mobile) ──────────────────── */
-.mobile-system-nav {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  gap: 48px;
-  align-items: center;
-  height: 44px;
-  background: var(--surface);
-  border-top: 1px solid var(--win-border);
-  z-index: 1002;
-}
-.sys-nav-btn {
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 22px;
-  padding: 6px 12px;
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-  font-family: 'Share Tech Mono', monospace;
-}
-.sys-nav-btn:active { color: var(--text-bright); }
-.sys-nav-disabled { opacity: 0.25; pointer-events: none; }
-
-/* ── RECENTS OVERLAY ──────────────────────── */
-.recents-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 1001;
-  background: rgba(0,0,0,0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.recents-container {
-  display: flex;
-  gap: 8px;
-  padding: 80px 12px 64px;
-  overflow-x: auto;
-  width: 100%;
-  max-width: 100%;
-  scroll-snap-type: x mandatory;
-}
-.recents-card {
-  flex: 0 0 260px;
-  scroll-snap-align: center;
-  background: var(--surface);
-  border: 1px solid var(--win-border);
-  padding: 32px 20px 20px;
-  text-align: center;
-  position: relative;
-  cursor: pointer;
-  user-select: none;
-  touch-action: pan-y;
-}
-.recents-card-current {
-  border-color: var(--accent);
-}
-.recents-card-icon {
-  width: 48px;
-  height: 48px;
-  margin: 0 auto 8px;
-}
-.recents-card-icon img,
-.recents-card-icon svg {
-  width: 100%;
-  height: 100%;
-  filter: invert(1);
-}
-.recents-card-title {
-  display: block;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-.recents-card-close {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  font-size: 16px;
-  cursor: pointer;
-  padding: 2px 6px;
-  font-family: 'Share Tech Mono', monospace;
-}
-.recents-empty {
-  color: var(--text-dim);
-  font-size: 14px;
-  padding: 40px;
-  text-align: center;
-  width: 100%;
-}
-
 /* ── MOBILE APP VIEW ────────────────────── */
 .mobile-app-view {
   display: flex;
@@ -1566,22 +1468,26 @@ html, body, #root {
 .mobile-app-header {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
+  justify-content: center;
+  padding: 12px 14px;
   background: var(--surface);
   border-bottom: 1px solid var(--win-border);
-  min-height: 42px;
+  min-height: 50px;
+  position: relative;
 }
 .mobile-app-back {
+  position: absolute;
+  left: 14px;
   background: none;
   border: 1px solid var(--win-border);
-  color: var(--text-primary);
+  color: #cccccc;
   font-family: 'Share Tech Mono', monospace;
-  font-size: 16px;
+  font-size: 20px;
   cursor: pointer;
-  padding: 2px 10px;
+  padding: 6px 14px;
   line-height: 1;
   -webkit-tap-highlight-color: transparent;
+  border-radius: 4px;
 }
 .mobile-app-back:active {
   background: var(--surface2);
@@ -1589,7 +1495,7 @@ html, body, #root {
 .mobile-app-title {
   font-size: 13px;
   color: var(--text-bright);
-  flex: 1;
+  text-align: center;
 }
 .mobile-app-header-spacer {
   width: 32px;
@@ -1597,7 +1503,7 @@ html, body, #root {
 .mobile-app-content {
   flex: 1;
   overflow-y: auto;
-  padding: 12px 12px 56px;
+  padding: 12px 12px 12px;
   -webkit-overflow-scrolling: touch;
 }
 .mobile-app-content .win-content {
@@ -1681,7 +1587,7 @@ html, body, #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 16px 56px;
+  padding: 14px 16px 16px;
   background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
   transition: opacity 0.3s;
 }
@@ -1765,7 +1671,7 @@ html, body, #root {
 /* ── MOBILE KEYBOARD ────────────────────── */
 .mobile-keyboard {
   position: fixed;
-  bottom: 44px;
+  bottom: 0;
   left: 0;
   right: 0;
   background: var(--surface);

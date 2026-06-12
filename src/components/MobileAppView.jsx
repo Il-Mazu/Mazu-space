@@ -112,6 +112,7 @@ export default function MobileAppView({
     <div className={'mobile-app-view' + (exiting ? ' mobile-app-view-exit' : '')}>
       {!(appId === 'win-dump' && dumpFullScreen) && (
         <div className="mobile-app-header">
+          <button className="mobile-app-back" onClick={onBack}>←</button>
           <span className="mobile-app-title">{title}</span>
         </div>
       )}
