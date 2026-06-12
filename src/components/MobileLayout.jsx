@@ -25,9 +25,13 @@ export default function MobileLayout(props) {
     appBackRef.current = null;
   }, [screen]);
 
+  const screenRef = useRef(screen);
+  useEffect(() => { screenRef.current = screen; }, [screen]);
+
   const handleOpenApp = useCallback((appId) => {
     setExiting(false);
     setScreen(appId);
+    history.pushState({ screen: appId }, '');
   }, []);
 
   const handleBack = useCallback(() => {
@@ -42,6 +46,20 @@ export default function MobileLayout(props) {
       setExiting(false);
     }, 250);
   }, [screen]);
+
+  const handleBackRef = useRef(handleBack);
+  useEffect(() => { handleBackRef.current = handleBack; }, [handleBack]);
+
+  useEffect(() => {
+    history.replaceState({ screen: 'home' }, '');
+    const onPopState = () => {
+      if (screenRef.current !== 'home') {
+        handleBackRef.current?.();
+      }
+    };
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
+  }, []);
 
   const handleTerminalOpen = useCallback((appId) => {
     setExiting(false);
