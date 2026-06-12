@@ -5,11 +5,7 @@ const API_KEY = import.meta.env.VITE_RAWG_API_KEY;
 const RAWG_URL = 'https://api.rawg.io/api/games';
 const CACHE_KEY = 'games_cache';
 
-// This section lists every game I've ever played, each with a personal grade
-// I decided to give. Obviously, it's just my opinion and shouldn't be taken
-// too seriously.
 const GAMES_LIST = [
-  // FAVORITES
   { name: 'Cyberpunk 2077', category: 'favorites', vote: 99 },
   { name: 'Celeste', category: 'favorites', vote: 97 },
   { name: 'The Stanley Parable', category: 'favorites', vote: 95 },
@@ -18,7 +14,6 @@ const GAMES_LIST = [
   { name: 'The Legend of Zelda: Breath of the Wild', category: 'favorites', vote: 96 },
   { name: 'The Legend of Zelda: Tears of the Kingdom', category: 'favorites', vote: 97 },
   { name: "Baldur's Gate 3", category: 'favorites', vote: 94 },
-  // PLAYING
   { name: 'Deltarune', category: 'playing' },
   { name: 'League of Legends', category: 'playing' },
   { name: 'Ultrakill', category: 'playing' },
@@ -168,22 +163,7 @@ function GameCard({ name, data, vote }) {
   );
 }
 
-export default function GamesWindow({
-  id, x, y, width, height,
-  visible, focused, zIndex,
-  onFocus, onClose, onMinimize, onMove, onResize,
-}) {
-  const [cache, setCache] = useState(() => {
-    try {
-      const stored = localStorage.getItem(CACHE_KEY);
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  });
-  const [sort, setSort] = useState('default');
-  const [statusText, setStatusText] = useState('');
-
+export function GamesContent({ sort, setSort, statusText, setStatusText, cache, setCache }) {
   const fetchGames = useCallback(async () => {
     const allEntries = [...new Map(GAMES_LIST.map(g => [g.name, g])).values()];
     const toFetch = allEntries.filter(g => !cache[g.name] && !cache[`${g.name}_loading`]);
@@ -240,11 +220,11 @@ export default function GamesWindow({
 
     const loaded = Object.values(cache).filter(v => v && !v.loading).length + toFetch.length;
     setStatusText(`${loaded} games loaded`);
-  }, [cache]);
+  }, [cache, setCache, setStatusText]);
 
   useEffect(() => {
-    if (visible) fetchGames();
-  }, [visible, fetchGames]);
+    fetchGames();
+  }, [fetchGames]);
 
   const getSortedGames = (category) => {
     const catGames = GAMES_LIST.filter(g => g.category === category);
@@ -271,6 +251,77 @@ export default function GamesWindow({
   };
 
   return (
+    <div className="games-win">
+      <pre className="games-ascii">{`⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠀⣄⣼⣠⣤⣤⣀⣤⣤⣤⣴⣦⣤⣦⣤⣦⣼⣶⣤⣤⣤⣀⣤⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡅⢀⣀⣠⣤⣴⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣷⣶⣷⣶⣤⣀⡈⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠴⠞⠋⠉⠉⠻⠛⠿⠿⠿⠿⠟⠿⠿⠿⠛⠛⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄
+⠀⠀⠀⠀⠀⠀⣠⡴⡶⠏⠉⠀⠉⠀⠀⠀⢀⣀⣀⣀⠤⠤⠤⠤⠤⠤⠔⠢⠤⠤⠤⠴⠒⠒⠲⠤⠤⢤⣄⣀⣀⠀⠉⠉⠉⠉⠉⠙⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
+⠀⠀⠀⣠⣴⠟⢉⣀⣀⠠⠤⠔⠒⠊⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠁⠀⠀⠀⠈⠉⠓⠲⠤⠤⢀⣀⣀⢹⣿⣿⣿⠟⠛⠟⣿⣿⣿⡿⠁
+⠀⢀⣼⣟⣥⠔⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠒⠀⠐⠲⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⡟⠁⠀⣀⣼⣿⣿⠏⠀⠀
+⣠⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⡗⢄⠀⠀⠀⠀⢀⠴⠚⠉⠉⠒⢤⡀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣲⢦⣯⣛⣿⡿⠁⠀⠄⠀
+⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠑⣄⠀⢠⠋⠀⠀⠀⠀⠀⠑⢱⠀⠱⠄⠀⠀⠀⠀⣀⣀⠀⡎⣏⢂⠀⣠⣾⣿⡿⠓⠻⣄⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢌⠢⣸⡀⠀⠀⠀⠀⠀⠀⢸⠀⣦⠧⣴⡿⠛⠁⠀⠉⠙⠻⣾⡘⣶⣿⣿⠏⣀⡀⣀⠈⣄⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢬⣳⣄⠀⠀⣀⠤⠖⢋⡩⠔⣺⠁⣠⡶⠛⠛⠓⠢⠭⣍⣉⣛⡿⠏⠀⣀⣠⠿⠐⣿⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠶⠶⠛⠉⠀⠀⠀⠃⣾⠟⠀⠀⠀⠀⠀⣠⣿⣿⣿⢦⣧⠀⠀⠀⠀⢠⣿⡀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣏⠀⠰⢤⠀⣴⣰⣿⡿⣿⡇⠀⠙⠳⠦⠴⠾⠛⠙⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢇⡀⠀⣈⣽⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`}</pre>
+      <div className="games-disclaimer c-dim">
+        // This section lists every game I've ever played, each with a personal grade
+        I decided to give. Obviously, it's just my opinion and shouldn't be taken
+        too seriously.
+      </div>
+      {CATEGORIES.map(cat => (
+        hasDataForCategory(cat.key) && (
+          <div key={cat.key} className="games-section">
+            <div className="games-section-title">
+              <span className="games-section-icon">{cat.icon}</span>
+              <span>{cat.label}</span>
+              <span className="games-section-line" />
+            </div>
+            <div className="games-grid">
+              {getSortedGames(cat.key).map(game => (
+                <GameCard key={game.name} name={game.name} data={game.data} vote={game.vote} />
+              ))}
+            </div>
+          </div>
+        )
+      ))}
+
+      {Object.keys(cache).length === 0 && (
+        <div className="games-loading">
+          <div className="games-loading-spinner" />
+          <div className="c-dim">fetching game data...</div>
+        </div>
+      )}
+
+      <div className="games-attribution c-dim">
+        Game data sourced from <a href="https://rawg.io/" target="_blank" rel="noopener noreferrer">RAWG</a>
+      </div>
+    </div>
+  );
+}
+
+const sortMenus = [
+  { label: 'Sort', onClick: () => {} },
+];
+
+export default function GamesWindow({
+  id, x, y, width, height,
+  visible, focused, zIndex,
+  onFocus, onClose, onMinimize, onMove, onResize,
+}) {
+  const [cache, setCache] = useState(() => {
+    try {
+      const stored = localStorage.getItem(CACHE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  });
+  const [sort, setSort] = useState('default');
+  const [statusText, setStatusText] = useState('');
+
+  return (
     <Window
       id={id} title="games.exe — GAME LIBRARY"
       x={x} y={y} width={width} height={height}
@@ -289,53 +340,14 @@ export default function GamesWindow({
         { text: 'personal vote', className: '' },
       ]}
     >
-      <div className="games-win">
-        <pre className="games-ascii">{`⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠀⣄⣼⣠⣤⣤⣀⣤⣤⣤⣴⣦⣤⣦⣤⣦⣼⣶⣤⣤⣤⣀⣤⣀⣀⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡅⢀⣀⣠⣤⣴⣶⣶⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⣷⣶⣷⣶⣤⣀⡈⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⠴⠞⠋⠉⠉⠻⠛⠿⠿⠿⠿⠟⠿⠿⠿⠛⠛⠿⠿⠿⠿⠿⠿⠿⠿⠿⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣶⣦⣄
-⠀⠀⠀⠀⠀⠀⣠⡴⡶⠏⠉⠀⠉⠀⠀⠀⢀⣀⣀⣀⠤⠤⠤⠤⠤⠤⠔⠢⠤⠤⠤⠴⠒⠒⠲⠤⠤⢤⣄⣀⣀⠀⠉⠉⠉⠉⠉⠙⠻⠿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿
-⠀⠀⠀⣠⣴⠟⢉⣀⣀⠠⠤⠔⠒⠊⠉⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠁⠀⠀⠀⠈⠉⠓⠲⠤⠤⢀⣀⣀⢹⣿⣿⣿⠟⠛⠟⣿⣿⣿⡿⠁
-⠀⢀⣼⣟⣥⠔⠊⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⠒⠀⠐⠲⣤⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠉⠻⡟⠁⠀⣀⣼⣿⣿⠏⠀⠀
-⣠⠿⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⡗⢄⠀⠀⠀⠀⢀⠴⠚⠉⠉⠒⢤⡀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣲⢦⣯⣛⣿⡿⠁⠀⠄⠀
-⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢢⠑⣄⠀⢠⠋⠀⠀⠀⠀⠀⠑⢱⠀⠱⠄⠀⠀⠀⠀⣀⣀⠀⡎⣏⢂⠀⣠⣾⣿⡿⠓⠻⣄⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢌⠢⣸⡀⠀⠀⠀⠀⠀⠀⢸⠀⣦⠧⣴⡿⠛⠁⠀⠉⠙⠻⣾⡘⣶⣿⣿⠏⣀⡀⣀⠈⣄⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⢬⣳⣄⠀⠀⣀⠤⠖⢋⡩⠔⣺⠁⣠⡶⠛⠛⠓⠢⠭⣍⣉⣛⡿⠏⠀⣀⣠⠿⠐⣿⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⠛⠶⠶⠛⠉⠀⠀⠀⠃⣾⠟⠀⠀⠀⠀⠀⣠⣿⣿⣿⢦⣧⠀⠀⠀⠀⢠⣿⡀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣏⠀⠰⢤⠀⣴⣰⣿⡿⣿⡇⠀⠙⠳⠦⠴⠾⠛⠙⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⢇⡀⠀⣈⣽⣿⣿⣿⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀`}</pre>
-        <div className="games-disclaimer c-dim">
-          // This section lists every game I've ever played, each with a personal grade
-          I decided to give. Obviously, it's just my opinion and shouldn't be taken
-          too seriously.
-        </div>
-        {CATEGORIES.map(cat => (
-          hasDataForCategory(cat.key) && (
-            <div key={cat.key} className="games-section">
-              <div className="games-section-title">
-                <span className="games-section-icon">{cat.icon}</span>
-                <span>{cat.label}</span>
-                <span className="games-section-line" />
-              </div>
-              <div className="games-grid">
-                {getSortedGames(cat.key).map(game => (
-                  <GameCard key={game.name} name={game.name} data={game.data} vote={game.vote} />
-                ))}
-              </div>
-            </div>
-          )
-        ))}
-
-        {Object.keys(cache).length === 0 && (
-          <div className="games-loading">
-            <div className="games-loading-spinner" />
-            <div className="c-dim">fetching game data...</div>
-          </div>
-        )}
-
-        <div className="games-attribution c-dim">
-          Game data sourced from <a href="https://rawg.io/" target="_blank" rel="noopener noreferrer">RAWG</a>
-        </div>
-      </div>
+      <GamesContent
+        sort={sort}
+        setSort={setSort}
+        statusText={statusText}
+        setStatusText={setStatusText}
+        cache={cache}
+        setCache={setCache}
+      />
     </Window>
   );
 }

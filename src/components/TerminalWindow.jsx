@@ -268,6 +268,7 @@ export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
       </div>
       <input
         ref={hiddenInputRef}
+        className="terminal-hidden-input"
         type="text"
         onKeyDown={handleKeyDown}
         onChange={() => {}}

@@ -146,7 +146,7 @@ function BlogReader({ post, onBack }) {
   );
 }
 
-export default function BlogWindow({ onNotif }) {
+export default function BlogWindow({ onNotif, onRegisterBack }) {
   const [view, setView] = useState('list');
   const [currentSlug, setCurrentSlug] = useState(null);
   const [tagFilter, setTagFilter] = useState(null);
@@ -165,6 +165,15 @@ export default function BlogWindow({ onNotif }) {
     () => [...new Set(posts.flatMap(p => p.tags))],
     []
   );
+
+  useEffect(() => {
+    if (view === 'read') {
+      onRegisterBack?.(() => { setView('list'); setCurrentSlug(null); });
+    } else {
+      onRegisterBack?.(null);
+    }
+    return () => onRegisterBack?.(null);
+  }, [view, onRegisterBack]);
 
   const handleRead = (slug) => {
     setCurrentSlug(slug);

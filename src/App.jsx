@@ -16,6 +16,8 @@ import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
 import HomeWindow from './components/HomeWindow';
 import useLanyard from './hooks/useLanyard';
+import useScreenMode from './hooks/useScreenMode';
+import MobileLayout from './components/MobileLayout';
 import { commits, remote, buildDate } from 'virtual:git-info';
 import { posts } from './blog/posts';
 import ambientSound from '../assets/ASMR - Alien： Isolation - Nap Time near a Computer Console - Ambient Sounds - NO Aliens Aboard! [rPMG0PLmh9s].mp3';
@@ -77,6 +79,7 @@ export default function App() {
   const notifTimer = useRef(null);
   const ambientRef = useRef(null);
   const [desktopReveal, setDesktopReveal] = useState(false);
+  const [mobileReveal, setMobileReveal] = useState(false);
   const audioRef = useRef(null);
   const [crtEnabled, setCrtEnabled] = useState(true);
   const [noiseEnabled, setNoiseEnabled] = useState(true);
@@ -85,6 +88,7 @@ export default function App() {
   const [lightMode, setLightMode] = useState(false);
   const [allMinimized, setAllMinimized] = useState(false);
   const lanyard = useLanyard();
+  const mode = useScreenMode();
   const savedVisible = useRef(null);
   const [progress, setProgress] = useState(0);
   const [currentAudioTime, setCurrentAudioTime] = useState('00:00');
@@ -277,28 +281,32 @@ export default function App() {
     return () => clearInterval(interval);
   }, [glitchEnabled]);
 
-  // Open only AboutWindow after boot, then trigger desktop reveal
+  // Open only AboutWindow after boot, then trigger reveal
   useEffect(() => {
     if (bootDone) {
-      const vw = window.innerWidth;
-      const vh = window.innerHeight - TASKBAR_H;
-      setWindows(prev => {
-        const next = {};
-        for (const key of Object.keys(prev)) {
-          next[key] = { ...prev[key], focused: false };
-        }
-        next['win-about'] = {
-          ...prev['win-about'],
-          x: Math.round(vw * 0.02),
-          y: 0,
-          w: Math.round(vw * 0.25),
-          h: vh,
-          open: true, visible: true, focused: true, zIndex: ++zCounter,
-        };
-        return next;
-      });
-      setStartMenuOpen(false);
-      setDesktopReveal(true);
+      if (mode === 'mobile') {
+        setMobileReveal(true);
+      } else {
+        const vw = window.innerWidth;
+        const vh = window.innerHeight - TASKBAR_H;
+        setWindows(prev => {
+          const next = {};
+          for (const key of Object.keys(prev)) {
+            next[key] = { ...prev[key], focused: false };
+          }
+          next['win-about'] = {
+            ...prev['win-about'],
+            x: Math.round(vw * 0.02),
+            y: 0,
+            w: Math.round(vw * 0.25),
+            h: vh,
+            open: true, visible: true, focused: true, zIndex: ++zCounter,
+          };
+          return next;
+        });
+        setStartMenuOpen(false);
+        setDesktopReveal(true);
+      }
     }
   }, [bootDone]);
 
@@ -499,19 +507,44 @@ export default function App() {
 
   const w = windows;
 
+  const mobileProps = {
+    tracks: TRACKS,
+    currentTrack, playing, progress, currentAudioTime, volume, shuffle, loopMode,
+    onPrev: prevTrack, onNext: nextTrack, onTogglePlay: togglePlay,
+    onToggleShuffle: toggleShuffle, onCycleLoop: cycleLoop,
+    onVolumeChange: handleVolumeChange, onSelectTrack: selectTrack,
+    commits, remote, buildDate,
+    blogCount: posts.length, tracksCount: TRACKS.length,
+    lanyard, showNotif,
+    onGlitch: () => {
+      const el = document.querySelector('.window.focused');
+      if (el) {
+        el.classList.remove('tear');
+        void el.offsetWidth;
+        el.classList.add('tear');
+        setTimeout(() => {
+          const desktop = document.getElementById('desktop');
+          if (desktop) {
+            desktop.classList.remove('shake');
+            void desktop.offsetWidth;
+            desktop.classList.add('shake');
+          }
+        }, 100);
+      }
+    },
+    audioRef: audioRef.current,
+  };
+
   return (
     <>
       {!bootDone && <Boot onComplete={() => setBootDone(true)} />}
       {crtEnabled && <CrtOverlay />}
       {noiseEnabled && <NoiseOverlay />}
 
-      <div id="mobile-block">
-        <div className="mb-icon">⊞</div>
-        <div>mazu-space</div>
-        <div className="c-dim">This desktop experience requires a wider screen.</div>
-        <div className="c-dim">Open on a desktop computer for the full effect.</div>
-      </div>
+      <audio ref={audioRef} preload="auto" />
 
+      {bootDone && mode === 'desktop' && (
+        <>
       <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
         <Suspense fallback={null}>
         <div id="wallpaper">
@@ -707,7 +740,7 @@ export default function App() {
       </div>
 
       <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
-      {bootDone && <Taskbar
+      <Taskbar
         windows={windows}
         focusedId={focusedId}
         onOpenWindow={openWindow}
@@ -721,7 +754,14 @@ export default function App() {
         onToggleLightMode={toggleLightMode}
         onToggleDesktop={toggleDesktop}
         allMinimized={allMinimized}
-      />}
+      />
+      </>
+      )}
+      {bootDone && mode === 'mobile' && (
+        <div className={'mobile-reveal-wrap' + (mobileReveal ? ' mobile-reveal-active' : '')}>
+          <MobileLayout {...mobileProps} />
+        </div>
+      )}
     </>
   );
 }
