@@ -1641,21 +1641,93 @@ html, body, #root {
   width: 100%;
   object-fit: contain;
 }
-.mobile-app-content .dump-fullscreen .gallery-nav {
+/* ── MOBILE GALLERY BARS ────────────────── */
+.mobile-app-content .gallery-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+  transition: opacity 0.3s;
+}
+.mobile-app-content .gallery-back-btn {
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 4px 4px 0;
+  user-select: none;
+  opacity: 0.9;
+}
+.mobile-app-content .gallery-back-btn:active {
+  opacity: 0.5;
+}
+.mobile-app-content .gallery-top-counter {
+  color: #fff;
+  font-size: 14px;
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.85;
+}
+.mobile-app-content .gallery-nav-mobile {
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0,0,0,0.6);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 56px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
   transition: opacity 0.3s;
-  border-top: none;
 }
-.mobile-app-content .dump-fullscreen .gallery-nav-hidden {
+.mobile-app-content .gallery-btn-mobile {
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 8px 12px;
+  user-select: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.mobile-app-content .gallery-btn-mobile:active {
+  opacity: 0.5;
+}
+.mobile-app-content .gallery-counter-mobile {
+  color: #fff;
+  font-size: 13px;
+  font-family: 'Share Tech Mono', monospace;
+  opacity: 0.7;
+}
+.mobile-app-content .gallery-sep-mobile {
+  color: rgba(255,255,255,0.25);
+  font-size: 16px;
+  user-select: none;
+}
+.mobile-app-content .gallery-bar-hidden {
   opacity: 0;
   pointer-events: none;
 }
+
+/* ── MOBILE GALLERY IMAGE WRAP ─────────── */
+.mobile-app-content .gallery-img-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-app-content .gallery-img-animating {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+}
 .mobile-app-content .dump-grid {
-  max-height: 60vh;
+  max-height: none;
+  padding: 3px;
+  gap: 3px;
 }
 .mobile-app-content .dump-grid-mobile {
   grid-template-columns: repeat(3, 1fr);
@@ -1663,6 +1735,14 @@ html, body, #root {
 }
 .mobile-app-content .dump-grid-mobile .dump-grid-item {
   aspect-ratio: 1;
+  border-radius: 6px;
+  border: none;
+  overflow: hidden;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.mobile-app-content .dump-grid-mobile .dump-grid-item:active {
+  transform: scale(0.95);
+  opacity: 0.7;
 }
 .mobile-app-content .games-grid {
   grid-template-columns: repeat(2, 1fr);

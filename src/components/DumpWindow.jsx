@@ -6,8 +6,13 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
   const [currentIndex, setCurrentIndex] = useState(null);
   const [showGrid, setShowGrid] = useState(true);
   const [showNav, setShowNav] = useState(true);
+  const [swipeX, setSwipeX] = useState(0);
+  const [swipeY, setSwipeY] = useState(0);
+  const [swipeAnimClass, setSwipeAnimClass] = useState('');
   const navTimer = useRef(null);
   const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
+  const animatingRef = useRef(false);
 
   useEffect(() => {
     if (imageList.length > 0) {
@@ -73,13 +78,76 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
   }, []);
 
   const handleTouchStart = useCallback((e) => {
+    if (animatingRef.current) return;
     touchStartX.current = e.touches[0].clientX;
+    touchStartY.current = e.touches[0].clientY;
+    setSwipeAnimClass('');
+    setSwipeX(0);
+    setSwipeY(0);
+  }, []);
+
+  const handleTouchMove = useCallback((e) => {
+    if (animatingRef.current) return;
+    e.preventDefault();
+    const dx = e.touches[0].clientX - touchStartX.current;
+    const dy = e.touches[0].clientY - touchStartY.current;
+    if (Math.abs(dx) > Math.abs(dy)) {
+      setSwipeX(dx);
+      setSwipeY(0);
+    } else if (dy > 0) {
+      setSwipeX(0);
+      setSwipeY(dy * 0.4);
+    }
   }, []);
 
   const handleTouchEnd = useCallback((e) => {
+    if (animatingRef.current) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
-    if (dx > 50) prev();
-    else if (dx < -50) next();
+    const dy = e.changedTouches[0].clientY - touchStartY.current;
+
+    // Swipe down to close
+    if (dy > 100 && Math.abs(dx) < Math.abs(dy) * 0.6) {
+      animatingRef.current = true;
+      setSwipeAnimClass('gallery-img-animating');
+      setSwipeY(500);
+      setTimeout(() => {
+        setShowGrid(true);
+        setSwipeX(0);
+        setSwipeY(0);
+        setSwipeAnimClass('');
+        animatingRef.current = false;
+      }, 300);
+      return;
+    }
+
+    if (dx > 50) {
+      animatingRef.current = true;
+      setSwipeAnimClass('gallery-img-animating');
+      setSwipeX(window.innerWidth);
+      setTimeout(() => {
+        prev();
+        setSwipeX(0);
+        setSwipeY(0);
+        setSwipeAnimClass('');
+        animatingRef.current = false;
+      }, 250);
+    } else if (dx < -50) {
+      animatingRef.current = true;
+      setSwipeAnimClass('gallery-img-animating');
+      setSwipeX(-window.innerWidth);
+      setTimeout(() => {
+        next();
+        setSwipeX(0);
+        setSwipeY(0);
+        setSwipeAnimClass('');
+        animatingRef.current = false;
+      }, 250);
+    } else {
+      setSwipeAnimClass('gallery-img-animating');
+      setSwipeX(0);
+      setSwipeY(0);
+      setTimeout(() => setSwipeAnimClass(''), 200);
+    }
   }, [prev, next]);
 
   const handleImageTap = useCallback(() => {
@@ -108,29 +176,53 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
         <div
           className={mobile ? 'dump-fullscreen' : 'dump-content'}
           onTouchStart={mobile ? handleTouchStart : undefined}
+          onTouchMove={mobile ? handleTouchMove : undefined}
           onTouchEnd={mobile ? handleTouchEnd : undefined}
           onClick={handleImageTap}
         >
-          <img
-            src={imageList[currentIndex]}
-            alt={`dump ${currentIndex + 1}`}
-            className="gallery-img"
-            draggable={false}
-          />
+          {mobile && (
+            <div className={'gallery-top-bar' + (!showNav ? ' gallery-bar-hidden' : '')}
+                 onClick={e => e.stopPropagation()}>
+              <span className="gallery-back-btn" onClick={() => setShowGrid(true)}>←</span>
+            </div>
+          )}
+          <div
+            className={'gallery-img-wrap' + (swipeAnimClass ? ' ' + swipeAnimClass : '')}
+            style={{
+              transform: `translate(${swipeX}px, ${swipeY}px)`,
+              opacity: swipeY > 0 ? Math.max(0, 1 - swipeY / 300) : 1,
+            }}
+          >
+            <img
+              src={imageList[currentIndex]}
+              alt={`dump ${currentIndex + 1}`}
+              className="gallery-img"
+              draggable={false}
+            />
+          </div>
+          {mobile && (
+            <div
+              className={'gallery-nav-mobile' + (!showNav ? ' gallery-bar-hidden' : '')}
+              onClick={e => e.stopPropagation()}
+            >
+              <span className="gallery-btn-mobile" onClick={prev}>◀</span>
+              <span className="gallery-counter-mobile">{currentIndex + 1} / {imageList.length}</span>
+              <span className="gallery-btn-mobile" onClick={next}>▶</span>
+            </div>
+          )}
         </div>
       )}
-      <div
-        className={'gallery-nav' + (mobile && !showGrid && !showNav ? ' gallery-nav-hidden' : '')}
-        onClick={e => e.stopPropagation()}
-      >
-        <span className="gallery-btn" onClick={prev}>◀</span>
-        <span className="gallery-counter">{currentIndex + 1}/{imageList.length}</span>
-        <span className="gallery-btn" onClick={next}>▶</span>
-        <span className="gallery-sep">|</span>
-        <span className="gallery-btn" onClick={toggleGrid}>
-          {showGrid ? 'View' : 'Grid'}
-        </span>
-      </div>
+      {!mobile && (
+        <div className="gallery-nav" onClick={e => e.stopPropagation()}>
+          <span className="gallery-btn" onClick={prev}>◀</span>
+          <span className="gallery-counter">{currentIndex + 1}/{imageList.length}</span>
+          <span className="gallery-btn" onClick={next}>▶</span>
+          <span className="gallery-sep">|</span>
+          <span className="gallery-btn" onClick={toggleGrid}>
+            {showGrid ? 'View' : 'Grid'}
+          </span>
+        </div>
+      )}
     </>
   );
 }

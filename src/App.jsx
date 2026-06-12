@@ -281,6 +281,18 @@ export default function App() {
     return () => clearInterval(interval);
   }, [glitchEnabled]);
 
+  // Sync reveal states when switching modes after boot
+  useEffect(() => {
+    if (!bootDone) return;
+    if (mode === 'mobile') {
+      setDesktopReveal(false);
+      setMobileReveal(true);
+    } else {
+      setMobileReveal(false);
+      setDesktopReveal(true);
+    }
+  }, [mode, bootDone]);
+
   // Open only AboutWindow after boot, then trigger reveal
   useEffect(() => {
     if (bootDone) {
