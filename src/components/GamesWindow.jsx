@@ -17,6 +17,7 @@ const GAMES_LIST = [
   { name: 'Deltarune', category: 'playing' },
   { name: 'League of Legends', category: 'playing' },
   { name: 'Ultrakill', category: 'playing' },
+  { name: 'Outer Wilds', category: 'played', vote: 85 },
   { name: 'Pokémon HeartGold / SoulSilver', category: 'played', vote: 86 },
   { name: 'Pokémon FireRed', category: 'played', vote: 60 },
   { name: 'Pokémon Emerald', category: 'played', vote: 75 },
