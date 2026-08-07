@@ -2,7 +2,7 @@
 
 > Un portfolio che finge di essere un desktop anni '90 — finestre draggabili, CRT scanlines, oscilloscopio audio e tutto il resto.
 
-**[→ ilmazu-space.vercel.app](https://ilmazu-space.vercel.app/)**
+**[→ mazu.is-a.dev](mazu.is-a.dev)**
 
 ---
 
