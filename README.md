@@ -1,8 +1,8 @@
-![Mazu-space — a personal website disguised as a retro desktop](assets/banner.svg)
+![Mazu-space — My portfolio and blog.](assets/banner-basic.svg)
 
-# A little desktop you can visit
+# Mazu-space
 
-**Mazu-space** is my portfolio, blog and digital playground, wrapped in a retro computer interface. Open a window, put on some music and explore.
+My website, made to look like an old desktop. It has a blog, music and windows you can move around.
 
 ### [Enter the desktop → mazu.is-a.dev](https://mazu.is-a.dev)
 
@@ -10,7 +10,7 @@
 
 **React 18 · Vite 5 · JavaScript · CSS**
 
-## Inside the desktop
+## What it has
 
 - Draggable, resizable and minimizable windows.
 - CRT scanlines, noise overlays and a boot sequence.
@@ -37,7 +37,7 @@ npm run build     # production files in dist/
 npm run preview   # preview the production build
 ```
 
-## Explore the code
+## Files
 
 | Path | What's there |
 | --- | --- |
