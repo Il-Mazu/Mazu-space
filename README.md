@@ -1,75 +1,58 @@
-# 🖥️ mazu-space
+![Mazu-space — a personal website disguised as a retro desktop](assets/banner.svg)
 
-> Un portfolio che finge di essere un desktop anni '90 — finestre draggabili, CRT scanlines, oscilloscopio audio e tutto il resto.
+# A little desktop you can visit
 
-**[→ mazu.is-a.dev](mazu.is-a.dev)**
+**Mazu-space** is my portfolio, blog and digital playground, wrapped in a retro computer interface. Open a window, put on some music and explore.
 
----
+### [Enter the desktop → mazu.is-a.dev](https://mazu.is-a.dev)
 
-<img width="1920" height="1080" alt="immagine" src="https://github.com/user-attachments/assets/3b05e423-59d6-4343-b34e-61f2ba9b7786" />
+![Mazu-space desktop screenshot](https://github.com/user-attachments/assets/3b05e423-59d6-4343-b34e-61f2ba9b7786)
 
----
+**React 18 · Vite 5 · JavaScript · CSS**
 
-## Di che si tratta
+## Inside the desktop
 
-Un desktop simulator fatto in React dove ogni sezione è una finestra che puoi spostare, ridimensionare e minimizzare.
+- Draggable, resizable and minimizable windows.
+- CRT scanlines, noise overlays and a boot sequence.
+- A music player and audio oscilloscope.
+- Markdown blog posts with syntax highlighting.
+- Discord presence through Lanyard.
+- A separate mobile interface.
 
-**Features**
+## Run it locally
 
-- CRT scanline overlay + noise overlay sempre attivi
-- Glitch/shake periodici
-- Audio ambientale (hum da console computer)
-- Suono di avvio stile Mac al boot
-- Discord presence in tempo reale via Lanyard API
-
----
-
-## Stack
-
-![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=for-the-badge&logo=vite&logoColor=white)
-![CSS](https://img.shields.io/badge/CSS-vanilla-1572B6?style=for-the-badge&logo=css3&logoColor=white)
-![JavaScript](https://img.shields.io/badge/JavaScript-ES2024-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
-![Vercel](https://img.shields.io/badge/Vercel-deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)
-
----
-
-## Avvia in locale
+Install Node.js and npm, then:
 
 ```bash
+git clone https://github.com/Il-Mazu/Mazu-space.git
+cd Mazu-space
 npm install
-npm run dev       # dev server → http://localhost:5173
-npm run build     # build di produzione → dist/
-npm run preview   # preview della build
+npm run dev
 ```
 
----
+Open the local URL Vite prints in your terminal (normally **http://localhost:5173**).
 
-## Struttura del progetto
-
-```
-mazu-space/
-├── src/
-│   ├── App.jsx               # app principale, gestione finestre, logica music
-│   ├── main.jsx              # entry point
-│   ├── index.css             # stili globali
-│   ├── components/           # finestre, taskbar, boot screen, ecc.
-│   ├── hooks/                # useLanyard, useScreenMode
-│   ├── blog/                 # post markdown + loader
-│   └── utils/                # audio helpers (fade in/out)
-├── assets/                   # tracce musicali, cover art, wallpaper, ambient
-├── public/                   # file statici (favicon)
-├── index.html
-├── vite.config.js
-└── package.json
+```bash
+npm run build     # production files in dist/
+npm run preview   # preview the production build
 ```
 
----
+## Explore the code
 
-## Analytics
+| Path | What's there |
+| --- | --- |
+| `src/App.jsx` | Desktop state, windows and music logic |
+| `src/components/` | Desktop windows, mobile views, taskbar and boot screen |
+| `src/hooks/` | Discord presence and screen-mode hooks |
+| `src/blog/` | Markdown posts and post loader |
+| `src/utils/audio.js` | Audio helpers |
+| `src/index.css` | Global styling |
+| `assets/` | Music, cover art, wallpaper and ambient assets |
 
-Vercel Analytics + Speed Insights integrati — tanto per vedere se qualcuno ci capita davvero.
+## Make it yours
 
----
+Start with the home/about components and blog posts, then update the assets and presence configuration. Vercel Analytics and Speed Insights are integrated in the source; review those integrations when adapting the project. Check rights separately before reusing music, artwork or other media.
 
-*Fatto da [Il-Mazu](https://github.com/Il-Mazu)*
+Found a layout or audio bug? Include your browser, screen size and reproduction steps in an issue.
+
+Built by [Marco / Il-Mazu](https://github.com/Il-Mazu).
