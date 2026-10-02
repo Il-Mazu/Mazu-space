@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import Window from './Window';
 import { images as imageList } from 'virtual:dump-images';
 
 export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBack }) {
@@ -224,23 +223,5 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
         </div>
       )}
     </>
-  );
-}
-
-export default function DumpWindow({
-  id, x, y, width, height,
-  visible, focused, zIndex,
-  onFocus, onClose, onMinimize, onMove, onResize,
-}) {
-  return (
-    <Window
-      id={id} title="dump/ — BIN"
-      x={x} y={y} width={width} height={height}
-      visible={visible} focused={focused} zIndex={zIndex}
-      onFocus={onFocus} onClose={onClose} onMinimize={onMinimize}
-      onMove={onMove} onResize={onResize}
-    >
-      <DumpContent focused={focused} />
-    </Window>
   );
 }

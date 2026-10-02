@@ -20,11 +20,15 @@ export default function useLanyard() {
       }
     };
 
+    // Poll only while the tab is visible; refresh as soon as it comes back.
+    const tick = () => { if (!document.hidden) fetchData(); };
     fetchData();
-    const interval = setInterval(fetchData, 30_000);
+    const interval = setInterval(tick, 30_000);
+    document.addEventListener('visibilitychange', tick);
     return () => {
       cancelled = true;
       clearInterval(interval);
+      document.removeEventListener('visibilitychange', tick);
     };
   }, []);
 

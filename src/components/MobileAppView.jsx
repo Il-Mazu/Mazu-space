@@ -21,11 +21,10 @@ const APP_TITLES = {
 export default function MobileAppView({
   appId, onBack, onRegisterBack, exiting,
   tracks,
-  currentTrack, playing, progress, currentAudioTime, volume, shuffle, loopMode,
+  currentTrack, playing, volume, shuffle, loopMode,
   onPrev, onNext, onTogglePlay, onToggleShuffle, onCycleLoop, onVolumeChange, onSelectTrack,
   commits, remote, buildDate, tracksCount, lanyard,
   onGlitch, onTerminalOpen,
-  gamesCache, gamesSort, setGamesSort, gamesStatusText, setGamesStatusText, setGamesCache,
   showNotif,
   audioRef,
 }) {
@@ -60,8 +59,7 @@ export default function MobileAppView({
             tracks={tracks}
             currentTrack={currentTrack}
             playing={playing}
-            progress={progress}
-            currentAudioTime={currentAudioTime}
+            audioRef={audioRef}
             volume={volume}
             shuffle={shuffle}
             loopMode={loopMode}
@@ -81,18 +79,9 @@ export default function MobileAppView({
       case 'win-term':
         return <TerminalWindow onGlitch={onGlitch} onOpen={onTerminalOpen || onBack} />;
       case 'win-scope':
-        return <ScopeContent audioElement={audioRef} trackKey={currentTrack} />;
+        return <ScopeContent audioRef={audioRef} />;
       case 'win-games':
-        return (
-          <GamesContent
-            sort={gamesSort}
-            setSort={setGamesSort}
-            statusText={gamesStatusText}
-            setStatusText={setGamesStatusText}
-            cache={gamesCache}
-            setCache={setGamesCache}
-          />
-        );
+        return <GamesContent />;
       default:
         return <div className="c-dim" style={{ padding: 20 }}>unknown app</div>;
     }

@@ -1,7 +1,29 @@
+import { useEffect, useState } from 'react';
+
+const fmt = (secs) => `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
+
+// Subscribed here rather than in App so only the player re-renders on timeupdate.
+function useAudioTime(audioRef) {
+  const [time, setTime] = useState(0);
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const update = () => setTime(audio.currentTime);
+    update();
+    audio.addEventListener('timeupdate', update);
+    audio.addEventListener('emptied', update);
+    return () => {
+      audio.removeEventListener('timeupdate', update);
+      audio.removeEventListener('emptied', update);
+    };
+  }, [audioRef]);
+  return time;
+}
+
 const LOOP_LABELS = ['↻', '↻ all', '↻ 1'];
 
 export default function MusicWindow({
-  tracks, currentTrack, playing, progress, currentAudioTime, volume,
+  tracks, currentTrack, playing, audioRef, volume,
   shuffle, loopMode,
   onPrev, onNext, onTogglePlay, onToggleShuffle, onCycleLoop,
   onVolumeChange, onSelectTrack, onNotif, lanyard,
@@ -9,8 +31,8 @@ export default function MusicWindow({
   const current = tracks[currentTrack];
   const nextIx = (currentTrack + 1) % tracks.length;
   const next = tracks[nextIx];
-  const totalSecs = current.duration;
-  const totalTime = `${String(Math.floor(totalSecs / 60)).padStart(2, '0')}:${String(totalSecs % 60).padStart(2, '0')}`;
+  const time = useAudioTime(audioRef);
+  const progress = Math.min(100, (time / current.duration) * 100);
 
   return (
     <div className="music-player">
@@ -26,7 +48,7 @@ export default function MusicWindow({
           <span className={playing ? 'c-red' : 'c-dim'}>▶ </span>
           <span className="c-accent">{current.artist} — {current.title}</span>
         </div>
-        <div className="time-display c-dim">{currentAudioTime} / {totalTime}</div>
+        <div className="time-display c-dim">{fmt(time)} / {fmt(current.duration)}</div>
 
         <div className="progress">
           <div className="progress-fill" style={{ width: `${progress}%` }} />

@@ -6,10 +6,10 @@ import DesktopIcons from './components/DesktopIcons';
 import Window from './components/Window';
 import AboutWindow from './components/AboutWindow';
 import MusicWindow from './components/MusicWindow';
-import DumpWindow from './components/DumpWindow';
+import { DumpContent } from './components/DumpWindow';
 import TerminalWindow from './components/TerminalWindow';
 import OscilloscopeWindow from './components/OscilloscopeWindow';
-import GamesWindow, { preloadGamesCache } from './components/GamesWindow';
+import GamesWindow from './components/GamesWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
@@ -17,11 +17,13 @@ import HomeWindow from './components/HomeWindow';
 import useLanyard from './hooks/useLanyard';
 import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
+import { WINDOWS } from './windows';
 import { commits, remote, buildDate } from 'virtual:git-info';
 import { images as dumpImages } from 'virtual:dump-images';
 import ambientSound from '../assets/ambient-sound.mp3';
 import macSound from '../assets/mac-startup.mp3';
 import { fadeIn, fadeOut } from './utils/audio';
+import { glitch, tear, shake } from './utils/glitch';
 import track0 from '../assets/Musica/akiba-kagami.mp3';
 import track1 from '../assets/Musica/goreshit-fine-night.mp3';
 import track2 from '../assets/Musica/machine-girl-ghost.mp3';
@@ -36,23 +38,10 @@ import cover4 from '../assets/covers/sewerslvt-mr-kill-myself.jpg';
 const TASKBAR_H = 40;
 const AMBIENT_VOL = 0.06;
 
-const WIN_IDS = ['win-home', 'win-about', 'win-music', 'win-dump', 'win-term', 'win-scope', 'win-games'];
-
-const DEFAULT_SIZES = {
-  'win-home':  { w: 500, h: 350 },
-  'win-about': { w: 420, h: 500 },
-  'win-music': { w: 420, h: 320 },
-  'win-dump':  { w: 500, h: 400 },
-  'win-term':  { w: 640, h: 350 },
-  'win-scope': { w: 420, h: 300 },
-  'win-games': { w: 660, h: 480 },
-};
-
 function buildInitialWindows() {
   const result = {};
-  for (const id of WIN_IDS) {
-    const sz = DEFAULT_SIZES[id] || { w: 300, h: 200 };
-    result[id] = { open: false, visible: false, focused: false, zIndex: 1, x: 0, y: 0, w: sz.w, h: sz.h };
+  for (const [id, { w, h }] of Object.entries(WINDOWS)) {
+    result[id] = { open: false, visible: false, focused: false, zIndex: 1, x: 0, y: 0, w, h };
   }
   return result;
 }
@@ -88,17 +77,14 @@ export default function App() {
   const lanyard = useLanyard();
   const mode = useScreenMode();
   const savedVisible = useRef(null);
-
-  // Preload content during boot sequence
-  useEffect(() => {
-    preloadGamesCache();
-    dumpImages.forEach(src => { const img = new Image(); img.src = src; });
-  }, []);
-  const [progress, setProgress] = useState(0);
-  const [currentAudioTime, setCurrentAudioTime] = useState('00:00');
   const [volume, setVolume] = useState(0.8);
   const [shuffle, setShuffle] = useState(false);
   const [loopMode, setLoopMode] = useState(0); // 0=off, 1=repeat all, 2=repeat one
+
+  // Preload dump images during the boot sequence
+  useEffect(() => {
+    dumpImages.forEach(src => { const img = new Image(); img.src = src; });
+  }, []);
 
   const showNotif = useCallback((msg) => {
     setNotif(msg);
@@ -109,6 +95,8 @@ export default function App() {
   // ── Window management ──
   const focusWindow = useCallback((id) => {
     setWindows(prev => {
+      // The focused window is always on top, so re-focusing it is a no-op.
+      if (prev[id].focused) return prev;
       zCounter++;
       const next = {};
       for (const key of Object.keys(prev)) {
@@ -124,14 +112,11 @@ export default function App() {
       const cur = prev[id];
       if (!cur) return prev;
 
-      const winW = cur.w || 300;
-      const winH = cur.h || 200;
-
       let nx = pos ? pos.x : cur.x, ny = pos ? pos.y : cur.y;
 
       if (!cur.open) {
-        nx = Math.round((window.innerWidth - winW) / 2);
-        ny = Math.round((window.innerHeight - TASKBAR_H - winH) / 2);
+        nx = Math.round((window.innerWidth - cur.w) / 2);
+        ny = Math.round((window.innerHeight - TASKBAR_H - cur.h) / 2);
       }
 
       zCounter++;
@@ -154,60 +139,37 @@ export default function App() {
   }, []);
 
   const moveWindow = useCallback((id, x, y) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], x, y },
-    }));
+    setWindows(prev => ({ ...prev, [id]: { ...prev[id], x, y } }));
   }, []);
 
   const resizeWindow = useCallback((id, x, y, w, h) => {
-    setWindows(prev => ({
-      ...prev,
-      [id]: { ...prev[id], x, y, w, h },
-    }));
+    setWindows(prev => ({ ...prev, [id]: { ...prev[id], x, y, w, h } }));
   }, []);
+
+  const win = (id) => ({
+    id, title: WINDOWS[id].title, ...windows[id],
+    onFocus: focusWindow, onClose: closeWindow, onMinimize: minimizeWindow,
+    onMove: moveWindow, onResize: resizeWindow,
+  });
 
   // ── Music player ──
-  const pickNextTrack = useCallback((prev) => {
+  const pickTrack = useCallback((prev, dir) => {
     if (shuffle) {
       let next;
       do { next = Math.floor(Math.random() * TRACKS.length); }
       while (next === prev && TRACKS.length > 1);
       return next;
     }
-    return (prev + 1) % TRACKS.length;
+    return (prev + dir + TRACKS.length) % TRACKS.length;
   }, [shuffle]);
 
-  const pickPrevTrack = useCallback((prev) => {
-    if (shuffle) {
-      let next;
-      do { next = Math.floor(Math.random() * TRACKS.length); }
-      while (next === prev && TRACKS.length > 1);
-      return next;
-    }
-    return (prev - 1 + TRACKS.length) % TRACKS.length;
-  }, [shuffle]);
-
-  const prevTrack = useCallback(() => {
-    setCurrentTrack(prev => pickPrevTrack(prev));
-    setProgress(0);
-    setCurrentAudioTime('00:00');
-  }, [pickPrevTrack]);
-  const nextTrack = useCallback(() => {
-    setCurrentTrack(prev => pickNextTrack(prev));
-    setProgress(0);
-    setCurrentAudioTime('00:00');
-  }, [pickNextTrack]);
+  const prevTrack = useCallback(() => setCurrentTrack(prev => pickTrack(prev, -1)), [pickTrack]);
+  const nextTrack = useCallback(() => setCurrentTrack(prev => pickTrack(prev, 1)), [pickTrack]);
   const togglePlay = useCallback(() => setPlaying(prev => !prev), []);
-  const handleVolumeChange = useCallback((v) => {
-    setVolume(v);
-  }, []);
   const toggleShuffle = useCallback(() => setShuffle(prev => !prev), []);
   const cycleLoop = useCallback(() => setLoopMode(prev => (prev + 1) % 3), []);
   const selectTrack = useCallback((i) => {
     setCurrentTrack(i);
-    setProgress(0);
-    setCurrentAudioTime('00:00');
     setPlaying(true);
   }, []);
 
@@ -217,11 +179,7 @@ export default function App() {
   const toggleAmbient = useCallback(() => setAmbientEnabled(prev => !prev), []);
   const toggleGlitch = useCallback(() => setGlitchEnabled(prev => !prev), []);
   const toggleLightMode = useCallback(() => setLightMode(prev => !prev), []);
-
-  // ── Desktop toggle (minimize/restore all) ──
-  const toggleDesktop = useCallback(() => {
-    setAllMinimized(prev => !prev);
-  }, []);
+  const toggleDesktop = useCallback(() => setAllMinimized(prev => !prev), []);
 
   useEffect(() => {
     setWindows(prev => {
@@ -245,14 +203,8 @@ export default function App() {
   }, [allMinimized]);
 
   // ── Start menu ──
-  const toggleStartMenu = useCallback(() => {
-    setStartMenuOpen(prev => !prev);
-  }, []);
-
-  // Close start menu on desktop click
-  const handleDesktopClick = useCallback(() => {
-    setStartMenuOpen(false);
-  }, []);
+  const toggleStartMenu = useCallback(() => setStartMenuOpen(prev => !prev), []);
+  const handleDesktopClick = useCallback(() => setStartMenuOpen(false), []);
 
   // Listen for custom mazu-notif events (from maximize button, etc.)
   useEffect(() => {
@@ -265,22 +217,9 @@ export default function App() {
   useEffect(() => {
     if (!glitchEnabled) return;
     const interval = setInterval(() => {
-      if (Math.random() < 0.15) {
-        const el = document.querySelector('.window.focused');
-        if (el) {
-          el.classList.remove('tear');
-          void el.offsetWidth;
-          el.classList.add('tear');
-        }
-      }
-      if (Math.random() < 0.05) {
-        const desktop = document.getElementById('desktop');
-        if (desktop) {
-          desktop.classList.remove('shake');
-          void desktop.offsetWidth;
-          desktop.classList.add('shake');
-        }
-      }
+      if (document.hidden) return;
+      if (Math.random() < 0.15) tear();
+      if (Math.random() < 0.05) shake();
     }, 4000);
     return () => clearInterval(interval);
   }, [glitchEnabled]);
@@ -288,42 +227,36 @@ export default function App() {
   // Sync reveal states when switching modes after boot
   useEffect(() => {
     if (!bootDone) return;
-    if (mode === 'mobile') {
-      setDesktopReveal(false);
-      setMobileReveal(true);
-    } else {
-      setMobileReveal(false);
-      setDesktopReveal(true);
-    }
+    setMobileReveal(mode === 'mobile');
+    setDesktopReveal(mode !== 'mobile');
   }, [mode, bootDone]);
 
   // Open only AboutWindow after boot, then trigger reveal
   useEffect(() => {
-    if (bootDone) {
-      if (mode === 'mobile') {
-        setMobileReveal(true);
-      } else {
-        const vw = window.innerWidth;
-        const vh = window.innerHeight - TASKBAR_H;
-        setWindows(prev => {
-          const next = {};
-          for (const key of Object.keys(prev)) {
-            next[key] = { ...prev[key], focused: false };
-          }
-          next['win-about'] = {
-            ...prev['win-about'],
-            x: Math.round(vw * 0.02),
-            y: 0,
-            w: Math.round(vw * 0.25),
-            h: vh,
-            open: true, visible: true, focused: true, zIndex: ++zCounter,
-          };
-          return next;
-        });
-        setStartMenuOpen(false);
-        setDesktopReveal(true);
-      }
+    if (!bootDone) return;
+    if (mode === 'mobile') {
+      setMobileReveal(true);
+      return;
     }
+    const vw = window.innerWidth;
+    const vh = window.innerHeight - TASKBAR_H;
+    setWindows(prev => {
+      const next = {};
+      for (const key of Object.keys(prev)) {
+        next[key] = { ...prev[key], focused: false };
+      }
+      next['win-about'] = {
+        ...prev['win-about'],
+        x: Math.round(vw * 0.02),
+        y: 0,
+        w: Math.round(vw * 0.25),
+        h: vh,
+        open: true, visible: true, focused: true, zIndex: ++zCounter,
+      };
+      return next;
+    });
+    setStartMenuOpen(false);
+    setDesktopReveal(true);
   }, [bootDone]);
 
   // Play Mac startup sound then crossfade to ambient background after boot
@@ -384,76 +317,53 @@ export default function App() {
   }, [ambientEnabled]);
 
   // ── Music track audio ──
+  // Track changes load a new source; play/pause only toggles playback, so
+  // resuming continues where it stopped instead of restarting the track.
+  const playingRef = useRef(playing);
+  playingRef.current = playing;
+
   useEffect(() => {
-    if (!bootDone) return;
+    const audio = audioRef.current;
+    if (!bootDone || !audio) return;
+    audio.src = TRACKS[currentTrack].src;
+    if (playingRef.current) audio.play().catch(() => {});
+  }, [bootDone, currentTrack]);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!bootDone || !audio) return;
+    if (playing) audio.play().catch(() => {});
+    else audio.pause();
+  }, [bootDone, playing]);
+
+  useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-
-    const track = TRACKS[currentTrack];
-    if (!track) return;
-
-    audio.src = track.src;
-    audio.volume = volume;
-    audio.load();
-
-    if (playing) {
-      audio.play().catch(() => {});
-    } else {
-      audio.pause();
-    }
-
-    const onTimeUpdate = () => {
-      if (audio.duration) {
-        setProgress((audio.currentTime / audio.duration) * 100);
-        const m = Math.floor(audio.currentTime / 60);
-        const s = Math.floor(audio.currentTime % 60);
-        setCurrentAudioTime(`${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
-      }
-    };
-
     const onEnded = () => {
       if (loopMode === 2) {
         audio.currentTime = 0;
         audio.play().catch(() => {});
         return;
       }
-      setCurrentTrack(prev => pickNextTrack(prev));
+      setCurrentTrack(prev => pickTrack(prev, 1));
     };
-
-    audio.addEventListener('timeupdate', onTimeUpdate);
     audio.addEventListener('ended', onEnded);
+    return () => audio.removeEventListener('ended', onEnded);
+  }, [loopMode, pickTrack]);
 
-    return () => {
-      audio.removeEventListener('timeupdate', onTimeUpdate);
-      audio.removeEventListener('ended', onEnded);
-    };
-  }, [bootDone, currentTrack, playing, loopMode, pickNextTrack]);
-
-  // ── Sync volume to audio element ──
   useEffect(() => {
     if (audioRef.current) audioRef.current.volume = volume;
   }, [volume]);
 
-  // ── Responsive sizing for visible windows ──
+  // ── Responsive sizing for the about window ──
   useEffect(() => {
     const updateSizes = () => {
       const vw = window.innerWidth;
       const vh = window.innerHeight - TASKBAR_H;
-      setWindows(prev => {
-        const next = {};
-        for (const key of Object.keys(prev)) {
-          next[key] = { ...prev[key] };
-        }
-        if (next['win-about'].visible) {
-          next['win-about'] = {
-            ...next['win-about'],
-            x: Math.round(vw * 0.02),
-            w: Math.round(vw * 0.25),
-            h: vh,
-          };
-        }
-        return next;
-      });
+      setWindows(prev => prev['win-about'].visible ? {
+        ...prev,
+        'win-about': { ...prev['win-about'], x: Math.round(vw * 0.02), w: Math.round(vw * 0.25), h: vh },
+      } : prev);
     };
 
     updateSizes();
@@ -478,45 +388,26 @@ export default function App() {
         { text: `${TRACKS.length} tracks`, className: 'status-seg' },
         { text: `vol: ${Math.round(volume * 100)}%` },
       ],
-      'win-games': [
-        { text: 'GAME LIBRARY', className: 'status-seg c-accent' },
-        { text: 'data: RAWG.io', className: 'status-seg' },
-        { text: 'v0.2.0', className: '' },
-      ],
     };
     return statuses[id] || null;
   };
 
   const focusedId = Object.keys(windows).find(id => windows[id].focused);
 
-  const w = windows;
-
-  const mobileProps = {
-    tracks: TRACKS,
-    currentTrack, playing, progress, currentAudioTime, volume, shuffle, loopMode,
+  const playerProps = {
+    tracks: TRACKS, audioRef,
+    currentTrack, playing, volume, shuffle, loopMode,
     onPrev: prevTrack, onNext: nextTrack, onTogglePlay: togglePlay,
     onToggleShuffle: toggleShuffle, onCycleLoop: cycleLoop,
-    onVolumeChange: handleVolumeChange, onSelectTrack: selectTrack,
+    onVolumeChange: setVolume, onSelectTrack: selectTrack,
+  };
+
+  const mobileProps = {
+    ...playerProps,
     commits, remote, buildDate,
     tracksCount: TRACKS.length,
     lanyard, showNotif,
-    onGlitch: () => {
-      const el = document.querySelector('.window.focused');
-      if (el) {
-        el.classList.remove('tear');
-        void el.offsetWidth;
-        el.classList.add('tear');
-        setTimeout(() => {
-          const desktop = document.getElementById('desktop');
-          if (desktop) {
-            desktop.classList.remove('shake');
-            void desktop.offsetWidth;
-            desktop.classList.add('shake');
-          }
-        }, 100);
-      }
-    },
-    audioRef: audioRef.current,
+    onGlitch: glitch,
   };
 
   return (
@@ -529,192 +420,57 @@ export default function App() {
 
       {bootDone && mode === 'desktop' && (
         <>
-      <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
-        <div id="wallpaper">
-          <img
-            src="/assets/wallpaper.gif"
-            alt="wallpaper"
-            draggable={false}
+          <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
+            <div id="wallpaper">
+              <img src="/assets/wallpaper.gif" alt="wallpaper" draggable={false} />
+            </div>
+
+            <DesktopIcons onOpen={openWindow} />
+
+            <Window {...win('win-home')} statusbar={statusFor('win-home')}>
+              <HomeWindow commits={commits} remote={remote} buildDate={buildDate} tracksCount={TRACKS.length} lanyard={lanyard} />
+            </Window>
+
+            <Window {...win('win-about')} statusbar={statusFor('win-about')}>
+              <AboutWindow />
+            </Window>
+
+            <Window {...win('win-music')} statusbar={statusFor('win-music')}>
+              <MusicWindow {...playerProps} onNotif={showNotif} lanyard={lanyard} />
+            </Window>
+
+            <Window {...win('win-dump')}>
+              <DumpContent focused={windows['win-dump'].focused} />
+            </Window>
+
+            <Window {...win('win-term')}>
+              <TerminalWindow onOpen={openWindow} onGlitch={glitch} />
+            </Window>
+
+            <OscilloscopeWindow {...win('win-scope')} audioRef={audioRef} />
+
+            <GamesWindow {...win('win-games')} />
+
+            <Notification message={notif} />
+          </div>
+
+          <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
+          <Taskbar
+            windows={windows}
+            focusedId={focusedId}
+            onOpenWindow={openWindow}
+            onMinimizeWindow={minimizeWindow}
+            onToggleStartMenu={toggleStartMenu}
+            settings={{ crt: crtEnabled, noise: noiseEnabled, ambient: ambientEnabled, glitch: glitchEnabled, lightMode }}
+            onToggleCrt={toggleCrt}
+            onToggleNoise={toggleNoise}
+            onToggleAmbient={toggleAmbient}
+            onToggleGlitch={toggleGlitch}
+            onToggleLightMode={toggleLightMode}
+            onToggleDesktop={toggleDesktop}
+            allMinimized={allMinimized}
           />
-        </div>
-
-        <DesktopIcons onOpen={openWindow} />
-
-        <Window
-          id="win-home" title="home.txt — MAZU-SPACE"
-          x={w['win-home'].x} y={w['win-home'].y}
-          width={w['win-home'].w} height={w['win-home'].h}
-          visible={w['win-home'].visible}
-          focused={w['win-home'].focused}
-          zIndex={w['win-home'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-          statusbar={statusFor('win-home')}
-        >
-          <HomeWindow
-            commits={commits}
-            remote={remote}
-            buildDate={buildDate}
-            tracksCount={TRACKS.length}
-            lanyard={lanyard}
-          />
-        </Window>
-
-        <Window
-          id="win-about" title="about.txt — mazu-space"
-          x={w['win-about'].x} y={w['win-about'].y}
-          width={w['win-about'].w} height={w['win-about'].h}
-          visible={w['win-about'].visible}
-          focused={w['win-about'].focused}
-          zIndex={w['win-about'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-          statusbar={statusFor('win-about')}
-        >
-          <AboutWindow />
-        </Window>
-
-          <Window
-            id="win-music" title="player.exe — MEDIA"
-            x={w['win-music'].x} y={w['win-music'].y}
-            width={w['win-music'].w} height={w['win-music'].h}
-            visible={w['win-music'].visible}
-            focused={w['win-music'].focused}
-            zIndex={w['win-music'].zIndex}
-            onFocus={focusWindow}
-            onClose={closeWindow}
-            onMinimize={minimizeWindow}
-            onMove={moveWindow}
-            onResize={resizeWindow}
-            statusbar={statusFor('win-music')}
-          >
-          <MusicWindow
-            tracks={TRACKS}
-            currentTrack={currentTrack}
-            playing={playing}
-            progress={progress}
-            currentAudioTime={currentAudioTime}
-            volume={volume}
-            shuffle={shuffle}
-            loopMode={loopMode}
-            onPrev={prevTrack}
-            onNext={nextTrack}
-            onTogglePlay={togglePlay}
-            onToggleShuffle={toggleShuffle}
-            onCycleLoop={cycleLoop}
-            onVolumeChange={handleVolumeChange}
-            onSelectTrack={selectTrack}
-            onNotif={showNotif}
-            lanyard={lanyard}
-          />
-        </Window>
-
-        <DumpWindow
-          id="win-dump"
-          x={w['win-dump'].x} y={w['win-dump'].y}
-          width={w['win-dump'].w} height={w['win-dump'].h}
-          visible={w['win-dump'].visible}
-          focused={w['win-dump'].focused}
-          zIndex={w['win-dump'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-        />
-
-
-
-        <Window
-          id="win-term" title="cmd.exe"
-          x={w['win-term'].x} y={w['win-term'].y}
-          width={w['win-term'].w} height={w['win-term'].h}
-          visible={w['win-term'].visible}
-          focused={w['win-term'].focused}
-          zIndex={w['win-term'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-        >
-          <TerminalWindow
-            onOpen={openWindow}
-            onGlitch={() => {
-              const el = document.querySelector('.window.focused');
-              if (el) {
-                el.classList.remove('tear');
-                void el.offsetWidth;
-                el.classList.add('tear');
-                setTimeout(() => {
-                  const desktop = document.getElementById('desktop');
-                  if (desktop) {
-                    desktop.classList.remove('shake');
-                    void desktop.offsetWidth;
-                    desktop.classList.add('shake');
-                  }
-                }, 100);
-              }
-            }}
-          />
-        </Window>
-
-        <OscilloscopeWindow
-          id="win-scope"
-          x={w['win-scope'].x} y={w['win-scope'].y}
-          width={w['win-scope'].w} height={w['win-scope'].h}
-          visible={w['win-scope'].visible}
-          focused={w['win-scope'].focused}
-          zIndex={w['win-scope'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-          audioElement={audioRef.current}
-          trackKey={currentTrack}
-        />
-
-        <GamesWindow
-          id="win-games"
-          x={w['win-games'].x} y={w['win-games'].y}
-          width={w['win-games'].w} height={w['win-games'].h}
-          visible={w['win-games'].visible}
-          focused={w['win-games'].focused}
-          zIndex={w['win-games'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-        />
-
-        <Notification message={notif} />
-      </div>
-
-      <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
-      <Taskbar
-        windows={windows}
-        focusedId={focusedId}
-        onOpenWindow={openWindow}
-        onMinimizeWindow={minimizeWindow}
-        onToggleStartMenu={toggleStartMenu}
-        settings={{ crt: crtEnabled, noise: noiseEnabled, ambient: ambientEnabled, glitch: glitchEnabled, lightMode }}
-        onToggleCrt={toggleCrt}
-        onToggleNoise={toggleNoise}
-        onToggleAmbient={toggleAmbient}
-        onToggleGlitch={toggleGlitch}
-        onToggleLightMode={toggleLightMode}
-        onToggleDesktop={toggleDesktop}
-        allMinimized={allMinimized}
-      />
-      </>
+        </>
       )}
       {bootDone && mode === 'mobile' && (
         <div className={'mobile-reveal-wrap' + (mobileReveal ? ' mobile-reveal-active' : '')}>

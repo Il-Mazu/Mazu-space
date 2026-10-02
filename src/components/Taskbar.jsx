@@ -1,14 +1,6 @@
 import { useEffect, useState } from 'react';
+import { WINDOWS } from '../windows';
 
-const TITLES = {
-  'win-home': 'home.txt — MAZU-SPACE',
-  'win-about': 'about.txt — mazu-space',
-  'win-music': 'player.exe — MEDIA',
-  'win-dump': 'dump/',
-  'win-term': 'cmd.exe',
-  'win-scope': 'oscilloscope.exe',
-  'win-games': 'games.exe',
-};
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
@@ -114,7 +106,7 @@ export default function Taskbar({
             onClick={() => handleTaskClick(id)}
           >
             <div className="task-dot" />
-            <span className="task-title">{TITLES[id] || id}</span>
+            <span className="task-title">{WINDOWS[id]?.title || id}</span>
           </div>
         ))}
       </div>
