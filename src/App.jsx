@@ -17,10 +17,10 @@ import HomeWindow from './components/HomeWindow';
 import useLanyard from './hooks/useLanyard';
 import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
+import Wallpaper from './components/Wallpaper';
 import { WINDOWS } from './windows';
 import './App.css';
 import { commits, remote, buildDate } from 'virtual:git-info';
-import { images as dumpImages } from 'virtual:dump-images';
 import ambientSound from '../assets/ambient-sound.mp3';
 import macSound from '../assets/mac-startup.mp3';
 import { fadeIn, fadeOut } from './utils/audio';
@@ -30,11 +30,11 @@ import track1 from '../assets/Musica/goreshit-fine-night.mp3';
 import track2 from '../assets/Musica/machine-girl-ghost.mp3';
 import track3 from '../assets/Musica/machine-girl-uzumaki.mp3';
 import track4 from '../assets/Musica/sewerslvt-mr-kill-myself.mp3';
-import cover0 from '../assets/covers/akiba-kagami.jpg';
-import cover1 from '../assets/covers/goreshit-fine-night.jpg';
-import cover2 from '../assets/covers/machine-girl-ghost.jpg';
-import cover3 from '../assets/covers/machine-girl-uzumaki.jpg';
-import cover4 from '../assets/covers/sewerslvt-mr-kill-myself.jpg';
+import cover0 from '../assets/covers/akiba-kagami.webp';
+import cover1 from '../assets/covers/goreshit-fine-night.webp';
+import cover2 from '../assets/covers/machine-girl-ghost.webp';
+import cover3 from '../assets/covers/machine-girl-uzumaki.webp';
+import cover4 from '../assets/covers/sewerslvt-mr-kill-myself.webp';
 
 const TASKBAR_H = 40;
 const AMBIENT_VOL = 0.06;
@@ -79,6 +79,9 @@ export default function App() {
   ambientEnabledRef.current = ambientEnabled;
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [lightMode, setLightMode] = useState(false);
+  const [wallpaper, setWallpaper] = useState(() => {
+    try { return localStorage.getItem('mazu_wallpaper') || 'eye'; } catch { return 'eye'; }
+  });
   const [allMinimized, setAllMinimized] = useState(false);
   const lanyard = useLanyard();
   const mode = useScreenMode();
@@ -86,11 +89,6 @@ export default function App() {
   const [volume, setVolume] = useState(0.8);
   const [shuffle, setShuffle] = useState(false);
   const [loopMode, setLoopMode] = useState(0); // 0=off, 1=repeat all, 2=repeat one
-
-  // Preload dump images during the boot sequence
-  useEffect(() => {
-    dumpImages.forEach(src => { const img = new Image(); img.src = src; });
-  }, []);
 
   const finishBoot = useCallback(() => {
     try { sessionStorage.setItem('mazu_booted', '1'); } catch {}
@@ -322,6 +320,10 @@ export default function App() {
     document.documentElement.dataset.theme = lightMode ? 'light' : 'dark';
   }, [lightMode]);
 
+  useEffect(() => {
+    try { localStorage.setItem('mazu_wallpaper', wallpaper); } catch {}
+  }, [wallpaper]);
+
   // ── Ambient audio toggle ──
   useEffect(() => {
     if (!ambientRef.current) return;
@@ -424,6 +426,7 @@ export default function App() {
     tracksCount: TRACKS.length,
     lanyard, showNotif,
     onGlitch: glitch,
+    wallpaper,
   };
 
   return (
@@ -432,14 +435,12 @@ export default function App() {
       {crtEnabled && <CrtOverlay />}
       {noiseEnabled && <NoiseOverlay />}
 
-      <audio ref={audioRef} preload="auto" />
+      <audio ref={audioRef} preload="none" />
 
       {bootDone && mode === 'desktop' && (
         <>
           <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
-            <div id="wallpaper">
-              <img src="/assets/wallpaper.gif" alt="wallpaper" draggable={false} />
-            </div>
+            <Wallpaper id={wallpaper} />
 
             <DesktopIcons onOpen={openWindow} />
 
@@ -483,6 +484,8 @@ export default function App() {
             onToggleAmbient={toggleAmbient}
             onToggleGlitch={toggleGlitch}
             onToggleLightMode={toggleLightMode}
+            wallpaper={wallpaper}
+            onWallpaperChange={setWallpaper}
             onToggleDesktop={toggleDesktop}
             allMinimized={allMinimized}
           />

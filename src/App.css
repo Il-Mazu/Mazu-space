@@ -4,9 +4,7 @@
   height: calc(100vh - var(--taskbar-h));
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse at 50% 40%, var(--surface-2) 0%, transparent 70%),
-    var(--bg);
+  background: var(--bg);
 }
 #desktop:not(.desktop-reveal) {
   opacity: 0;
@@ -19,25 +17,6 @@
   0%   { clip-path: inset(50% 0 50% 0); opacity: 0; }
   40%  { clip-path: inset(25% 0 25% 0); opacity: 0.8; }
   100% { clip-path: inset(0); opacity: 1; }
-}
-
-/* ── WALLPAPER ───────────────────────────── */
-#wallpaper {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  pointer-events: none;
-  z-index: 0;
-}
-#wallpaper img {
-  max-width: 90%;
-  max-height: 90%;
-  object-fit: contain;
-  opacity: 0.35;
-  image-rendering: pixelated;
-  filter: var(--wallpaper-filter);
 }
 
 /* ── NOTIFICATION ────────────────────────── */

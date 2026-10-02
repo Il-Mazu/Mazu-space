@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { WINDOWS } from '../windows';
+import { WALLPAPERS } from './Wallpaper';
 import './Taskbar.css';
 
 
@@ -9,7 +10,7 @@ const DAYS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
 export default function Taskbar({
   windows, focusedId, onOpenWindow, onMinimizeWindow, onToggleStartMenu,
   settings, onToggleCrt, onToggleNoise, onToggleAmbient, onToggleGlitch, onToggleLightMode,
-  onToggleDesktop, allMinimized
+  onToggleDesktop, allMinimized, wallpaper, onWallpaperChange,
 }) {
   const [time, setTime] = useState('--:--');
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -138,6 +139,14 @@ export default function Taskbar({
                 <span className="toggle-dot">{settings.lightMode ? '[x]' : '[ ]'}</span>
                 Light mode
               </div>
+              <div className="smenu-sep" />
+              <div className="smenu-label">wallpaper</div>
+              {WALLPAPERS.map(w => (
+                <div key={w.id} className="smenu-item" onClick={e => toggleItem(e, () => onWallpaperChange(w.id))}>
+                  <span className="toggle-dot">{wallpaper === w.id ? '(*)' : '( )'}</span>
+                  {w.label}
+                </div>
+              ))}
             </div>
           )}
         </div>

@@ -42,7 +42,9 @@ npm run preview   # preview the production build
 | `src/utils/audio.js` | Audio helpers |
 | `src/styles/base.css` | Design tokens, fonts and shared styles (each component imports its own `.css`) |
 | `public/fonts/` | Self-hosted Departure Mono and Silkscreen (OFL) |
-| `assets/` | Music, cover art, wallpaper and ambient assets |
+| `assets/` | Music, cover art and ambient audio |
+| `public/wallpapers/`, `public/icons.svg` | Wallpapers and the pixel icon sprite ([pixelarticons](https://github.com/halfmage/pixelarticons), MIT) |
+| `public/Dump/` | Gallery images; run `npm run thumbs` (needs ImageMagick) after adding some to create their WebP thumbnails |
 
 ## Customization
 

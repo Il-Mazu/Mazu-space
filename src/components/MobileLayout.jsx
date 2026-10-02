@@ -67,6 +67,7 @@ export default function MobileLayout(props) {
           remote={props.remote}
           buildDate={props.buildDate}
           tracksCount={props.tracksCount}
+          wallpaper={props.wallpaper}
         />
       ) : (
         <MobileAppView

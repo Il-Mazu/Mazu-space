@@ -162,13 +162,13 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
     <>
       {showGrid ? (
         <div className={gridClass}>
-          {imageList.map((src, i) => (
+          {imageList.map((img, i) => (
             <div
               key={i}
               className="dump-grid-item"
               onClick={() => goTo(i)}
             >
-              <img src={src} alt={`dump ${i + 1}`} draggable={false} />
+              <img src={img.thumb} alt={`dump ${i + 1}`} draggable={false} loading="lazy" decoding="async" />
             </div>
           ))}
         </div>
@@ -194,7 +194,7 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
             }}
           >
             <img
-              src={imageList[currentIndex]}
+              src={imageList[currentIndex].src}
               alt={`dump ${currentIndex + 1}`}
               className="gallery-img"
               draggable={false}
