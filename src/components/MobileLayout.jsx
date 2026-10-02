@@ -5,16 +5,6 @@ import MobileAppView from './MobileAppView';
 export default function MobileLayout(props) {
   const [screen, setScreen] = useState('home');
   const [exiting, setExiting] = useState(false);
-  const [gamesSort, setGamesSort] = useState('default');
-  const [gamesStatusText, setGamesStatusText] = useState('');
-  const [gamesCache, setGamesCache] = useState(() => {
-    try {
-      const stored = localStorage.getItem('games_cache');
-      return stored ? JSON.parse(stored) : {};
-    } catch {
-      return {};
-    }
-  });
 
   const appBackRef = useRef(null);
   const handleRegisterBack = useCallback((fn) => {
@@ -66,15 +56,6 @@ export default function MobileLayout(props) {
     setScreen(appId);
   }, []);
 
-  const sharedGamesProps = {
-    gamesSort,
-    setGamesSort,
-    gamesStatusText,
-    setGamesStatusText,
-    gamesCache,
-    setGamesCache,
-  };
-
   return (
     <div className="mobile-layout">
       {screen === 'home' ? (
@@ -93,7 +74,6 @@ export default function MobileLayout(props) {
           onTerminalOpen={handleTerminalOpen}
           onRegisterBack={handleRegisterBack}
           exiting={exiting}
-          {...sharedGamesProps}
           {...props}
         />
       )}

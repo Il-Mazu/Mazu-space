@@ -43,22 +43,19 @@ html, body, #root {
   inset: 0;
   z-index: 9999;
   pointer-events: none;
-  opacity: 0.08;
-  mix-blend-mode: screen;
+  opacity: 0.05;
 }
 #noise::before {
   content: '';
   position: absolute;
-  inset: -50%;
-  width: 200%;
-  height: 200%;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  inset: -64px;
+  background-image: var(--noise);
   animation: noise-shift 0.5s steps(3) infinite;
 }
 @keyframes noise-shift {
   0%   { transform: translate(0, 0); }
-  33%  { transform: translate(-3%, -2%); }
-  66%  { transform: translate(2%, 1%); }
+  33%  { transform: translate(-37px, -23px); }
+  66%  { transform: translate(29px, 13px); }
 }
 
 /* ── CRT OVERLAY ─────────────────────────── */
@@ -347,16 +344,6 @@ html, body, #root {
 }
 
 /* ── SCREEN TEAR (applied via JS) ────────── */
-.tear {
-  animation: screentear 0.15s ease-out;
-}
-@keyframes screentear {
-  0%   { clip-path: inset(0 0 0 0); }
-  10%  { clip-path: inset(25% 0 55% 0); }
-  20%  { clip-path: inset(45% 0 30% 0); }
-  30%  { clip-path: inset(15% 0 70% 0); }
-  40%  { clip-path: inset(0 0 0 0); }
-}
 
 /* ── CHROMATIC ABERRATION (hover) ────────── */
 .chromatic {
@@ -1746,44 +1733,8 @@ html, body, #root {
 }
 
 /* ── SHAKE KEYFRAMES (injected by JS in original, always here now) ── */
-@keyframes shake {
-  0%, 100% { transform: translate(0); }
-  20% { transform: translate(-2px, 1px); }
-  40% { transform: translate(2px, -1px); }
-  60% { transform: translate(-1px, 2px); }
-  80% { transform: translate(1px, -2px); }
-}
-.shake {
-  animation: shake 0.15s ease-out;
-}
 
 /* ── SCOPE WINDOW ─────────────────────────── */
-.scope-titlebar {
-  background: linear-gradient(180deg, #222 0%, #1a1a1a 15%, #0f0f0f 50%, #080808 100%);
-  border-bottom: 1px solid #222;
-  padding: 5px 8px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-family: 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  color: var(--text-dim);
-  cursor: move;
-  user-select: none;
-  flex-shrink: 0;
-}
-.window.focused .scope-titlebar {
-  background: linear-gradient(180deg, #333 0%, #2a2a2a 15%, #1a1a1a 50%, #0f0f0f 100%);
-  color: var(--text-bright);
-  border-bottom-color: var(--win-border-light);
-}
-.scope-title {
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
 .scope-content {
   flex: 1;
   position: relative;

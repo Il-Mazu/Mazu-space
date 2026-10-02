@@ -1,92 +1,68 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useRef } from 'react';
 
+const TASKBAR_H = 40;
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+// Drag/resize mutate the DOM directly while the pointer moves and commit to
+// React state once on release, so moving a window never re-renders the app.
 export default function Window({
-  id, title, x, y, width, height,
+  id, title, x, y, w, h,
   visible, focused, zIndex,
   onFocus, onClose, onMinimize,
   onMove, onResize,
-  menubar, statusbar, style: extraStyle,
+  menubar, statusbar, bare, minW = 200, minH = 120,
   children,
 }) {
   const winRef = useRef(null);
-  const dragRef = useRef(null);
-  const resizeRef = useRef(null);
+  const gesture = useRef(null);
 
-  const handleMouseDown = useCallback(() => {
-    if (onFocus) onFocus(id);
-  }, [id, onFocus]);
-
-  const handleTitleMouseDown = useCallback((e) => {
-    if (e.target.closest('.win-btn')) return;
-    const win = winRef.current;
-    if (!win) return;
-    const rect = win.getBoundingClientRect();
-    dragRef.current = {
-      ox: e.clientX - rect.left,
-      oy: e.clientY - rect.top,
-    };
+  const start = (kind) => (e) => {
+    if (e.button !== 0 || e.target.closest('.win-btn')) return;
     e.preventDefault();
-  }, []);
+    e.currentTarget.setPointerCapture(e.pointerId);
+    const el = winRef.current;
+    gesture.current = { kind, sx: e.clientX, sy: e.clientY, x, y, w: el.offsetWidth, h: el.offsetHeight };
+  };
 
-  // ── Drag (always-listen pattern) ──
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!dragRef.current) return;
-      const { ox, oy } = dragRef.current;
-      const nx = Math.max(0, Math.min(window.innerWidth - 180, e.clientX - ox));
-      const ny = Math.max(0, Math.min(window.innerHeight - 40 - 100, e.clientY - oy));
-      onMove(id, nx, ny);
-    };
-    const handleMouseUp = () => {
-      dragRef.current = null;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [id, onMove]);
+  const move = (e) => {
+    const g = gesture.current;
+    if (!g) return;
+    const el = winRef.current;
+    const dx = e.clientX - g.sx, dy = e.clientY - g.sy;
+    if (g.kind === 'drag') {
+      g.nx = clamp(g.x + dx, 0, window.innerWidth - 180);
+      g.ny = clamp(g.y + dy, 0, window.innerHeight - TASKBAR_H - 100);
+      el.style.transform = `translate(${g.nx - g.x}px, ${g.ny - g.y}px)`;
+    } else {
+      g.nw = Math.max(minW, g.w + dx);
+      g.nh = Math.max(minH, g.h + dy);
+      el.style.width = g.nw + 'px';
+      el.style.height = g.nh + 'px';
+    }
+  };
 
-  // ── Resize handle ──
-  const handleResizeMouseDown = useCallback((e) => {
-    const win = winRef.current;
-    if (!win) return;
-    const rect = win.getBoundingClientRect();
-    resizeRef.current = {
-      startX: e.clientX, startY: e.clientY,
-      startW: rect.width, startH: rect.height,
-      startL: rect.left, startT: rect.top,
-    };
-    e.preventDefault();
-    if (onFocus) onFocus(id);
-  }, [id, onFocus]);
+  const end = () => {
+    const g = gesture.current;
+    if (!g) return;
+    gesture.current = null;
+    const el = winRef.current;
+    if (g.kind === 'drag') {
+      if (g.nx === undefined) return;
+      el.style.left = g.nx + 'px';
+      el.style.top = g.ny + 'px';
+      el.style.transform = '';
+      onMove(id, g.nx, g.ny);
+    } else if (g.nw !== undefined) {
+      onResize(id, g.x, g.y, g.nw, g.nh);
+    }
+  };
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (!resizeRef.current) return;
-      const { startX, startY, startW, startH, startL, startT } = resizeRef.current;
-      const dx = e.clientX - startX;
-      const dy = e.clientY - startY;
-      const MIN_W = 200, MIN_H = 120;
-      let newW = startW + dx;
-      let newH = startH + dy;
-
-      if (newW < MIN_W) newW = MIN_W;
-      if (newH < MIN_H) newH = MIN_H;
-
-      onResize(id, startL, startT, newW, newH);
-    };
-    const handleMouseUp = () => {
-      resizeRef.current = null;
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mouseup', handleMouseUp);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mouseup', handleMouseUp);
-    };
-  }, [id, onResize]);
+  const gestureHandlers = (kind) => ({
+    onPointerDown: start(kind),
+    onPointerMove: move,
+    onPointerUp: end,
+    onLostPointerCapture: end,
+  });
 
   if (!visible) return null;
 
@@ -95,10 +71,10 @@ export default function Window({
       ref={winRef}
       id={id}
       className={`window ${focused ? 'focused' : ''}`}
-      style={{ left: x, top: y, width, height: height || undefined, zIndex, ...extraStyle }}
-      onMouseDown={handleMouseDown}
+      style={{ left: x, top: y, width: w, height: h || undefined, zIndex }}
+      onPointerDown={() => onFocus(id)}
     >
-      <div className="titlebar" data-win={id} onMouseDown={handleTitleMouseDown}>
+      <div className="titlebar" {...gestureHandlers('drag')}>
         <div className="titlebar-icon" />
         <span className="titlebar-title">{title}</span>
         <div className="win-buttons">
@@ -113,9 +89,7 @@ export default function Window({
           ))}
         </div>
       )}
-      <div className="win-content">
-        {children}
-      </div>
+      {bare ? children : <div className="win-content">{children}</div>}
       {statusbar && (
         <div className="statusbar">
           {statusbar.map((seg, i) => (
@@ -123,7 +97,7 @@ export default function Window({
           ))}
         </div>
       )}
-      <div className="resize-handle" onMouseDown={handleResizeMouseDown} />
+      <div className="resize-handle" {...gestureHandlers('resize')} />
     </div>
   );
 }

@@ -1,21 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useSyncExternalStore } from 'react';
+
+const desktop = window.matchMedia('(min-width: 768px)');
+const subscribe = (cb) => {
+  desktop.addEventListener('change', cb);
+  return () => desktop.removeEventListener('change', cb);
+};
 
 export default function useScreenMode() {
-  const [mode, setMode] = useState(() =>
-    window.innerWidth >= 768 ? 'desktop' : 'mobile'
-  );
-
-  useEffect(() => {
-    const check = () => {
-      setMode(window.innerWidth >= 768 ? 'desktop' : 'mobile');
-    };
-    window.addEventListener('resize', check);
-    window.addEventListener('orientationchange', check);
-    return () => {
-      window.removeEventListener('resize', check);
-      window.removeEventListener('orientationchange', check);
-    };
-  }, []);
-
-  return mode;
+  return useSyncExternalStore(subscribe, () => (desktop.matches ? 'desktop' : 'mobile'));
 }
