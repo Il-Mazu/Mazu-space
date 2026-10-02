@@ -101,7 +101,7 @@
 /* ── LINKS ───────────────────────────────── */
 .link-item {
   padding: 3px 0;
-  cursor: pointer;
+  cursor: var(--cursor-pointer);
   font-size: 13px;
   display: flex;
   align-items: center;

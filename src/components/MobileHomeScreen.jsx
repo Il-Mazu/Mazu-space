@@ -1,31 +1,16 @@
 import { useState, useEffect, useMemo } from 'react';
 import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from './GamesWindow';
-import homeIcon from '../../assets/icons/home.png';
-import aboutIcon from '../../assets/icons/about.png';
-import musicIcon from '../../assets/icons/music.png';
-import dumpIcon from '../../assets/icons/dump.png';
-import terminalSvg from '../../assets/icons/terminal.svg';
-
-const GamepadIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="2 4 20 16" className="desk-icon-svg">
-    <path d="M20 20H4v-2h16v2ZM4 18H2V6h2v12Zm18 0h-2V6h2v12Zm-12-7h2v2h-2v2H8v-2H6v-2h2V9h2v2Zm8 4h-2v-2h2v2Zm-2-4h-2V9h2v2Zm4-5H4V4h16v2Z"/>
-  </svg>
-);
-
-const CmdIcon = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="2 2 20 20" className="desk-icon-svg">
-    <path d="M20 22H4v-2h16v2ZM4 20H2V4h2v16Zm18 0h-2V4h2v16ZM8 18H6v-2h2v2Zm8 0h-4v-2h4v2Zm-6-2H8v-2h2v2Zm-2-2H6v-2h2v2ZM20 4H4V2h16v2Z"/>
-  </svg>
-);
+import Icon from './Icon';
+import Wallpaper from './Wallpaper';
 
 const APPS = [
-  { id: 'win-home', icon: homeIcon, label: 'Home' },
-  { id: 'win-about', icon: aboutIcon, label: 'About' },
-  { id: 'win-music', icon: musicIcon, label: 'Music' },
-  { id: 'win-dump', icon: dumpIcon, label: 'Gallery' },
-  { id: 'win-term', svg: CmdIcon, label: 'Terminal' },
-  { id: 'win-games', svg: GamepadIcon, label: 'Games' },
+  { id: 'win-home', icon: 'home', label: 'Home' },
+  { id: 'win-about', icon: 'about', label: 'About' },
+  { id: 'win-music', icon: 'music', label: 'Music' },
+  { id: 'win-dump', icon: 'dump', label: 'Gallery' },
+  { id: 'win-term', icon: 'terminal', label: 'Terminal' },
+  { id: 'win-games', icon: 'games', label: 'Games' },
 ];
 
 const STATUS_COLORS = { online: '#1D9E75', idle: '#BA7517', dnd: '#A32D2D', offline: '#888780' };
@@ -63,7 +48,7 @@ function formatRemote(url) {
 }
 
 export default function MobileHomeScreen({
-  onOpen, lanyard, commits, remote, buildDate, tracksCount,
+  onOpen, lanyard, commits, remote, buildDate, tracksCount, wallpaper,
 }) {
   const [clock, setClock] = useState(new Date());
 
@@ -82,13 +67,7 @@ export default function MobileHomeScreen({
 
   return (
     <div className="mobile-home">
-      <div className="mobile-home-wallpaper">
-        <img
-          src="/assets/wallpaper.gif"
-          alt=""
-          draggable={false}
-        />
-      </div>
+      <Wallpaper id={wallpaper} />
 
       <div className="mobile-home-content">
         <div className="mobile-status-bar">
@@ -146,7 +125,7 @@ export default function MobileHomeScreen({
           {APPS.map(app => (
             <div key={app.id} className="mobile-home-app" onClick={() => onOpen(app.id)}>
               <div className="mobile-home-app-icon">
-                {app.svg ? <app.svg /> : <img src={app.icon} alt="" draggable={false} />}
+                <Icon name={app.icon} />
               </div>
               <div className="mobile-home-app-label">{app.label}</div>
             </div>

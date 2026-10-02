@@ -51,7 +51,10 @@ function dumpImagesPlugin() {
     return files
       .filter(f => exts.includes(path.extname(f).toLowerCase()))
       .sort()
-      .map(f => `/Dump/${f}`);
+      .map(f => {
+        const thumb = `thumbs/${path.parse(f).name}.webp`;
+        return { src: `/Dump/${f}`, thumb: `/Dump/${fs.existsSync(path.join(dumpDir, thumb)) ? thumb : f}` };
+      });
   }
 
   return {
@@ -131,6 +134,5 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
     plugins: [react(), gitInfoPlugin(), dumpImagesPlugin(), gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY)],
-    assetsInclude: ['**/*.gif', '**/*.mp3', '**/*.jpg'],
   };
 });
