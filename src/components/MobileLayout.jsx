@@ -84,7 +84,6 @@ export default function MobileLayout(props) {
           commits={props.commits}
           remote={props.remote}
           buildDate={props.buildDate}
-          blogCount={props.blogCount}
           tracksCount={props.tracksCount}
         />
       ) : (

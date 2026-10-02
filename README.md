@@ -1,6 +1,6 @@
 # Mazu-space
 
-My website, made to look like an old desktop. It has a blog, music and windows you can move around.
+My website, made to look like an old desktop. It has music, an image dump, a terminal and windows you can move around.
 
 [mazu.is-a.dev](https://mazu.is-a.dev)
 
@@ -11,7 +11,6 @@ My website, made to look like an old desktop. It has a blog, music and windows y
 - Draggable, resizable and minimizable windows.
 - CRT scanlines, noise overlays and a boot sequence.
 - A music player and audio oscilloscope.
-- Markdown blog posts with syntax highlighting.
 - Discord presence through Lanyard.
 - A separate mobile interface.
 
@@ -40,11 +39,10 @@ npm run preview   # preview the production build
 | `src/App.jsx` | Desktop state, windows and music logic |
 | `src/components/` | Desktop windows, mobile views, taskbar and boot screen |
 | `src/hooks/` | Discord presence and screen-mode hooks |
-| `src/blog/` | Markdown posts and post loader |
 | `src/utils/audio.js` | Audio helpers |
 | `src/index.css` | Global styling |
 | `assets/` | Music, cover art, wallpaper and ambient assets |
 
 ## Customization
 
-Start with the home/about components and blog posts, then update the assets and presence configuration. Vercel Analytics and Speed Insights are integrated in the source; review those integrations when adapting the project. Check rights separately before reusing music, artwork or other media.
+Start with the home/about components, then update the assets and presence configuration. Vercel Analytics and Speed Insights are integrated in the source; review those integrations when adapting the project. Check rights separately before reusing music, artwork or other media.

@@ -3,13 +3,12 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 const termCmds = {
   help:    '// available: help, about, ls, date, clear, echo [text], glitch, sysinfo, fastfetch, cmatrix',
   about:   '// mazu-space \u2014 my little corner of the internet.',
-  ls:      'about.txt\nblog.txt\nplayer.exe\ndump/\nscope.exe',
+  ls:      'about.txt\nplayer.exe\ndump/\nscope.exe',
   sysinfo: `// mazu-space OS v0.2.0\n// arch: x86\n// mem: 64MB\n// net: loopback\n// uptime: unknown`,
 };
 
 const fileMap = {
   'about.txt': 'win-about',
-  'blog.txt': 'win-blog',
   'player.exe': 'win-music',
   'dump/': 'win-dump',
   'scope.exe': 'win-scope',

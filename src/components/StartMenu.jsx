@@ -1,7 +1,6 @@
 const items = [
   { id: 'win-home', label: '[~] home.txt' },
   { id: 'win-about', label: '[SYS] about.txt' },
-  { id: 'win-blog', label: '[LOG] blog.txt' },
   { id: 'win-music', label: '[MP3] player.exe' },
   { id: 'win-dump', label: '[BIN] dump/' },
   { id: 'win-term', label: '[$] cmd.exe' },

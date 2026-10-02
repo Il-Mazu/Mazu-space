@@ -1,11 +1,10 @@
-import { useState, useCallback, useRef, useEffect, Suspense, lazy } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import Boot from './components/Boot';
 import CrtOverlay from './components/CrtOverlay';
 import NoiseOverlay from './components/NoiseOverlay';
 import DesktopIcons from './components/DesktopIcons';
 import Window from './components/Window';
 import AboutWindow from './components/AboutWindow';
-const BlogWindow = lazy(() => import('./components/BlogWindow'));
 import MusicWindow from './components/MusicWindow';
 import DumpWindow from './components/DumpWindow';
 import TerminalWindow from './components/TerminalWindow';
@@ -20,7 +19,6 @@ import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
 import { commits, remote, buildDate } from 'virtual:git-info';
 import { images as dumpImages } from 'virtual:dump-images';
-import { posts } from './blog/posts';
 import ambientSound from '../assets/ambient-sound.mp3';
 import macSound from '../assets/mac-startup.mp3';
 import { fadeIn, fadeOut } from './utils/audio';
@@ -38,12 +36,11 @@ import cover4 from '../assets/covers/sewerslvt-mr-kill-myself.jpg';
 const TASKBAR_H = 40;
 const AMBIENT_VOL = 0.06;
 
-const WIN_IDS = ['win-home', 'win-about', 'win-blog', 'win-music', 'win-dump', 'win-term', 'win-scope', 'win-games'];
+const WIN_IDS = ['win-home', 'win-about', 'win-music', 'win-dump', 'win-term', 'win-scope', 'win-games'];
 
 const DEFAULT_SIZES = {
   'win-home':  { w: 500, h: 350 },
   'win-about': { w: 420, h: 500 },
-  'win-blog':  { w: 600, h: 420 },
   'win-music': { w: 420, h: 320 },
   'win-dump':  { w: 500, h: 400 },
   'win-term':  { w: 640, h: 350 },
@@ -95,7 +92,6 @@ export default function App() {
   // Preload content during boot sequence
   useEffect(() => {
     preloadGamesCache();
-    import('./components/BlogWindow');
     dumpImages.forEach(src => { const img = new Image(); img.src = src; });
   }, []);
   const [progress, setProgress] = useState(0);
@@ -465,32 +461,6 @@ export default function App() {
     return () => window.removeEventListener('resize', updateSizes);
   }, []);
 
-  // ── Window menubar configurations ──
-  const menuFor = (id) => {
-    const menus = {
-      'win-home': [
-        { label: 'File', onClick: () => showNotif('feature coming soon') },
-        { label: 'Edit', onClick: () => showNotif('feature coming soon') },
-        { label: 'View', onClick: () => showNotif('feature coming soon') },
-      ],
-      'win-about': [
-        { label: 'File', onClick: () => showNotif('feature coming soon') },
-        { label: 'Edit', onClick: () => showNotif('feature coming soon') },
-        { label: 'View', onClick: () => showNotif('feature coming soon') },
-      ],
-      'win-blog': [
-        { label: 'New Post',  onClick: () => showNotif('create a .md file in src/blog/ to publish') },
-        { label: 'Archive',   onClick: () => showNotif('showing all posts (sorted by date)') },
-        { label: 'Tags',      onClick: () => showNotif('click a tag in the list to filter') },
-      ],
-      'win-music': null,
-      'win-games': [
-        { label: 'Sort', onClick: () => window.dispatchEvent(new CustomEvent('mazu-notif', { detail: 'use the menubar in the games window' })) },
-      ],
-    };
-    return menus[id] || null;
-  };
-
   // ── Statusbar configurations ──
   const statusFor = (id) => {
     const statuses = {
@@ -502,12 +472,6 @@ export default function App() {
         { text: 'ONLINE', className: 'status-seg c-accent' },
         { text: 'v0.2.0', className: 'status-seg' },
         { text: 'UTF-8' },
-      ],
-      'win-blog': [
-        { text: `${posts.length} posts`, className: 'status-seg' },
-        { text: 'read_only: false', className: 'status-seg' },
-        { text: `latest: ${posts[0]?.date || '---'}`, className: 'status-seg' },
-        { text: `${import.meta.env.DEV ? 'dev' : 'prod'}`, className: '' },
       ],
       'win-music': [
         { text: playing ? 'PLAYING' : 'PAUSED', className: 'status-seg c-red' },
@@ -534,7 +498,7 @@ export default function App() {
     onToggleShuffle: toggleShuffle, onCycleLoop: cycleLoop,
     onVolumeChange: handleVolumeChange, onSelectTrack: selectTrack,
     commits, remote, buildDate,
-    blogCount: posts.length, tracksCount: TRACKS.length,
+    tracksCount: TRACKS.length,
     lanyard, showNotif,
     onGlitch: () => {
       const el = document.querySelector('.window.focused');
@@ -566,7 +530,6 @@ export default function App() {
       {bootDone && mode === 'desktop' && (
         <>
       <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
-        <Suspense fallback={null}>
         <div id="wallpaper">
           <img
             src="/assets/wallpaper.gif"
@@ -589,14 +552,12 @@ export default function App() {
           onMinimize={minimizeWindow}
           onMove={moveWindow}
           onResize={resizeWindow}
-          menubar={menuFor('win-home')}
           statusbar={statusFor('win-home')}
         >
           <HomeWindow
             commits={commits}
             remote={remote}
             buildDate={buildDate}
-            blogCount={posts.length}
             tracksCount={TRACKS.length}
             lanyard={lanyard}
           />
@@ -614,28 +575,9 @@ export default function App() {
           onMinimize={minimizeWindow}
           onMove={moveWindow}
           onResize={resizeWindow}
-          menubar={menuFor('win-about')}
           statusbar={statusFor('win-about')}
         >
           <AboutWindow />
-        </Window>
-
-        <Window
-          id="win-blog" title="blog.txt — THOUGHTS"
-          x={w['win-blog'].x} y={w['win-blog'].y}
-          width={w['win-blog'].w} height={w['win-blog'].h}
-          visible={w['win-blog'].visible}
-          focused={w['win-blog'].focused}
-          zIndex={w['win-blog'].zIndex}
-          onFocus={focusWindow}
-          onClose={closeWindow}
-          onMinimize={minimizeWindow}
-          onMove={moveWindow}
-          onResize={resizeWindow}
-          menubar={menuFor('win-blog')}
-          statusbar={statusFor('win-blog')}
-        >
-          <BlogWindow onNotif={showNotif} />
         </Window>
 
           <Window
@@ -650,7 +592,6 @@ export default function App() {
             onMinimize={minimizeWindow}
             onMove={moveWindow}
             onResize={resizeWindow}
-            menubar={menuFor('win-music')}
             statusbar={statusFor('win-music')}
           >
           <MusicWindow
@@ -672,7 +613,6 @@ export default function App() {
             onNotif={showNotif}
             lanyard={lanyard}
           />
-          <audio ref={audioRef} preload="auto" />
         </Window>
 
         <DumpWindow
@@ -756,7 +696,6 @@ export default function App() {
         />
 
         <Notification message={notif} />
-      </Suspense>
       </div>
 
       <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
