@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import Icon from './Icon';
 import './MusicWindow.css';
 
 const fmt = (secs) => `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
@@ -21,7 +22,7 @@ function useAudioTime(audioRef) {
   return time;
 }
 
-const LOOP_LABELS = ['↻', '↻ all', '↻ 1'];
+const LOOP_LABELS = ['Repeat: off', 'Repeat: all', 'Repeat: one'];
 
 export default function MusicWindow({
   tracks, currentTrack, playing, audioRef, volume,
@@ -46,34 +47,30 @@ export default function MusicWindow({
 
       <div className="player-main">
         <div className="now-playing">
-          <span className={playing ? 'c-red' : 'c-dim'}>▶ </span>
+          <span className={playing ? 'c-red' : 'c-dim'} aria-hidden="true">▶ </span>
           <span className="c-accent">{current.artist} — {current.title}</span>
         </div>
-        <div className="time-display c-dim">{fmt(time)} / {fmt(current.duration)}</div>
+        <div className="time-display c-dim" aria-hidden="true">{fmt(time)} / {fmt(current.duration)}</div>
 
-        <div className="progress">
+        <div className="progress" role="progressbar" aria-label="Track progress" aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress)} aria-valuetext={`${fmt(time)} of ${fmt(current.duration)}`}>
           <div className="progress-fill" style={{ width: `${progress}%` }} />
         </div>
 
         <div className="controls">
-          <span className="c-dim" style={{ cursor: 'pointer' }} onClick={onPrev}>|◄◄</span>
-          <span className={playing ? 'c-red' : 'c-dim'} style={{ cursor: 'pointer' }} onClick={onTogglePlay}>
-            {playing ? '❚❚' : '▶'}
-          </span>
-          <span className="c-dim" style={{ cursor: 'pointer' }} onClick={onNext}>►►|</span>
-          <span
-            className={shuffle ? 'active' : 'c-dim'}
-            style={{ cursor: 'pointer' }}
-            onClick={onToggleShuffle}
-          >⇄</span>
-          <span
-            className={loopMode ? 'active' : 'c-dim'}
-            style={{ cursor: 'pointer' }}
-            onClick={onCycleLoop}
-          >{LOOP_LABELS[loopMode]}</span>
+          <button aria-label="Previous track" onClick={onPrev}><Icon name="prev" /></button>
+          <button aria-label={playing ? 'Pause' : 'Play'} className={playing ? 'active' : ''} onClick={onTogglePlay}>
+            <Icon name={playing ? 'pause' : 'play'} />
+          </button>
+          <button aria-label="Next track" onClick={onNext}><Icon name="next" /></button>
+          <button aria-label="Shuffle" aria-pressed={shuffle} className={shuffle ? 'active' : ''} onClick={onToggleShuffle}>
+            <Icon name="shuffle" />
+          </button>
+          <button aria-label={LOOP_LABELS[loopMode]} className={loopMode ? 'active' : ''} onClick={onCycleLoop}>
+            <Icon name={loopMode === 2 ? 'repeat-1' : 'repeat'} />
+          </button>
         </div>
 
-        <div className="volume-row">
+        <label className="volume-row">
           <span className="c-dim vol-label">VOL</span>
           <input
             type="range"
@@ -81,19 +78,16 @@ export default function MusicWindow({
             max="1"
             step="any"
             value={volume}
+            aria-label="Volume"
             onChange={(e) => onVolumeChange(e.target.valueAsNumber)}
           />
-        </div>
+        </label>
 
         <div className="next-up">
           <span className="c-dim">next up: </span>
-          <span
-            className="c-red"
-            style={{ cursor: 'pointer' }}
-            onClick={() => onSelectTrack(nextIx)}
-          >
+          <button className="c-red" onClick={() => onSelectTrack(nextIx)}>
             {next.artist} — {next.title}
-          </span>
+          </button>
         </div>
 
         {lanyard?.listening_to_spotify && lanyard.spotify && (

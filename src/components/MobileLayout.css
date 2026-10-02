@@ -66,26 +66,9 @@
   font-size: 13px;
   margin-top: 4px;
 }
-.mobile-discord-card {
-  margin: 4px 0 12px;
-  background: var(--surface);
-  border: 0.5px solid var(--border);
-}
-.mobile-discord-inner {
-  display: flex;
-  align-items: center;
-}
-.mobile-discord-center {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 6px 10px;
-  flex: 1;
-  justify-content: center;
-}
-.mobile-discord-card .discord-wing {
-  font-size: 3.5px;
-}
+.mobile-home .discord-card { margin: 4px 0 12px; }
+.mobile-home .discord-card-center { gap: 12px; padding: 6px 10px; }
+.mobile-home .discord-wing { font-size: 3.5px; }
 .mobile-stats-row {
   display: flex;
   flex-wrap: wrap;
@@ -106,8 +89,6 @@
 .mobile-links-row .link-item {
   font-size: 13px;
   padding: 2px 0;
-  color: var(--text) !important;
-  text-decoration: none;
 }
 .mobile-home-grid {
   display: grid;
@@ -192,6 +173,7 @@
   background: var(--surface-2);
 }
 .mobile-app-title {
+  font-weight: normal;
   font-family: var(--font-label);
   font-size: 10px;
   color: var(--chrome-text);

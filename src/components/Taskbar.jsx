@@ -1,173 +1,180 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { WINDOWS } from '../windows';
 import { WALLPAPERS } from './Wallpaper';
+import Icon from './Icon';
 import './Taskbar.css';
-
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const DAYS = ['Mo','Tu','We','Th','Fr','Sa','Su'];
 
 export default function Taskbar({
-  windows, focusedId, onOpenWindow, onMinimizeWindow, onToggleStartMenu,
+  windows, focusedId, onOpenWindow, onMinimizeWindow, startMenuOpen, onToggleStartMenu,
   settings, onToggleCrt, onToggleNoise, onToggleAmbient, onToggleGlitch, onToggleLightMode,
   onToggleDesktop, allMinimized, wallpaper, onWallpaperChange,
 }) {
   const [time, setTime] = useState('--:--');
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [popup, setPopup] = useState(null); // 'settings' | 'calendar' | null
   const [calDate, setCalDate] = useState(new Date());
+  const triggers = { settings: useRef(null), calendar: useRef(null) };
 
   useEffect(() => {
     function update() {
       const now = new Date();
-      const h = String(now.getHours()).padStart(2, '0');
-      const m = String(now.getMinutes()).padStart(2, '0');
-      setTime(h + ':' + m);
+      setTime(String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0'));
     }
     update();
     const id = setInterval(update, 10000);
     return () => clearInterval(id);
   }, []);
 
+  // Outside click or Esc closes the open popup; Esc hands focus back to its button.
   useEffect(() => {
-    if (!settingsOpen) return;
-    const handler = () => setSettingsOpen(false);
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [settingsOpen]);
+    if (!popup) return;
+    const close = () => setPopup(null);
+    const onKey = (e) => {
+      if (e.key !== 'Escape') return;
+      e.stopPropagation();
+      triggers[popup].current?.focus();
+      close();
+    };
+    document.addEventListener('click', close);
+    window.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('click', close);
+      window.removeEventListener('keydown', onKey, true);
+    };
+  }, [popup]);
 
-  useEffect(() => {
-    if (!calendarOpen) return;
-    const handler = () => setCalendarOpen(false);
-    document.addEventListener('click', handler);
-    return () => document.removeEventListener('click', handler);
-  }, [calendarOpen]);
+  const togglePopup = (name) => (e) => {
+    e.stopPropagation();
+    setPopup(p => (p === name ? null : name));
+  };
 
   const openEntries = Object.keys(windows).filter(id => windows[id].open);
 
   const handleTaskClick = (id) => {
-    if (windows[id].visible) {
-      onMinimizeWindow(id);
-    } else {
-      onOpenWindow(id);
-    }
+    if (windows[id].visible && focusedId === id) onMinimizeWindow(id);
+    else onOpenWindow(id);
   };
 
-  const handleSettingsClick = (e) => {
-    e.stopPropagation();
-    setCalendarOpen(false);
-    setSettingsOpen(prev => !prev);
-  };
-
-  const handleClockClick = (e) => {
-    e.stopPropagation();
-    setSettingsOpen(false);
-    setCalendarOpen(prev => !prev);
-  };
-
-  const toggleItem = (e, fn) => {
-    e.stopPropagation();
-    fn();
-  };
+  const toggles = [
+    { label: 'CRT overlay', on: settings.crt, toggle: onToggleCrt },
+    { label: 'Noise overlay', on: settings.noise, toggle: onToggleNoise },
+    { label: 'Ambient audio', on: settings.ambient, toggle: onToggleAmbient },
+    { label: 'Glitch effects', on: settings.glitch, toggle: onToggleGlitch },
+    { label: 'Light mode', on: settings.lightMode, toggle: onToggleLightMode },
+  ];
 
   const today = new Date();
   const year = calDate.getFullYear();
   const month = calDate.getMonth();
-
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   // Convert Sunday=0 to Monday=0
   const startOffset = firstDay === 0 ? 6 : firstDay - 1;
-
   const dates = [];
   for (let i = 0; i < startOffset; i++) dates.push(null);
   for (let d = 1; d <= daysInMonth; d++) dates.push(d);
-
-  const prevMonth = (e) => {
-    e.stopPropagation();
-    setCalDate(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-
-  const nextMonth = (e) => {
-    e.stopPropagation();
-    setCalDate(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
+  const isToday = (d) => d === today.getDate() && month === today.getMonth() && year === today.getFullYear();
+  const shiftMonth = (n) => setCalDate(prev => new Date(prev.getFullYear(), prev.getMonth() + n, 1));
 
   return (
-    <div id="taskbar">
-      <div id="start-btn" onClick={onToggleStartMenu}>
-        <div className="start-gem" />
+    <div id="taskbar" role="navigation" aria-label="Taskbar">
+      <button
+        id="start-btn"
+        aria-expanded={startMenuOpen}
+        aria-controls="start-menu"
+        onClick={(e) => { e.stopPropagation(); onToggleStartMenu(); }}
+      >
+        <span className="start-gem" aria-hidden="true" />
         START
-      </div>
+      </button>
       <div id="taskbar-tasks">
         {openEntries.map(id => (
-          <div
+          <button
             key={id}
-            id={'task-' + id}
             className={`task-btn ${focusedId === id ? 'active' : ''} ${windows[id].visible ? '' : 'hidden'}`}
+            aria-pressed={focusedId === id}
             onClick={() => handleTaskClick(id)}
           >
-            <div className="task-dot" />
+            <span className="task-dot" aria-hidden="true" />
             <span className="task-title">{WINDOWS[id]?.title || id}</span>
-          </div>
+          </button>
         ))}
       </div>
       <div id="sys-tray">
         <div id="settings-area">
-          <span id="settings-btn" title="settings" onClick={handleSettingsClick}>[≡]</span>
-          {settingsOpen && (
-            <div id="settings-menu" className="menu-panel" onClick={e => e.stopPropagation()}>
-              <div className="smenu-header">settings</div>
-              <div className="smenu-item" onClick={e => toggleItem(e, onToggleCrt)}>
-                <span className="toggle-dot">{settings.crt ? '[x]' : '[ ]'}</span>
-                CRT overlay
-              </div>
-              <div className="smenu-item" onClick={e => toggleItem(e, onToggleNoise)}>
-                <span className="toggle-dot">{settings.noise ? '[x]' : '[ ]'}</span>
-                Noise overlay
-              </div>
-              <div className="smenu-item" onClick={e => toggleItem(e, onToggleAmbient)}>
-                <span className="toggle-dot">{settings.ambient ? '[x]' : '[ ]'}</span>
-                Ambient audio
-              </div>
-              <div className="smenu-item" onClick={e => toggleItem(e, onToggleGlitch)}>
-                <span className="toggle-dot">{settings.glitch ? '[x]' : '[ ]'}</span>
-                Glitch effects
-              </div>
-              <div className="smenu-sep" />
-              <div className="smenu-item" onClick={e => toggleItem(e, onToggleLightMode)}>
-                <span className="toggle-dot">{settings.lightMode ? '[x]' : '[ ]'}</span>
-                Light mode
-              </div>
-              <div className="smenu-sep" />
-              <div className="smenu-label">wallpaper</div>
-              {WALLPAPERS.map(w => (
-                <div key={w.id} className="smenu-item" onClick={e => toggleItem(e, () => onWallpaperChange(w.id))}>
-                  <span className="toggle-dot">{wallpaper === w.id ? '(*)' : '( )'}</span>
-                  {w.label}
-                </div>
+          <button
+            id="settings-btn"
+            ref={triggers.settings}
+            aria-label="Settings"
+            aria-expanded={popup === 'settings'}
+            aria-controls="settings-menu"
+            onClick={togglePopup('settings')}
+          >
+            <Icon name="settings" />
+          </button>
+          {popup === 'settings' && (
+            <div id="settings-menu" className="menu-panel" role="group" aria-label="Settings" onClick={e => e.stopPropagation()}>
+              <div className="smenu-header" aria-hidden="true">settings</div>
+              {toggles.map(t => (
+                <button key={t.label} className="smenu-item" aria-pressed={t.on} onClick={t.toggle} autoFocus={t === toggles[0]}>
+                  <span className="toggle-dot" aria-hidden="true">{t.on ? '[x]' : '[ ]'}</span>
+                  {t.label}
+                </button>
               ))}
+              <div className="smenu-sep" />
+              <div className="smenu-label" id="wallpaper-label">wallpaper</div>
+              <div role="group" aria-labelledby="wallpaper-label">
+                {WALLPAPERS.map(w => (
+                  <button key={w.id} className="smenu-item" aria-pressed={wallpaper === w.id} onClick={() => onWallpaperChange(w.id)}>
+                    <span className="toggle-dot" aria-hidden="true">{wallpaper === w.id ? '(*)' : '( )'}</span>
+                    {w.label}
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
-        <span id="desk-btn" title={allMinimized ? 'restore windows' : 'show desktop'} onClick={onToggleDesktop}>[~]</span>
+        <button
+          id="desk-btn"
+          aria-label={allMinimized ? 'Restore windows' : 'Show desktop'}
+          aria-pressed={allMinimized}
+          onClick={onToggleDesktop}
+        >
+          <Icon name="desktop" />
+        </button>
         <div id="clock-area">
-          <span id="clock" onClick={handleClockClick}>{time}</span>
-          {calendarOpen && (
-            <div id="calendar-menu" onClick={e => e.stopPropagation()}>
+          <button
+            id="clock"
+            ref={triggers.calendar}
+            aria-label={`${time}, open calendar`}
+            aria-expanded={popup === 'calendar'}
+            aria-controls="calendar-menu"
+            onClick={togglePopup('calendar')}
+          >
+            {time}
+          </button>
+          {popup === 'calendar' && (
+            <div id="calendar-menu" role="group" aria-label="Calendar" onClick={e => e.stopPropagation()}>
               <div className="cal-header">
-                <span className="cal-nav" onClick={prevMonth}>‹</span>
-                <span className="cal-title">{MONTHS[month]} {year}</span>
-                <span className="cal-nav" onClick={nextMonth}>›</span>
+                <button className="cal-nav" aria-label="Previous month" onClick={() => shiftMonth(-1)} autoFocus>
+                  <Icon name="chevron-left" />
+                </button>
+                <span className="cal-title" aria-live="polite">{MONTHS[month]} {year}</span>
+                <button className="cal-nav" aria-label="Next month" onClick={() => shiftMonth(1)}>
+                  <Icon name="chevron-right" />
+                </button>
               </div>
-              <div className="cal-days">
+              <div className="cal-days" aria-hidden="true">
                 {DAYS.map(d => <div key={d} className="cal-weekday">{d}</div>)}
               </div>
               <div className="cal-grid">
                 {dates.map((d, i) => (
                   <div
                     key={i}
-                    className={'cal-cell' + (d === null ? ' cal-empty' : '') + (d === today.getDate() && month === today.getMonth() && year === today.getFullYear() ? ' cal-today' : '')}
+                    className={'cal-cell' + (d === null ? ' cal-empty' : '') + (isToday(d) ? ' cal-today' : '')}
+                    aria-current={isToday(d) ? 'date' : undefined}
                   >
                     {d || ''}
                   </div>

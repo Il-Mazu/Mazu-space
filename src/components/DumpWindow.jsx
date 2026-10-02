@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { images as imageList } from 'virtual:dump-images';
+import Icon from './Icon';
 import './DumpWindow.css';
 
 export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBack }) {
@@ -45,10 +46,14 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
       } else if (e.key === 'ArrowRight') {
         e.preventDefault();
         setCurrentIndex(p => (p + 1) % imageList.length);
+      } else if (e.key === 'Escape') {
+        // Back to the grid first; the next Esc closes the window.
+        e.stopPropagation();
+        setShowGrid(true);
       }
     };
-    window.addEventListener('keydown', handleKey);
-    return () => window.removeEventListener('keydown', handleKey);
+    window.addEventListener('keydown', handleKey, true);
+    return () => window.removeEventListener('keydown', handleKey, true);
   }, [focused, showGrid, imageList.length]);
 
   // Auto-hide nav on mobile after 3s
@@ -163,13 +168,14 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
       {showGrid ? (
         <div className={gridClass}>
           {imageList.map((img, i) => (
-            <div
+            <button
               key={i}
               className="dump-grid-item"
+              aria-label={`Open image ${i + 1} of ${imageList.length}`}
               onClick={() => goTo(i)}
             >
-              <img src={img.thumb} alt={`dump ${i + 1}`} draggable={false} loading="lazy" decoding="async" />
-            </div>
+              <img src={img.thumb} alt="" draggable={false} loading="lazy" decoding="async" />
+            </button>
           ))}
         </div>
       ) : (
@@ -183,7 +189,7 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
           {mobile && (
             <div className={'gallery-top-bar' + (!showNav ? ' gallery-bar-hidden' : '')}
                  onClick={e => e.stopPropagation()}>
-              <span className="gallery-back-btn" onClick={() => setShowGrid(true)}>←</span>
+              <button className="gallery-back-btn" aria-label="Back to grid" onClick={() => setShowGrid(true)}><Icon name="back" /></button>
             </div>
           )}
           <div
@@ -205,22 +211,22 @@ export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBac
               className={'gallery-nav-mobile' + (!showNav ? ' gallery-bar-hidden' : '')}
               onClick={e => e.stopPropagation()}
             >
-              <span className="gallery-btn-mobile" onClick={prev}>◀</span>
+              <button className="gallery-btn-mobile" aria-label="Previous image" onClick={prev}><Icon name="chevron-left" /></button>
               <span className="gallery-counter-mobile">{currentIndex + 1} / {imageList.length}</span>
-              <span className="gallery-btn-mobile" onClick={next}>▶</span>
+              <button className="gallery-btn-mobile" aria-label="Next image" onClick={next}><Icon name="chevron-right" /></button>
             </div>
           )}
         </div>
       )}
       {!mobile && (
         <div className="gallery-nav" onClick={e => e.stopPropagation()}>
-          <span className="gallery-btn" onClick={prev}>◀</span>
+          <button className="gallery-btn" aria-label="Previous image" onClick={prev}><Icon name="chevron-left" /></button>
           <span className="gallery-counter">{currentIndex + 1}/{imageList.length}</span>
-          <span className="gallery-btn" onClick={next}>▶</span>
-          <span className="gallery-sep">|</span>
-          <span className="gallery-btn" onClick={toggleGrid}>
+          <button className="gallery-btn" aria-label="Next image" onClick={next}><Icon name="chevron-right" /></button>
+          <span className="gallery-sep" aria-hidden="true">|</span>
+          <button className="gallery-btn" onClick={toggleGrid}>
             {showGrid ? 'View' : 'Grid'}
-          </span>
+          </button>
         </div>
       )}
     </>

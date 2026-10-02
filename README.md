@@ -32,6 +32,16 @@ npm run build     # production files in dist/
 npm run preview   # preview the production build
 ```
 
+## Keyboard
+
+| Key | Action |
+| --- | --- |
+| `Tab` / `Shift+Tab` | Move between icons, taskbar and window controls |
+| `Enter` / `Space` | Activate the focused item |
+| `Esc` | Close the start menu, popup or focused window |
+| ``Alt+` `` / ``Alt+Shift+` `` | Cycle focus between open windows |
+| `←` / `→` | Previous / next image in `dump/` |
+
 ## Files
 
 | Path | What's there |

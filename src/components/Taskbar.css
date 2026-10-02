@@ -139,3 +139,5 @@
 .cal-cell { padding: 4px 0; }
 .cal-empty { visibility: hidden; }
 .cal-today { background: var(--accent); color: var(--on-accent); }
+#sys-tray .icon { font-size: 16px; display: block; }
+#taskbar button:focus-visible { outline-offset: -3px; }

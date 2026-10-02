@@ -13,7 +13,7 @@ import GamesWindow from './components/GamesWindow';
 import Taskbar from './components/Taskbar';
 import StartMenu from './components/StartMenu';
 import Notification from './components/Notification';
-import HomeWindow from './components/HomeWindow';
+import HomeWindow, { formatRemote } from './components/HomeWindow';
 import useLanyard from './hooks/useLanyard';
 import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
@@ -56,6 +56,17 @@ const TRACKS = [
 ];
 
 let zCounter = 10;
+
+// Hiding a window hands focus to the topmost one still visible.
+const hideWindow = (prev, id, patch) => {
+  const next = { ...prev, [id]: { ...prev[id], ...patch, focused: false } };
+  if (!prev[id].focused) return next;
+  const top = Object.keys(next)
+    .filter(k => next[k].visible)
+    .sort((a, b) => next[b].zIndex - next[a].zIndex)[0];
+  if (top) next[top] = { ...next[top], focused: true };
+  return next;
+};
 
 export default function App() {
   // Boot plays once per tab session; reloads go straight to the desktop.
@@ -140,11 +151,11 @@ export default function App() {
   }, []);
 
   const closeWindow = useCallback((id) => {
-    setWindows(prev => ({ ...prev, [id]: { ...prev[id], open: false, visible: false } }));
+    setWindows(prev => hideWindow(prev, id, { open: false, visible: false }));
   }, []);
 
   const minimizeWindow = useCallback((id) => {
-    setWindows(prev => ({ ...prev, [id]: { ...prev[id], visible: false } }));
+    setWindows(prev => hideWindow(prev, id, { visible: false }));
   }, []);
 
   const moveWindow = useCallback((id, x, y) => {
@@ -214,6 +225,40 @@ export default function App() {
   // ── Start menu ──
   const toggleStartMenu = useCallback(() => setStartMenuOpen(prev => !prev), []);
   const handleDesktopClick = useCallback(() => setStartMenuOpen(false), []);
+
+  // ── Keyboard: Esc closes the start menu or the focused window, Alt+` cycles windows ──
+  const startMenuOpenRef = useRef(startMenuOpen);
+  startMenuOpenRef.current = startMenuOpen;
+  const windowsRef = useRef(windows);
+  windowsRef.current = windows;
+
+  useEffect(() => {
+    if (!bootDone || mode !== 'desktop') return;
+    const onKey = (e) => {
+      if (e.key === 'Escape') {
+        if (startMenuOpenRef.current) {
+          setStartMenuOpen(false);
+          document.getElementById('start-btn')?.focus();
+          return;
+        }
+        const focused = Object.keys(windowsRef.current).find(id => windowsRef.current[id].focused && windowsRef.current[id].visible);
+        if (focused) closeWindow(focused);
+      } else if (e.altKey && e.code === 'Backquote') {
+        e.preventDefault();
+        const order = Object.keys(windowsRef.current)
+          .filter(id => windowsRef.current[id].visible)
+          .sort((a, b) => windowsRef.current[b].zIndex - windowsRef.current[a].zIndex);
+        if (order.length < 2) return;
+        // Forward sends the top window to the back (like Alt+Tab held once); Shift brings the bottom one up.
+        if (e.shiftKey) focusWindow(order[order.length - 1]);
+        else {
+          for (let i = order.length - 1; i >= 1; i--) focusWindow(order[i]);
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [bootDone, mode, closeWindow, focusWindow]);
 
   // Listen for custom mazu-notif events (from maximize button, etc.)
   useEffect(() => {
@@ -394,7 +439,7 @@ export default function App() {
     const statuses = {
       'win-home': [
         { text: 'v0.2.0', className: 'status-seg' },
-        { text: `source: ${remote.replace(/^git@/, '').replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(':', '/')}` },
+        { text: `source: ${formatRemote(remote)}` },
       ],
       'win-about': [
         { text: 'ONLINE', className: 'status-seg c-accent' },
@@ -436,10 +481,11 @@ export default function App() {
       {noiseEnabled && <NoiseOverlay />}
 
       <audio ref={audioRef} preload="none" />
+      <Notification message={notif} />
 
       {bootDone && mode === 'desktop' && (
         <>
-          <div id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
+          <main id="desktop" className={desktopReveal ? 'desktop-reveal' : ''} onClick={handleDesktopClick}>
             <Wallpaper id={wallpaper} />
 
             <DesktopIcons onOpen={openWindow} />
@@ -468,8 +514,7 @@ export default function App() {
 
             <GamesWindow {...win('win-games')} />
 
-            <Notification message={notif} />
-          </div>
+          </main>
 
           <StartMenu open={startMenuOpen} onOpen={openWindow} onNotif={showNotif} />
           <Taskbar
@@ -477,6 +522,7 @@ export default function App() {
             focusedId={focusedId}
             onOpenWindow={openWindow}
             onMinimizeWindow={minimizeWindow}
+            startMenuOpen={startMenuOpen}
             onToggleStartMenu={toggleStartMenu}
             settings={{ crt: crtEnabled, noise: noiseEnabled, ambient: ambientEnabled, glitch: glitchEnabled, lightMode }}
             onToggleCrt={toggleCrt}

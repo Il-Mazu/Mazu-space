@@ -13,13 +13,13 @@ const icons = [
 
 export default function DesktopIcons({ onOpen }) {
   return (
-    <div id="desktop-icons">
+    <nav id="desktop-icons" aria-label="Desktop">
       {icons.map(icon => (
-        <div key={icon.id} className="desk-icon" onClick={() => onOpen(icon.id)}>
+        <button key={icon.id} className="desk-icon" onClick={() => onOpen(icon.id)}>
           <Icon name={icon.icon} className="desk-icon-svg" />
-          <div className="desk-icon-label">{icon.label}</div>
-        </div>
+          <span className="desk-icon-label">{icon.label}</span>
+        </button>
       ))}
-    </div>
+    </nav>
   );
 }

@@ -116,8 +116,8 @@ export default function GamesWindow(win) {
     <Window
       {...win}
       menubar={[
-        { label: 'Name', onClick: toggle('name') },
-        { label: 'Year', onClick: toggle('year') },
+        { label: 'Name', onClick: toggle('name'), active: sort === 'name' },
+        { label: 'Year', onClick: toggle('year'), active: sort === 'year' },
       ]}
       statusbar={[
         { text: `${GAMES.length} games`, className: 'status-seg' },

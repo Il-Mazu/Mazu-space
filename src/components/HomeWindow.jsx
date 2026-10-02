@@ -1,16 +1,15 @@
-import { useMemo } from 'react';
 import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from './GamesWindow';
 import './HomeWindow.css';
 
-function formatRemote(url) {
+// Shared by the desktop window and the mobile home screen.
+
+export function formatRemote(url) {
   if (!url) return 'github.com';
-  let clean = url.replace(/^git@/, '').replace(/^https?:\/\//, '');
-  clean = clean.replace(/\.git$/, '').replace(':', '/');
-  return clean;
+  return url.replace(/^git@/, '').replace(/^https?:\/\//, '').replace(/\.git$/, '').replace(':', '/');
 }
 
-const STATUS_COLORS = { online: '#1D9E75', idle: '#BA7517', dnd: '#A32D2D', offline: '#888780' };
+const STATUS_COLORS = { online: '#2bb57f', idle: '#d68d1f', dnd: '#e5484d', offline: '#8a8a94' };
 
 function avatarUrl(user) {
   if (!user?.id || !user?.avatar) return null;
@@ -37,54 +36,74 @@ const WING_ART = `⠀⠀⠀⠀⢀⣴⢿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⢤⠴⠋⠀⡀⠛⠿⠟⡇⠠⠤⠤⠷
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠤⠴⣇⣠⣏⣰⠁⠀⠀⠀⠀`;
 
-export default function HomeWindow({ commits, remote, buildDate, tracksCount, lanyard }) {
-  const statusColor = STATUS_COLORS[lanyard?.discord_status] || '#888780';
-  const user = lanyard?.discord_user;
+export function DiscordCard({ lanyard }) {
+  if (!lanyard) {
+    return <div className="discord-card"><div className="discord-card-loading">discord: loading...</div></div>;
+  }
+  const user = lanyard.discord_user;
   const avatarSrc = avatarUrl(user);
-  const repoUrl = useMemo(() => formatRemote(remote), [remote]);
-
   return (
-    <>
-      <div className="discord-card">
-        <div className="discord-card-inner">
-          {lanyard ? (
-            <>
-              <div className="discord-wing-panel">
-                <pre className="discord-wing">{WING_ART}</pre>
-              </div>
-              <div className="discord-card-center">
-                <div className="discord-card-avatar">
-                  {avatarSrc ? (
-                    <img className="discord-avatar" src={avatarSrc} alt="avatar" />
-                  ) : (
-                    <div className="discord-avatar-placeholder" />
-                  )}
-                </div>
-                <div className="discord-card-info">
-                  <div className="discord-card-name">{user?.username || 'mazu'}</div>
-                  <div className="discord-card-status" style={{ color: statusColor }}>● {lanyard.discord_status}</div>
-                </div>
-              </div>
-              <div className="discord-wing-panel discord-wing-right">
-                <pre className="discord-wing">{WING_ART}</pre>
-              </div>
-            </>
-          ) : (
-            <div className="discord-card-loading">discord: loading...</div>
-          )}
+    <div className="discord-card">
+      <div className="discord-card-inner">
+        <div className="discord-wing-panel" aria-hidden="true">
+          <pre className="discord-wing">{WING_ART}</pre>
+        </div>
+        <div className="discord-card-center">
+          <div className="discord-card-avatar">
+            {avatarSrc
+              ? <img className="discord-avatar" src={avatarSrc} alt="" />
+              : <div className="discord-avatar-placeholder" />}
+          </div>
+          <div className="discord-card-info">
+            <div className="discord-card-name">{user?.username || 'mazu'}</div>
+            <div className="discord-card-status" style={{ color: STATUS_COLORS[lanyard.discord_status] || STATUS_COLORS.offline }}>
+              <span aria-hidden="true">● </span>discord: {lanyard.discord_status}
+            </div>
+          </div>
+        </div>
+        <div className="discord-wing-panel discord-wing-right" aria-hidden="true">
+          <pre className="discord-wing">{WING_ART}</pre>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function ContentStats({ tracksCount }) {
+  return [['music', tracksCount], ['dump', dumpCount], ['games', gamesCount]].map(([label, n]) => (
+    <div key={label} className="home-stat">
+      <span className="c-red" aria-hidden="true">♰ </span>{label}: <span className="c-accent2">{n}</span>
+    </div>
+  ));
+}
+
+export function Links({ remote }) {
+  const links = [
+    ['github', `https://${formatRemote(remote)}`],
+    ['instagram', 'https://www.instagram.com/ilmazu_'],
+    ['spotify', 'https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj'],
+  ];
+  return links.map(([label, href]) => (
+    <a key={label} href={href} target="_blank" rel="noopener noreferrer" className="link-item">
+      <span className="c-red" aria-hidden="true">&gt;</span>
+      <span>{label}</span>
+    </a>
+  ));
+}
+
+export default function HomeWindow({ commits, remote, buildDate, tracksCount, lanyard }) {
+  return (
+    <>
+      <DiscordCard lanyard={lanyard} />
 
       <div className="home-dashboard">
-        <div className="home-panel">
-          <div className="home-panel-title c-dim">── content ──</div>
-          <div className="home-stat"><span className="c-red">♰</span> music: <span className="c-accent2">{tracksCount}</span></div>
-          <div className="home-stat"><span className="c-red">♰</span> dump:  <span className="c-accent2">{dumpCount}</span></div>
-          <div className="home-stat"><span className="c-red">♰</span> games:  <span className="c-accent2">{gamesCount}</span></div>
-        </div>
+        <section className="home-panel" aria-labelledby="home-content">
+          <h2 className="home-panel-title c-dim" id="home-content">── content ──</h2>
+          <ContentStats tracksCount={tracksCount} />
+        </section>
 
-        <div className="home-panel">
-          <div className="home-panel-title c-dim">── commits ──</div>
+        <section className="home-panel" aria-labelledby="home-commits">
+          <h2 className="home-panel-title c-dim" id="home-commits">── commits ──</h2>
           {commits.length === 0 ? (
             <div className="home-stat c-dim">no commits</div>
           ) : (
@@ -98,26 +117,15 @@ export default function HomeWindow({ commits, remote, buildDate, tracksCount, la
           <div className="home-stat" style={{ marginTop: 10 }}>
             <span className="c-dim">build:</span> <span className="c-accent2">{buildDate || '--'}</span>
           </div>
-        </div>
+        </section>
 
-        <div className="home-panel">
-          <div className="home-panel-title c-dim">── links ──</div>
-          <a href={`https://${repoUrl}`} target="_blank" rel="noopener noreferrer" className="link-item">
-            <span className="c-red">&gt;</span>
-            <span>github</span>
-          </a>
-          <a href="https://www.instagram.com/ilmazu_" target="_blank" rel="noopener noreferrer" className="link-item">
-            <span className="c-red">&gt;</span>
-            <span>instagram</span>
-          </a>
-          <a href="https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj" target="_blank" rel="noopener noreferrer" className="link-item">
-            <span className="c-red">&gt;</span>
-            <span>spotify</span>
-          </a>
-        </div>
+        <section className="home-panel" aria-labelledby="home-links">
+          <h2 className="home-panel-title c-dim" id="home-links">── links ──</h2>
+          <Links remote={remote} />
+        </section>
       </div>
 
-      <span className="cursor" />
+      <span className="cursor" aria-hidden="true" />
     </>
   );
 }

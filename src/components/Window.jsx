@@ -1,4 +1,5 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
+import Icon from './Icon';
 import './Window.css';
 
 const TASKBAR_H = 40;
@@ -16,6 +17,12 @@ export default function Window({
 }) {
   const winRef = useRef(null);
   const gesture = useRef(null);
+
+  // Keep keyboard focus with the focused window, so Esc and Tab act on it.
+  useEffect(() => {
+    const el = winRef.current;
+    if (focused && el && !el.contains(document.activeElement)) el.focus({ preventScroll: true });
+  }, [focused, visible]);
 
   const start = (kind) => (e) => {
     if (e.button !== 0 || e.target.closest('.win-btn')) return;
@@ -73,20 +80,24 @@ export default function Window({
       id={id}
       className={`window ${focused ? 'focused' : ''}`}
       style={{ left: x, top: y, width: w, height: h || undefined, zIndex }}
+      role="dialog"
+      aria-labelledby={id + '-title'}
+      tabIndex={-1}
       onPointerDown={() => onFocus(id)}
+      onFocus={() => onFocus(id)}
     >
       <div className="titlebar" {...gestureHandlers('drag')}>
         <div className="titlebar-icon" />
-        <span className="titlebar-title">{title}</span>
+        <span className="titlebar-title" id={id + '-title'}>{title}</span>
         <div className="win-buttons">
-          <div className="win-btn minimize" onClick={() => onMinimize(id)}>_</div>
-          <div className="win-btn close" onClick={() => onClose(id)}>×</div>
+          <button className="win-btn minimize" aria-label="Minimize" onClick={() => onMinimize(id)}><Icon name="minimize" /></button>
+          <button className="win-btn close" aria-label="Close" onClick={() => onClose(id)}><Icon name="close" /></button>
         </div>
       </div>
       {menubar && (
         <div className="win-menubar">
           {menubar.map((item, i) => (
-            <span key={i} className="menu-item" onClick={item.onClick}>{item.label}</span>
+            <button key={i} className="menu-item" aria-pressed={item.active} onClick={item.onClick}>{item.label}</button>
           ))}
         </div>
       )}
@@ -98,7 +109,7 @@ export default function Window({
           ))}
         </div>
       )}
-      <div className="resize-handle" {...gestureHandlers('resize')} />
+      <div className="resize-handle" aria-hidden="true" {...gestureHandlers('resize')} />
     </div>
   );
 }

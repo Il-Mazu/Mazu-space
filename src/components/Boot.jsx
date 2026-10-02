@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import bootSound from '../../assets/boot-sound.mp3';
 import { fadeOut } from '../utils/audio';
+import { BOOT_LOGO } from '../bootLogo';
 import './Boot.css';
 
 // Each line types itself in CSS (steps() over its own length); `at` is the
@@ -13,14 +14,6 @@ const LINES = [
 ];
 const BAR_AT = 1650;
 
-const ascii = `   /'\\_/\\\`                                                                              
-  /\\      \\     __     ____    __  __             ____  _____      __      ___     __   
- \\ \\ \\__\\ \\  /'__\`\\  /\\_ ,\`\\ /\\ \\/\\ \\  _______  /',__\\/\\ '__\`\\  /'__\`\\   /'___\\ /'__\`\\ 
-  \\ \\ \\_/\\ \\/\\ \\L\\.\\_\\/_/  /_\\ \\ \\_\\ \\/\\______\\/\\__, \`\\ \\ \\L\\ \\/\\ \\L\\.\\_/\\ \\__//\\  __/ 
-   \\ \\_\\\\ \\_\\/\\__/.\\_\\ /\\____\\\\ \\____\\/\\______\\/\\____/\\ \\ ,__/\\ \\__/.\\_\\/\\____\\ \\____\\
-    \\/_/ \\/_/\\/__/\\/_/ \\/____/ \\/___/           \\/___/  \\ \\ \\/  \\/__/\\/_/\\/____/\\/____/
-                                                           \\ \\_\\                         
-                                                            \\/_/                         `;
 
 export default function Boot({ onComplete }) {
   const [started, setStarted] = useState(false);
@@ -53,9 +46,9 @@ export default function Boot({ onComplete }) {
   }, [started]);
 
   return (
-    <div id="boot" className={hidden ? 'hidden' : ''}>
+    <main id="boot" className={hidden ? 'hidden' : ''}>
       <div id="boot-terminal">
-        <pre className="ascii-art">{ascii}</pre>
+        <pre className="ascii-art">{BOOT_LOGO}</pre>
         {!started ? (
           <div className="boot-enter">
             <span className="c-dim">&gt;</span>{' '}
@@ -75,6 +68,6 @@ export default function Boot({ onComplete }) {
         )}
       </div>
       <button className="boot-skip" onClick={finish}>SKIP &gt;&gt;</button>
-    </div>
+    </main>
   );
 }

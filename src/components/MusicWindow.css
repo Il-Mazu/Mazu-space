@@ -49,14 +49,19 @@
 }
 .now-playing { font-size: 15px; }
 .time-display, .next-up, .spotify-live-row { font-size: 11px; }
+.next-up button { font-size: inherit; text-align: left; }
 .controls {
   display: flex;
   gap: 4px;
-  font-size: 15px;
+  font-size: 24px;
 }
 .controls > * {
-  min-width: 28px;
-  text-align: center;
+  min-width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
 }
 .controls > *:hover, .controls .active { color: var(--accent); }
 

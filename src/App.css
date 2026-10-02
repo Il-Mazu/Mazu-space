@@ -24,6 +24,9 @@
   position: fixed;
   bottom: calc(var(--taskbar-h) + 12px);
   right: 12px;
+  z-index: 10003;
+}
+.notif-box {
   background: var(--win-bg);
   border: 1px solid var(--border-hi);
   border-left: 3px solid var(--accent);
@@ -31,9 +34,6 @@
   padding: 8px 14px;
   font-size: 13px;
   color: var(--text-bright);
-  z-index: 10003;
-  display: none;
   animation: slidein 0.2s ease;
 }
-#notif.visible { display: block; }
 @keyframes slidein { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }

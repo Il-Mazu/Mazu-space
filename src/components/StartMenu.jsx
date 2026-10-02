@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import './StartMenu.css';
 
 const items = [
@@ -10,22 +11,21 @@ const items = [
 ];
 
 export default function StartMenu({ open, onOpen, onNotif }) {
+  const firstRef = useRef(null);
+  useEffect(() => { if (open) firstRef.current?.focus(); }, [open]);
+
   return (
-    <div id="start-menu" className={'menu-panel' + (open ? ' open' : '')}>
-      <div className="smenu-header">mazu-space v0.2</div>
+    <nav id="start-menu" className={'menu-panel' + (open ? ' open' : '')} aria-label="Start menu">
+      <div className="smenu-header" aria-hidden="true">mazu-space v0.2</div>
       {items.map((item, i) => (
-        <div
-          key={i}
-          className="smenu-item"
-          onClick={() => { onOpen(item.id); }}
-        >
+        <button key={item.id} ref={i === 0 ? firstRef : null} className="smenu-item" onClick={() => onOpen(item.id)}>
           {item.label}
-        </div>
+        </button>
       ))}
       <div className="smenu-sep" />
-      <div className="smenu-item" onClick={() => onNotif('// shutdown: access denied')}>
+      <button className="smenu-item" onClick={() => onNotif('// shutdown: access denied')}>
         [x] shut down
-      </div>
-    </div>
+      </button>
+    </nav>
   );
 }

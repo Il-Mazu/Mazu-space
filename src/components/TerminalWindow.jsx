@@ -103,6 +103,7 @@ export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
   const handleKeyDown = useCallback((e) => {
     if (matrixActive) {
       e.preventDefault();
+      e.stopPropagation(); // Esc only stops the rain here, it must not close the window
       setMatrixActive(false);
       return;
     }
@@ -252,7 +253,9 @@ export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
     <>
       <div
         ref={outputRef}
-        className="win-content"
+        className="win-content terminal-output"
+        role="log"
+        aria-label="Terminal output"
         onClick={() => hiddenInputRef.current?.focus()}
         style={{ cursor: 'text', minHeight: 120, position: 'relative', height: '100%' }}
       >
@@ -260,7 +263,7 @@ export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
           <span key={i} dangerouslySetInnerHTML={{ __html: line.html }} />
         ))}
         {matrixActive && <canvas ref={matrixCanvasRef} className="matrix-canvas" />}
-        <div>
+        <div aria-hidden="true">
           <span className="c-accent">C:\&gt;</span> {input}<span className="cursor" style={{ verticalAlign: 'text-bottom' }} />
         </div>
       </div>
@@ -275,7 +278,10 @@ export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
           position: 'absolute', opacity: 0, width: 0, height: 0,
           pointerEvents: 'none',
         }}
-        aria-hidden="true"
+        aria-label="Terminal command"
+        autoComplete="off"
+        autoCapitalize="off"
+        spellCheck={false}
       />
     </>
   );
