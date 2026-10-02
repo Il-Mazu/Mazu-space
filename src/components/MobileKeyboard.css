@@ -1,0 +1,54 @@
+/* ── MOBILE KEYBOARD ────────────────────── */
+.mobile-keyboard {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  padding: 8px 4px;
+  transform: translateY(100%);
+  transition: transform 0.2s ease;
+  z-index: 100;
+}
+.mobile-keyboard-open {
+  transform: translateY(0);
+}
+.mobile-keyboard-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 500px;
+  margin: 0 auto;
+}
+.mobile-keyboard-row {
+  display: flex;
+  gap: 4px;
+  justify-content: center;
+}
+.mobile-key {
+  flex: 1;
+  max-width: 42px;
+  height: 40px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+.mobile-key:active {
+  background: var(--border);
+}
+.mobile-key-wide {
+  max-width: 60px;
+}
+.mobile-key-space {
+  max-width: 160px;
+  flex: 2;
+}

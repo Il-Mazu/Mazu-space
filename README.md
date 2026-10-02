@@ -40,7 +40,8 @@ npm run preview   # preview the production build
 | `src/components/` | Desktop windows, mobile views, taskbar and boot screen |
 | `src/hooks/` | Discord presence and screen-mode hooks |
 | `src/utils/audio.js` | Audio helpers |
-| `src/index.css` | Global styling |
+| `src/styles/base.css` | Design tokens, fonts and shared styles (each component imports its own `.css`) |
+| `public/fonts/` | Self-hosted Departure Mono and Silkscreen (OFL) |
 | `assets/` | Music, cover art, wallpaper and ambient assets |
 
 ## Customization

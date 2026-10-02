@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { WINDOWS } from '../windows';
+import './Taskbar.css';
 
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -114,27 +115,27 @@ export default function Taskbar({
         <div id="settings-area">
           <span id="settings-btn" title="settings" onClick={handleSettingsClick}>[≡]</span>
           {settingsOpen && (
-            <div id="settings-menu" className="open" onClick={e => e.stopPropagation()}>
+            <div id="settings-menu" className="menu-panel" onClick={e => e.stopPropagation()}>
               <div className="smenu-header">settings</div>
               <div className="smenu-item" onClick={e => toggleItem(e, onToggleCrt)}>
-                <span className="toggle-dot">{settings.crt ? '◉' : '○'}</span>
+                <span className="toggle-dot">{settings.crt ? '[x]' : '[ ]'}</span>
                 CRT overlay
               </div>
               <div className="smenu-item" onClick={e => toggleItem(e, onToggleNoise)}>
-                <span className="toggle-dot">{settings.noise ? '◉' : '○'}</span>
+                <span className="toggle-dot">{settings.noise ? '[x]' : '[ ]'}</span>
                 Noise overlay
               </div>
               <div className="smenu-item" onClick={e => toggleItem(e, onToggleAmbient)}>
-                <span className="toggle-dot">{settings.ambient ? '◉' : '○'}</span>
+                <span className="toggle-dot">{settings.ambient ? '[x]' : '[ ]'}</span>
                 Ambient audio
               </div>
               <div className="smenu-item" onClick={e => toggleItem(e, onToggleGlitch)}>
-                <span className="toggle-dot">{settings.glitch ? '◉' : '○'}</span>
+                <span className="toggle-dot">{settings.glitch ? '[x]' : '[ ]'}</span>
                 Glitch effects
               </div>
               <div className="smenu-sep" />
               <div className="smenu-item" onClick={e => toggleItem(e, onToggleLightMode)}>
-                <span className="toggle-dot">{settings.lightMode ? '◉' : '○'}</span>
+                <span className="toggle-dot">{settings.lightMode ? '[x]' : '[ ]'}</span>
                 Light mode
               </div>
             </div>

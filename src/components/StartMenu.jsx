@@ -1,3 +1,5 @@
+import './StartMenu.css';
+
 const items = [
   { id: 'win-home', label: '[~] home.txt' },
   { id: 'win-about', label: '[SYS] about.txt' },
@@ -9,7 +11,7 @@ const items = [
 
 export default function StartMenu({ open, onOpen, onNotif }) {
   return (
-    <div id="start-menu" className={open ? 'open' : ''}>
+    <div id="start-menu" className={'menu-panel' + (open ? ' open' : '')}>
       <div className="smenu-header">mazu-space v0.2</div>
       {items.map((item, i) => (
         <div

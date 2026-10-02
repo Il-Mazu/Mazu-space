@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import './MusicWindow.css';
 
 const fmt = (secs) => `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(Math.floor(secs % 60)).padStart(2, '0')}`;
 

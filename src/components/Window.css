@@ -1,0 +1,134 @@
+/* ── WINDOW ──────────────────────────────── */
+.window {
+  position: absolute;
+  background: var(--win-bg);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  min-width: 180px;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  will-change: transform;
+}
+.window.focused {
+  border-color: var(--border-hi);
+  box-shadow: var(--shadow), 0 0 0 1px rgba(0,0,0,0.5);
+}
+
+/* ── TITLEBAR ────────────────────────────── */
+.titlebar {
+  background: var(--chrome);
+  box-shadow: var(--bevel);
+  border-bottom: 1px solid var(--border);
+  padding: 5px 6px 5px 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.5px;
+  color: var(--text);
+  cursor: move;
+  flex-shrink: 0;
+}
+.window.focused .titlebar {
+  background: var(--chrome-hi);
+  color: var(--chrome-text);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+}
+.titlebar-icon {
+  width: 9px;
+  height: 9px;
+  background: var(--text-dim);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+.window.focused .titlebar-icon { background: var(--accent); }
+.titlebar-title {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.win-buttons { display: flex; gap: 3px; }
+.win-btn {
+  width: 18px;
+  height: 16px;
+  border: 1px solid var(--border-hi);
+  background: var(--chrome);
+  box-shadow: var(--bevel);
+  font-size: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--chrome-text);
+  cursor: pointer;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.win-btn:hover { background: var(--chrome-hi); }
+.win-btn:active { box-shadow: var(--bevel-in); }
+.win-btn.close:hover { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+
+/* ── MENUBAR ─────────────────────────────── */
+.win-menubar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 2px 6px;
+  display: flex;
+  flex-shrink: 0;
+}
+.menu-item {
+  padding: 2px 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: background 0.1s, color 0.1s;
+}
+.menu-item:hover { background: var(--accent); color: var(--on-accent); }
+
+/* ── CONTENT ─────────────────────────────── */
+.win-content {
+  padding: 12px 14px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  flex: 1;
+  overflow-y: auto;
+}
+
+/* ── STATUSBAR ───────────────────────────── */
+.statusbar {
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  box-shadow: var(--bevel);
+  padding: 3px 8px;
+  display: flex;
+  gap: 12px;
+  font-size: 11px;
+  color: var(--text-dim);
+  flex-shrink: 0;
+}
+.status-seg { border-right: 1px solid var(--border); padding-right: 12px; }
+
+/* ── RESIZE HANDLE ───────────────────────── */
+.resize-handle {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 14px;
+  height: 14px;
+  cursor: nwse-resize;
+  z-index: 10;
+}
+.resize-handle::after {
+  content: '';
+  position: absolute;
+  bottom: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid var(--border-hi);
+  border-bottom: 2px solid var(--border-hi);
+}

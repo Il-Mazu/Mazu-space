@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import './Window.css';
 
 const TASKBAR_H = 40;
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));

@@ -3,6 +3,7 @@ import aboutIcon from '../../assets/icons/about.png';
 import musicIcon from '../../assets/icons/music.png';
 import dumpIcon from '../../assets/icons/dump.png';
 import scopeIcon from '../../assets/icons/scope.png';
+import './DesktopIcons.css';
 
 const CmdIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="desk-icon-svg">
@@ -35,7 +36,7 @@ export default function DesktopIcons({ onOpen }) {
             {icon.svg
               ? <icon.svg />
               : icon.img
-                ? <img src={icon.img} alt="" className={'desk-icon-png' + (icon.id === 'win-home' ? ' home-icon' : '')} />
+                ? <img src={icon.img} alt="" className="desk-icon-png" />
                 : '[SYS]'
             }
           </div>

@@ -39,7 +39,7 @@ export default function AboutWindow() {
       <span className="c-red">│ age</span>    <span className="c-accent2">19</span><br />
       <span className="c-red">│ role</span>   <span className="c-dim">cs student</span><br />
       <span className="c-red">│ tags</span>   <span className="c-accent2">code, art, music</span><br /><br />
-      <div style={{ borderTop: '1px solid #1a1a1a', paddingTop: 10 }}>
+      <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
         <span className="c-dim">// Never fade away</span><br /><br />
       </div>
       <pre className="ascii-art" style={{ marginTop: 16 }}>

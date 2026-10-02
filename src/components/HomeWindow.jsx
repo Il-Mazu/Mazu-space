@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from './GamesWindow';
+import './HomeWindow.css';
 
 function formatRemote(url) {
   if (!url) return 'github.com';
@@ -101,15 +102,15 @@ export default function HomeWindow({ commits, remote, buildDate, tracksCount, la
 
         <div className="home-panel">
           <div className="home-panel-title c-dim">── links ──</div>
-          <a href={`https://${repoUrl}`} target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <a href={`https://${repoUrl}`} target="_blank" rel="noopener noreferrer" className="link-item">
             <span className="c-red">&gt;</span>
             <span>github</span>
           </a>
-          <a href="https://www.instagram.com/ilmazu_" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <a href="https://www.instagram.com/ilmazu_" target="_blank" rel="noopener noreferrer" className="link-item">
             <span className="c-red">&gt;</span>
             <span>instagram</span>
           </a>
-          <a href="https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj" target="_blank" rel="noopener noreferrer" className="link-item" style={{ color: 'inherit', textDecoration: 'none' }}>
+          <a href="https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj" target="_blank" rel="noopener noreferrer" className="link-item">
             <span className="c-red">&gt;</span>
             <span>spotify</span>
           </a>

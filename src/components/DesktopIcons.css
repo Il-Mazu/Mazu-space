@@ -1,0 +1,40 @@
+/* ── DESKTOP ICONS ───────────────────────── */
+#desktop-icons {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.desk-icon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px;
+  border: 1px dotted transparent;
+  width: 96px;
+}
+.desk-icon:hover { border-color: var(--border-hi); background: color-mix(in srgb, var(--text-bright) 5%, transparent); }
+.desk-icon:hover .desk-icon-label { background: var(--accent); color: var(--on-accent); text-shadow: none; }
+.desk-icon-png {
+  width: 32px;
+  height: 32px;
+  filter: invert(1);
+}
+:root[data-theme="light"] .desk-icon-png { filter: none; }
+.desk-icon-svg {
+  width: 32px;
+  height: 32px;
+  color: var(--text-bright);
+}
+.desk-icon-label {
+  font-size: 11px;
+  color: var(--text-bright);
+  text-align: center;
+  text-shadow: 1px 1px 0 var(--bg);
+  line-height: 1.2;
+  padding: 1px 3px;
+}

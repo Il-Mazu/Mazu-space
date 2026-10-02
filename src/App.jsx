@@ -18,6 +18,7 @@ import useLanyard from './hooks/useLanyard';
 import useScreenMode from './hooks/useScreenMode';
 import MobileLayout from './components/MobileLayout';
 import { WINDOWS } from './windows';
+import './App.css';
 import { commits, remote, buildDate } from 'virtual:git-info';
 import { images as dumpImages } from 'virtual:dump-images';
 import ambientSound from '../assets/ambient-sound.mp3';
@@ -57,7 +58,10 @@ const TRACKS = [
 let zCounter = 10;
 
 export default function App() {
-  const [bootDone, setBootDone] = useState(false);
+  // Boot plays once per tab session; reloads go straight to the desktop.
+  const [bootDone, setBootDone] = useState(() => {
+    try { return sessionStorage.getItem('mazu_booted') === '1'; } catch { return false; }
+  });
   const [windows, setWindows] = useState(buildInitialWindows);
   const [startMenuOpen, setStartMenuOpen] = useState(false);
   const [notif, setNotif] = useState(null);
@@ -71,6 +75,8 @@ export default function App() {
   const [crtEnabled, setCrtEnabled] = useState(true);
   const [noiseEnabled, setNoiseEnabled] = useState(true);
   const [ambientEnabled, setAmbientEnabled] = useState(true);
+  const ambientEnabledRef = useRef(ambientEnabled);
+  ambientEnabledRef.current = ambientEnabled;
   const [glitchEnabled, setGlitchEnabled] = useState(true);
   const [lightMode, setLightMode] = useState(false);
   const [allMinimized, setAllMinimized] = useState(false);
@@ -84,6 +90,11 @@ export default function App() {
   // Preload dump images during the boot sequence
   useEffect(() => {
     dumpImages.forEach(src => { const img = new Image(); img.src = src; });
+  }, []);
+
+  const finishBoot = useCallback(() => {
+    try { sessionStorage.setItem('mazu_booted', '1'); } catch {}
+    setBootDone(true);
   }, []);
 
   const showNotif = useCallback((msg) => {
@@ -292,7 +303,12 @@ export default function App() {
       }
     });
 
+    // A skipped boot has no user gesture yet, so autoplay is blocked until the first click.
+    const unlock = () => { if (ambientRef.current === ambient && ambient.paused && ambientEnabledRef.current) fadeIn(ambient, AMBIENT_VOL, 600); };
+    document.addEventListener('pointerdown', unlock, { once: true });
+
     return () => {
+      document.removeEventListener('pointerdown', unlock);
       mac.pause();
       mac.currentTime = 0;
       ambient.pause();
@@ -303,7 +319,7 @@ export default function App() {
 
   // ── Theme ──
   useEffect(() => {
-    document.documentElement.style.filter = lightMode ? 'invert(1)' : '';
+    document.documentElement.dataset.theme = lightMode ? 'light' : 'dark';
   }, [lightMode]);
 
   // ── Ambient audio toggle ──
@@ -412,7 +428,7 @@ export default function App() {
 
   return (
     <>
-      {!bootDone && <Boot onComplete={() => setBootDone(true)} />}
+      {!bootDone && <Boot onComplete={finishBoot} />}
       {crtEnabled && <CrtOverlay />}
       {noiseEnabled && <NoiseOverlay />}
 

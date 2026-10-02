@@ -1,0 +1,4 @@
+/* ── START MENU ──────────────────────────── */
+#start-menu { left: 0; width: 230px; }
+#start-menu:not(.open) { display: none; }
+#start-menu .smenu-header { padding: 14px 12px; font-size: 11px; }

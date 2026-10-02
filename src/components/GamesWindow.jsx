@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Window from './Window';
 import { GAMES } from '../data/games';
 import covers from 'virtual:game-covers';
+import './GamesWindow.css';
 
 export const gamesCount = GAMES.length;
 

@@ -1,0 +1,60 @@
+/* ── DESKTOP ─────────────────────────────── */
+#desktop {
+  width: 100%;
+  height: calc(100vh - var(--taskbar-h));
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 50% 40%, var(--surface-2) 0%, transparent 70%),
+    var(--bg);
+}
+#desktop:not(.desktop-reveal) {
+  opacity: 0;
+  clip-path: inset(50% 0 50% 0);
+}
+#desktop.desktop-reveal {
+  animation: desktop-reveal 0.6s ease-out forwards;
+}
+@keyframes desktop-reveal {
+  0%   { clip-path: inset(50% 0 50% 0); opacity: 0; }
+  40%  { clip-path: inset(25% 0 25% 0); opacity: 0.8; }
+  100% { clip-path: inset(0); opacity: 1; }
+}
+
+/* ── WALLPAPER ───────────────────────────── */
+#wallpaper {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 0;
+}
+#wallpaper img {
+  max-width: 90%;
+  max-height: 90%;
+  object-fit: contain;
+  opacity: 0.35;
+  image-rendering: pixelated;
+  filter: var(--wallpaper-filter);
+}
+
+/* ── NOTIFICATION ────────────────────────── */
+#notif {
+  position: fixed;
+  bottom: calc(var(--taskbar-h) + 12px);
+  right: 12px;
+  background: var(--win-bg);
+  border: 1px solid var(--border-hi);
+  border-left: 3px solid var(--accent);
+  box-shadow: var(--shadow);
+  padding: 8px 14px;
+  font-size: 13px;
+  color: var(--text-bright);
+  z-index: 10003;
+  display: none;
+  animation: slidein 0.2s ease;
+}
+#notif.visible { display: block; }
+@keyframes slidein { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
