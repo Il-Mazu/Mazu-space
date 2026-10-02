@@ -7,29 +7,18 @@ import { DumpContent } from './DumpWindow';
 import { ScopeContent } from './OscilloscopeWindow';
 import { GamesContent } from './GamesWindow';
 import MobileKeyboard from './MobileKeyboard';
+import Icon from './Icon';
+import { WINDOWS } from '../windows';
 
-const APP_TITLES = {
-  'win-home': 'home.txt',
-  'win-about': 'about.txt',
-  'win-music': 'player.exe',
-  'win-dump': 'dump/',
-  'win-term': 'cmd.exe',
-  'win-scope': 'scope.exe',
-  'win-games': 'games.exe',
-};
-
+// Each app renders the same content component as its desktop window.
 export default function MobileAppView({
   appId, onBack, onRegisterBack, exiting,
-  tracks,
-  currentTrack, playing, volume, shuffle, loopMode,
-  onPrev, onNext, onTogglePlay, onToggleShuffle, onCycleLoop, onVolumeChange, onSelectTrack,
   commits, remote, buildDate, tracksCount, lanyard,
-  onGlitch, onTerminalOpen,
-  showNotif,
-  audioRef,
+  onGlitch, onTerminalOpen, showNotif,
+  ...player
 }) {
   const [dumpFullScreen, setDumpFullScreen] = useState(false);
-  const title = APP_TITLES[appId] || 'mazu-space';
+  const title = WINDOWS[appId]?.title.split(' — ')[0] || 'mazu-space';
 
   const handleVirtualKey = (key) => {
     const input = document.querySelector('.terminal-hidden-input');
@@ -38,69 +27,28 @@ export default function MobileAppView({
     input.focus();
   };
 
-  const renderContent = () => {
-    const common = { onNotif: showNotif };
-    switch (appId) {
-      case 'win-home':
-        return (
-          <HomeWindow
-            commits={commits}
-            remote={remote}
-            buildDate={buildDate}
-            tracksCount={tracksCount}
-            lanyard={lanyard}
-          />
-        );
-      case 'win-about':
-        return <AboutWindow />;
-      case 'win-music':
-        return (
-          <MusicWindow
-            tracks={tracks}
-            currentTrack={currentTrack}
-            playing={playing}
-            audioRef={audioRef}
-            volume={volume}
-            shuffle={shuffle}
-            loopMode={loopMode}
-            onPrev={onPrev}
-            onNext={onNext}
-            onTogglePlay={onTogglePlay}
-            onToggleShuffle={onToggleShuffle}
-            onCycleLoop={onCycleLoop}
-            onVolumeChange={onVolumeChange}
-            onSelectTrack={onSelectTrack}
-            lanyard={lanyard}
-            {...common}
-          />
-        );
-      case 'win-dump':
-        return <DumpContent focused={true} mobile={true} onFullScreenChange={setDumpFullScreen} onRegisterBack={onRegisterBack} />;
-      case 'win-term':
-        return <TerminalWindow onGlitch={onGlitch} onOpen={onTerminalOpen || onBack} />;
-      case 'win-scope':
-        return <ScopeContent audioRef={audioRef} />;
-      case 'win-games':
-        return <GamesContent />;
-      default:
-        return <div className="c-dim" style={{ padding: 20 }}>unknown app</div>;
-    }
-  };
+  const content = {
+    'win-home': () => <HomeWindow commits={commits} remote={remote} buildDate={buildDate} tracksCount={tracksCount} lanyard={lanyard} />,
+    'win-about': () => <AboutWindow />,
+    'win-music': () => <MusicWindow {...player} lanyard={lanyard} onNotif={showNotif} />,
+    'win-dump': () => <DumpContent focused mobile onFullScreenChange={setDumpFullScreen} onRegisterBack={onRegisterBack} />,
+    'win-term': () => <TerminalWindow onGlitch={onGlitch} onOpen={onTerminalOpen || onBack} />,
+    'win-scope': () => <ScopeContent audioRef={player.audioRef} />,
+    'win-games': () => <GamesContent />,
+  }[appId];
 
   return (
     <div className={'mobile-app-view' + (exiting ? ' mobile-app-view-exit' : '')}>
       {!(appId === 'win-dump' && dumpFullScreen) && (
-        <div className="mobile-app-header">
-          <button className="mobile-app-back" onClick={onBack}>←</button>
-          <span className="mobile-app-title">{title}</span>
-        </div>
+        <header className="mobile-app-header">
+          <button className="mobile-app-back" aria-label="Back" onClick={onBack}><Icon name="back" /></button>
+          <h1 className="mobile-app-title">{title}</h1>
+        </header>
       )}
-      <div className="mobile-app-content">
-        {renderContent()}
-      </div>
-      {appId === 'win-term' && (
-        <MobileKeyboard visible={true} onKey={handleVirtualKey} />
-      )}
+      <main className="mobile-app-content">
+        {content ? content() : <div className="c-dim" style={{ padding: 20 }}>unknown app</div>}
+      </main>
+      {appId === 'win-term' && <MobileKeyboard visible onKey={handleVirtualKey} />}
     </div>
   );
 }

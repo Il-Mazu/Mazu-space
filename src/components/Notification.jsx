@@ -1,7 +1,8 @@
 export default function Notification({ message }) {
+  // The live region stays mounted so screen readers announce each new message.
   return (
-    <div id="notif" className={message ? 'visible' : ''}>
-      {message || 'action not available'}
+    <div id="notif" role="status">
+      {message && <div className="notif-box" key={message}>{message}</div>}
     </div>
   );
 }

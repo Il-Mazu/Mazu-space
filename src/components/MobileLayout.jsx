@@ -63,9 +63,7 @@ export default function MobileLayout(props) {
         <MobileHomeScreen
           onOpen={handleOpenApp}
           lanyard={props.lanyard}
-          commits={props.commits}
           remote={props.remote}
-          buildDate={props.buildDate}
           tracksCount={props.tracksCount}
           wallpaper={props.wallpaper}
         />

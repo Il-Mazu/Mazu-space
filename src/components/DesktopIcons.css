@@ -18,7 +18,7 @@
   width: 96px;
 }
 .desk-icon:hover { border-color: var(--border-hi); background: color-mix(in srgb, var(--text-bright) 5%, transparent); }
-.desk-icon:hover .desk-icon-label { background: var(--accent); color: var(--on-accent); text-shadow: none; }
+.desk-icon:hover .desk-icon-label, .desk-icon:focus-visible .desk-icon-label { background: var(--accent); color: var(--on-accent); text-shadow: none; }
 .desk-icon-svg {
   font-size: 32px;
   color: var(--text-bright);

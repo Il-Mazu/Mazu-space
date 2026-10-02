@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { GAMES } from './src/data/games.js';
+import { BOOT_LOGO } from './src/bootLogo.js';
 
 function gitInfoPlugin() {
   const VIRTUAL_ID = 'virtual:git-info';
@@ -130,9 +131,22 @@ function gameCoversPlugin(apiKey) {
   };
 }
 
+// Static copy of the boot screen's logo; React replaces it with the identical
+// live boot screen once the bundle runs, so it is the page's early LCP paint.
+function bootShellPlugin() {
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return {
+    name: 'boot-shell',
+    transformIndexHtml: (html) => html.replace(
+      '<div id="root"></div>',
+      `<div id="root"><main id="boot"><div id="boot-terminal"><pre class="ascii-art">${esc(BOOT_LOGO)}</pre><div class="boot-enter c-dim">&gt; loading...</div></div></main></div>`,
+    ),
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), gitInfoPlugin(), dumpImagesPlugin(), gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY)],
+    plugins: [react(), bootShellPlugin(), gitInfoPlugin(), dumpImagesPlugin(), gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY)],
   };
 });
