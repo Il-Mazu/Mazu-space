@@ -36,7 +36,7 @@ const WING_ART = `⠀⠀⠀⠀⢀⣴⢿⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀�
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⢤⠴⠋⠀⡀⠛⠿⠟⡇⠠⠤⠤⠷
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⠤⠴⣇⣠⣏⣰⠁⠀⠀⠀⠀`;
 
-export default function HomeWindow({ commits, remote, buildDate, blogCount, tracksCount, lanyard }) {
+export default function HomeWindow({ commits, remote, buildDate, tracksCount, lanyard }) {
   const statusColor = STATUS_COLORS[lanyard?.discord_status] || '#888780';
   const user = lanyard?.discord_user;
   const avatarSrc = avatarUrl(user);
@@ -77,7 +77,6 @@ export default function HomeWindow({ commits, remote, buildDate, blogCount, trac
       <div className="home-dashboard">
         <div className="home-panel">
           <div className="home-panel-title c-dim">── content ──</div>
-          <div className="home-stat"><span className="c-red">♰</span> blog:  <span className="c-accent2">{blogCount}</span></div>
           <div className="home-stat"><span className="c-red">♰</span> music: <span className="c-accent2">{tracksCount}</span></div>
           <div className="home-stat"><span className="c-red">♰</span> dump:  <span className="c-accent2">{dumpCount}</span></div>
           <div className="home-stat"><span className="c-red">♰</span> games:  <span className="c-accent2">{gamesCount}</span></div>

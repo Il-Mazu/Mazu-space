@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from 'react';
+import { useState } from 'react';
 import HomeWindow from './HomeWindow';
 import AboutWindow from './AboutWindow';
 import MusicWindow from './MusicWindow';
@@ -8,12 +8,9 @@ import { ScopeContent } from './OscilloscopeWindow';
 import { GamesContent } from './GamesWindow';
 import MobileKeyboard from './MobileKeyboard';
 
-const BlogWindow = lazy(() => import('./BlogWindow'));
-
 const APP_TITLES = {
   'win-home': 'home.txt',
   'win-about': 'about.txt',
-  'win-blog': 'blog.txt',
   'win-music': 'player.exe',
   'win-dump': 'dump/',
   'win-term': 'cmd.exe',
@@ -26,7 +23,7 @@ export default function MobileAppView({
   tracks,
   currentTrack, playing, progress, currentAudioTime, volume, shuffle, loopMode,
   onPrev, onNext, onTogglePlay, onToggleShuffle, onCycleLoop, onVolumeChange, onSelectTrack,
-  commits, remote, buildDate, blogCount, tracksCount, lanyard,
+  commits, remote, buildDate, tracksCount, lanyard,
   onGlitch, onTerminalOpen,
   gamesCache, gamesSort, setGamesSort, gamesStatusText, setGamesStatusText, setGamesCache,
   showNotif,
@@ -51,19 +48,12 @@ export default function MobileAppView({
             commits={commits}
             remote={remote}
             buildDate={buildDate}
-            blogCount={blogCount}
             tracksCount={tracksCount}
             lanyard={lanyard}
           />
         );
       case 'win-about':
         return <AboutWindow />;
-      case 'win-blog':
-        return (
-          <Suspense fallback={<div className="c-dim" style={{ padding: 20 }}>loading...</div>}>
-            <BlogWindow onNotif={showNotif} onRegisterBack={onRegisterBack} />
-          </Suspense>
-        );
       case 'win-music':
         return (
           <MusicWindow

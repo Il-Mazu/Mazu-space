@@ -1,6 +1,5 @@
 import homeIcon from '../../assets/icons/home.png';
 import aboutIcon from '../../assets/icons/about.png';
-import blogIcon from '../../assets/icons/blog.png';
 import musicIcon from '../../assets/icons/music.png';
 import dumpIcon from '../../assets/icons/dump.png';
 import scopeIcon from '../../assets/icons/scope.png';
@@ -20,7 +19,6 @@ const GamepadIcon = () => (
 const icons = [
   { id: 'win-home', img: homeIcon, label: 'home.txt' },
   { id: 'win-about', img: aboutIcon, label: 'about.txt' },
-  { id: 'win-blog', img: blogIcon, label: 'blog.txt' },
   { id: 'win-music', img: musicIcon, label: 'player.exe' },
   { id: 'win-dump', img: dumpIcon, label: 'dump/' },
   { id: 'win-term', svg: CmdIcon, label: 'cmd.exe' },

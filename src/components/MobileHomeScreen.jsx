@@ -3,7 +3,6 @@ import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from './GamesWindow';
 import homeIcon from '../../assets/icons/home.png';
 import aboutIcon from '../../assets/icons/about.png';
-import blogIcon from '../../assets/icons/blog.png';
 import musicIcon from '../../assets/icons/music.png';
 import dumpIcon from '../../assets/icons/dump.png';
 import terminalSvg from '../../assets/icons/terminal.svg';
@@ -23,7 +22,6 @@ const CmdIcon = () => (
 const APPS = [
   { id: 'win-home', icon: homeIcon, label: 'Home' },
   { id: 'win-about', icon: aboutIcon, label: 'About' },
-  { id: 'win-blog', icon: blogIcon, label: 'Blog' },
   { id: 'win-music', icon: musicIcon, label: 'Music' },
   { id: 'win-dump', icon: dumpIcon, label: 'Gallery' },
   { id: 'win-term', svg: CmdIcon, label: 'Terminal' },
@@ -65,7 +63,7 @@ function formatRemote(url) {
 }
 
 export default function MobileHomeScreen({
-  onOpen, lanyard, commits, remote, buildDate, blogCount, tracksCount,
+  onOpen, lanyard, commits, remote, buildDate, tracksCount,
 }) {
   const [clock, setClock] = useState(new Date());
 
@@ -127,7 +125,6 @@ export default function MobileHomeScreen({
         </div>
 
         <div className="mobile-stats-row">
-          <span className="home-stat"><span className="c-red">♰</span> blog <span className="c-accent2">{blogCount}</span></span>
           <span className="home-stat"><span className="c-red">♰</span> music <span className="c-accent2">{tracksCount}</span></span>
           <span className="home-stat"><span className="c-red">♰</span> dump <span className="c-accent2">{dumpCount}</span></span>
           <span className="home-stat"><span className="c-red">♰</span> games <span className="c-accent2">{gamesCount}</span></span>

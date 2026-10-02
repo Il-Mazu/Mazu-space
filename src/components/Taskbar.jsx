@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 const TITLES = {
   'win-home': 'home.txt — MAZU-SPACE',
   'win-about': 'about.txt — mazu-space',
-  'win-blog': 'blog.txt — THOUGHTS',
   'win-music': 'player.exe — MEDIA',
   'win-dump': 'dump/',
   'win-term': 'cmd.exe',
   'win-scope': 'oscilloscope.exe',
+  'win-games': 'games.exe',
 };
 
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
