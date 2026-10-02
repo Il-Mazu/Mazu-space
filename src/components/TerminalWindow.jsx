@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import './TerminalWindow.css';
 
 const termCmds = {
   help:    '// available: help, about, ls, date, clear, echo [text], glitch, sysinfo, fastfetch, cmatrix',
@@ -37,8 +38,8 @@ const MATRIX_CHARS = '\u30a2\u30a4\u30a6\u30a8\u30aa\u30ab\u30ad\u30af\u30b1\u30
 
 export default function TerminalWindow({ onGlitch, onOpen, startupCmd }) {
   const [lines, setLines] = useState([
-    { html: '<span class="c-dim">mazu-space OS [v0.2.0]</span>' },
-    { html: '<span class="c-dim">\u00a9 2026 mazu</span>' },
+    { html: '<span class="c-dim">mazu-space OS [v0.2.0]</span><br/>' },
+    { html: '<span class="c-dim">(c) 2026 mazu</span>' },
     { html: '<br/>' },
   ]);
   const [input, setInput] = useState('');

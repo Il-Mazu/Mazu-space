@@ -1,6 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import MobileHomeScreen from './MobileHomeScreen';
 import MobileAppView from './MobileAppView';
+import './MobileLayout.css';
 
 export default function MobileLayout(props) {
   const [screen, setScreen] = useState('home');

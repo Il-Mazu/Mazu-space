@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import Window from './Window';
+import './OscilloscopeWindow.css';
 
 // createMediaElementSource can only be called once per <audio>, and the element
 // then plays through this context, so the graph is created once and never closed.

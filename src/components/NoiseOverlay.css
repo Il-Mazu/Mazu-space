@@ -1,0 +1,20 @@
+/* ── NOISE TEXTURE ───────────────────────── */
+#noise {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.05;
+}
+#noise::before {
+  content: '';
+  position: absolute;
+  inset: -64px;
+  background-image: var(--noise);
+  animation: noise-shift 0.5s steps(3) infinite;
+}
+@keyframes noise-shift {
+  0%   { transform: translate(0, 0); }
+  33%  { transform: translate(-37px, -23px); }
+  66%  { transform: translate(29px, 13px); }
+}

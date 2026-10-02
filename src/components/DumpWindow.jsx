@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { images as imageList } from 'virtual:dump-images';
+import './DumpWindow.css';
 
 export function DumpContent({ focused, mobile, onFullScreenChange, onRegisterBack }) {
   const [currentIndex, setCurrentIndex] = useState(null);

@@ -1,3 +1,5 @@
+import './NoiseOverlay.css';
+
 // A 128px grayscale noise tile generated once. The old fullscreen SVG
 // turbulence + mix-blend-mode had to be re-blended on every frame.
 let tile;

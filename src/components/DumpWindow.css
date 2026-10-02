@@ -1,0 +1,181 @@
+/* ── DUMP GALLERY ────────────────────────── */
+.dump-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  overflow: hidden;
+}
+.gallery-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+  display: block;
+}
+.gallery-nav {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 12px;
+  width: 100%;
+  justify-content: center;
+  border-top: 1px solid var(--border);
+  box-shadow: var(--bevel);
+  flex-shrink: 0;
+  background: var(--surface);
+}
+.gallery-btn {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+.gallery-btn:hover { color: var(--accent); }
+.gallery-counter { color: var(--text-dim); font-size: 11px; }
+.gallery-sep { color: var(--border-hi); font-size: 11px; }
+
+#win-dump .win-content {
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.dump-grid {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  grid-auto-rows: 105px;
+  gap: 8px;
+  padding: 10px;
+  overflow-y: auto;
+}
+.dump-grid-item {
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid var(--border);
+}
+.dump-grid-item:hover { border-color: var(--accent); }
+.dump-grid-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  image-rendering: pixelated;
+  display: block;
+}
+.dump-grid-item:hover img { opacity: 0.8; }
+
+/* ── MOBILE GALLERY ──────────────────────── */
+.mobile-app-content .dump-content {
+  max-height: 60vh;
+}
+.mobile-app-content .gallery-img {
+  max-height: 55vh;
+}
+.mobile-app-content .dump-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-app-content .dump-fullscreen .gallery-img {
+  max-height: 100vh !important;
+  width: 100%;
+  object-fit: contain;
+}
+/* ── MOBILE GALLERY BARS ────────────────── */
+.mobile-app-content .gallery-top-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.65) 0%, transparent 100%);
+  transition: opacity 0.3s;
+}
+.mobile-app-content .gallery-back-btn {
+  color: #fff;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 4px 4px 0;
+  user-select: none;
+  opacity: 0.9;
+}
+.mobile-app-content .gallery-back-btn:active {
+  opacity: 0.5;
+}
+.mobile-app-content .gallery-nav-mobile {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px 16px;
+  background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, transparent 100%);
+  transition: opacity 0.3s;
+}
+.mobile-app-content .gallery-btn-mobile {
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 8px 12px;
+  user-select: none;
+  opacity: 0.85;
+  transition: opacity 0.15s;
+}
+.mobile-app-content .gallery-btn-mobile:active {
+  opacity: 0.5;
+}
+.mobile-app-content .gallery-counter-mobile {
+  color: #fff;
+  font-size: 13px;
+  opacity: 0.7;
+}
+.mobile-app-content .gallery-bar-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ── MOBILE GALLERY IMAGE WRAP ─────────── */
+.mobile-app-content .gallery-img-wrap {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.mobile-app-content .gallery-img-animating {
+  transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
+}
+.mobile-app-content .dump-grid {
+  max-height: none;
+  padding: 3px;
+  gap: 3px;
+}
+.mobile-app-content .dump-grid-mobile {
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: auto;
+}
+.mobile-app-content .dump-grid-mobile .dump-grid-item {
+  aspect-ratio: 1;
+  border-radius: 6px;
+  border: none;
+  overflow: hidden;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.mobile-app-content .dump-grid-mobile .dump-grid-item:active {
+  transform: scale(0.95);
+  opacity: 0.7;
+}

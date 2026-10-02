@@ -1,0 +1,112 @@
+/* ── DISCORD PROFILE CARD ────────────────── */
+.discord-card {
+  margin-bottom: 20px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--bevel-in);
+}
+.discord-card-inner {
+  display: flex;
+  align-items: center;
+}
+.discord-card-center {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 8px 14px;
+  flex: 1;
+  justify-content: center;
+}
+.discord-card-avatar {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-hi);
+  background: var(--surface-2);
+}
+.discord-avatar, .discord-avatar-placeholder {
+  width: 48px;
+  height: 48px;
+  display: block;
+  background: var(--surface-2);
+}
+.discord-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.discord-card-name {
+  font-size: 15px;
+  color: var(--text-bright);
+  line-height: 1.3;
+}
+.discord-card-status {
+  font-size: 11px;
+  line-height: 1.3;
+}
+.discord-card-loading {
+  font-size: 11px;
+  color: var(--text-dim);
+  text-align: center;
+  padding: 10px 14px;
+}
+
+/* ── DISCORD WINGS ───────────────────────── */
+.discord-wing-panel {
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+.discord-wing {
+  font-family: monospace;
+  font-size: 4.5px;
+  line-height: 1.05;
+  color: var(--text);
+  white-space: pre;
+  margin: 0;
+  opacity: 0.65;
+}
+.discord-wing-right { transform: scaleX(-1); }
+
+/* ── HOME DASHBOARD ──────────────────────── */
+.home-dashboard {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.home-panel {
+  flex: 1;
+  min-width: 0;
+}
+.home-panel-title {
+  font-family: var(--font-label);
+  font-size: 8px;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+.home-stat {
+  font-size: 13px;
+  line-height: 1.9;
+  overflow: hidden;
+}
+.home-commit {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* ── LINKS ───────────────────────────────── */
+.link-item {
+  padding: 3px 0;
+  cursor: pointer;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+.link-item:hover { color: var(--accent); }

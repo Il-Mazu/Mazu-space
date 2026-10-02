@@ -1,0 +1,29 @@
+/* ── CRT OVERLAY ─────────────────────────── */
+#crt {
+  position: fixed;
+  inset: 0;
+  background:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scanline) 2px,
+      var(--scanline) 4px
+    ),
+    radial-gradient(
+      ellipse at center,
+      transparent 55%,
+      rgba(0,0,0,0.75) 100%
+    );
+  pointer-events: none;
+  z-index: 9998;
+  animation: flicker 6s infinite;
+}
+@keyframes flicker {
+  0%,100% { opacity: 1; }
+  91% { opacity: 1; }
+  92% { opacity: 0.75; }
+  93% { opacity: 1; }
+  95% { opacity: 0.85; }
+  96% { opacity: 1; }
+}

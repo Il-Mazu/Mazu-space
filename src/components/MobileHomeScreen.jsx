@@ -145,7 +145,7 @@ export default function MobileHomeScreen({
         <div className="mobile-home-grid">
           {APPS.map(app => (
             <div key={app.id} className="mobile-home-app" onClick={() => onOpen(app.id)}>
-              <div className={'mobile-home-app-icon' + ((app.id === 'win-games' || app.id === 'win-term') ? ' mobile-home-app-icon--noinvert' : '')}>
+              <div className="mobile-home-app-icon">
                 {app.svg ? <app.svg /> : <img src={app.icon} alt="" draggable={false} />}
               </div>
               <div className="mobile-home-app-label">{app.label}</div>

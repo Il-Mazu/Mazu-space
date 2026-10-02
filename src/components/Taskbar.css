@@ -1,0 +1,141 @@
+/* ── TASKBAR ─────────────────────────────── */
+#taskbar {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: var(--taskbar-h);
+  background: var(--chrome);
+  box-shadow: var(--bevel);
+  border-top: 1px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  z-index: 10001;
+}
+
+#start-btn {
+  height: 100%;
+  padding: 0 18px 0 14px;
+  background: var(--chrome-hi);
+  box-shadow: var(--bevel);
+  border-right: 1px solid var(--border-hi);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-label);
+  font-size: 12px;
+  color: var(--chrome-text);
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.35);
+  cursor: pointer;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+#start-btn:active { box-shadow: var(--bevel-in); }
+.start-gem {
+  width: 10px; height: 10px;
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+#taskbar-tasks {
+  flex: 1;
+  display: flex;
+  gap: 4px;
+  padding: 4px 6px;
+  overflow: hidden;
+}
+.task-btn {
+  height: 30px;
+  padding: 0 10px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--bevel);
+  font-size: 11px;
+  color: var(--text-dim);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 190px;
+  min-width: 0;
+}
+.task-btn.active { border-color: var(--border-hi); color: var(--text-bright); background: var(--surface-2); box-shadow: var(--bevel-in); }
+.task-btn:hover  { color: var(--text-bright); border-color: var(--border-hi); }
+.task-btn.hidden { opacity: 0.55; }
+.task-dot { width: 6px; height: 6px; background: currentColor; flex-shrink: 0; }
+.task-btn.active .task-dot { background: var(--accent); }
+.task-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#sys-tray {
+  height: 100%;
+  padding: 0 10px;
+  margin: 0;
+  box-shadow: var(--bevel-in);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--chrome-text);
+  flex-shrink: 0;
+}
+#settings-area, #clock-area {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+#settings-btn, #desk-btn, #clock {
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+}
+#settings-btn:hover, #desk-btn:hover, #clock:hover { color: var(--accent); }
+
+#settings-menu { right: 0; width: 210px; }
+.toggle-dot { flex-shrink: 0; white-space: pre; }
+
+/* ── CALENDAR ────────────────────────────── */
+#calendar-menu {
+  position: absolute;
+  bottom: calc(100% + 1px);
+  right: 0;
+  width: 224px;
+  background: var(--win-bg);
+  border: 1px solid var(--border-hi);
+  border-bottom: none;
+  box-shadow: var(--shadow);
+  z-index: 10002;
+  padding: 10px;
+  color: var(--text);
+}
+.cal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--text-bright);
+}
+.cal-nav {
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 15px;
+  padding: 0 6px;
+}
+.cal-nav:hover { color: var(--accent); }
+.cal-days, .cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 11px;
+}
+.cal-days { margin-top: 8px; color: var(--text-dim); font-family: var(--font-label); font-size: 8px; }
+.cal-weekday { padding: 3px 0; }
+.cal-grid { margin-top: 2px; }
+.cal-cell { padding: 4px 0; }
+.cal-empty { visibility: hidden; }
+.cal-today { background: var(--accent); color: var(--on-accent); }
