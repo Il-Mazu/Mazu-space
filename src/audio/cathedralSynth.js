@@ -42,31 +42,29 @@ export function createCathedralImpulse(ctx, seconds = 3.6, decay = 2.6) {
   return buffer;
 }
 
-const CHAPEL_TINTS = [
-  // 0: Hero (Eye) - heartbeat drone pulse + subtle CRT hum
-  { droneFreq: 145, hbDepth: 0.042, padGain: 0.16, shimmerGain: 0.0, humGain: 0.042, roomGain: 0.014, wet: 0.62 },
-  // 1: About - warm stone mid-pad
-  { droneFreq: 165, hbDepth: 0.0, padGain: 0.24, shimmerGain: 0.008, humGain: 0.018, roomGain: 0.014, wet: 0.68 },
-  // 2: Presence - airy high overtone shimmer
-  { droneFreq: 175, hbDepth: 0.0, padGain: 0.20, shimmerGain: 0.032, humGain: 0.022, roomGain: 0.016, wet: 0.72 },
-  // 3: Music - balanced dark hall
-  { droneFreq: 140, hbDepth: 0.0, padGain: 0.15, shimmerGain: 0.0, humGain: 0.024, roomGain: 0.012, wet: 0.58 },
-  // 4: Dump - glassy shimmer + long reverb
-  { droneFreq: 160, hbDepth: 0.0, padGain: 0.18, shimmerGain: 0.028, humGain: 0.018, roomGain: 0.014, wet: 0.84 },
-  // 5: Games (Crypt) - deepest reverb, darker lowpass cavern
-  { droneFreq: 112, hbDepth: 0.014, padGain: 0.20, shimmerGain: 0.0, humGain: 0.016, roomGain: 0.016, wet: 0.92 },
-  // 6: Terminal - CRT hum & faint static hiss, drier close air
-  { droneFreq: 130, hbDepth: 0.0, padGain: 0.09, shimmerGain: 0.0, humGain: 0.072, roomGain: 0.030, wet: 0.34 },
-  // 7: Exit - receding low fifth
-  { droneFreq: 118, hbDepth: 0.0, padGain: 0.14, shimmerGain: 0.01, humGain: 0.016, roomGain: 0.012, wet: 0.74 },
-];
+const CHAPEL_TINTS = {
+  // heartbeat drone pulse + subtle CRT hum
+  hero: { droneFreq: 145, hbDepth: 0.042, padGain: 0.16, shimmerGain: 0.0, humGain: 0.042, roomGain: 0.014, wet: 0.62 },
+  // warm stone mid-pad
+  about: { droneFreq: 165, hbDepth: 0.0, padGain: 0.24, shimmerGain: 0.008, humGain: 0.018, roomGain: 0.014, wet: 0.68 },
+  // CRT hum and faint static, drier close air
+  works: { droneFreq: 130, hbDepth: 0.0, padGain: 0.12, shimmerGain: 0.0, humGain: 0.06, roomGain: 0.024, wet: 0.42 },
+  // airy overtone shimmer over a dark hall
+  live: { droneFreq: 160, hbDepth: 0.0, padGain: 0.18, shimmerGain: 0.024, humGain: 0.022, roomGain: 0.014, wet: 0.66 },
+  // glassy shimmer + long reverb
+  dump: { droneFreq: 160, hbDepth: 0.0, padGain: 0.18, shimmerGain: 0.028, humGain: 0.018, roomGain: 0.014, wet: 0.84 },
+  // deepest reverb, darker lowpass cavern
+  games: { droneFreq: 112, hbDepth: 0.014, padGain: 0.20, shimmerGain: 0.0, humGain: 0.016, roomGain: 0.016, wet: 0.92 },
+  vault: { droneFreq: 150, hbDepth: 0.0, padGain: 0.2, shimmerGain: 0.012, humGain: 0.018, roomGain: 0.014, wet: 0.7 },
+  // receding low fifth
+  exit: { droneFreq: 118, hbDepth: 0.0, padGain: 0.14, shimmerGain: 0.01, humGain: 0.016, roomGain: 0.012, wet: 0.74 },
+};
 
 export class CathedralAudioBus {
   constructor(ctx) {
     this.ctx = ctx;
     this.enabled = false;
-    this.musicPlaying = false;
-    this.chapelIndex = 0;
+    this.chapelId = 'hero';
     this.ambientStarted = false;
     this.creakTimer = null;
 
@@ -276,10 +274,10 @@ export class CathedralAudioBus {
 
   scheduleCreak() {
     clearTimeout(this.creakTimer);
-    if (!this.enabled || this.musicPlaying) return;
+    if (!this.enabled) return;
     const delay = 9000 + Math.random() * 13000;
     this.creakTimer = setTimeout(() => {
-      if (this.enabled && !this.musicPlaying) {
+      if (this.enabled) {
         this.playChainCreak();
       }
       this.scheduleCreak();
@@ -313,10 +311,10 @@ export class CathedralAudioBus {
     osc.stop(now + 0.48);
   }
 
-  setChapelTint(index) {
-    this.chapelIndex = Math.max(0, Math.min(CHAPEL_TINTS.length - 1, index));
+  setChapelTint(id) {
+    if (CHAPEL_TINTS[id]) this.chapelId = id;
     if (!this.nodes) return;
-    const t = CHAPEL_TINTS[this.chapelIndex];
+    const t = CHAPEL_TINTS[this.chapelId];
     const now = this.ctx.currentTime;
     const tau = 0.65;
     this.nodes.droneFilter.frequency.setTargetAtTime(t.droneFreq, now, tau);
@@ -328,19 +326,16 @@ export class CathedralAudioBus {
     this.ambientWet.gain.setTargetAtTime(t.wet, now, tau);
   }
 
-  setActive({ unlocked, enabled, musicPlaying, chapelIndex }) {
+  setActive({ unlocked, enabled, chapelId }) {
     this.enabled = Boolean(unlocked && enabled);
-    this.musicPlaying = Boolean(musicPlaying);
     const now = this.ctx.currentTime;
 
     if (this.enabled) {
       this.startAmbient();
-      this.setChapelTint(chapelIndex ?? this.chapelIndex);
+      this.setChapelTint(chapelId ?? this.chapelId);
       this.masterGain.gain.setTargetAtTime(1.0, now, 0.04);
-      const bedGain = this.musicPlaying ? 0.032 : 0.14;
-      this.ambientMaster.gain.setTargetAtTime(bedGain, now, 0.35);
-      if (this.musicPlaying) clearTimeout(this.creakTimer);
-      else this.scheduleCreak();
+      this.ambientMaster.gain.setTargetAtTime(0.14, now, 0.35);
+      this.scheduleCreak();
     } else {
       clearTimeout(this.creakTimer);
       this.masterGain.gain.setTargetAtTime(0.0, now, 0.03);
@@ -510,24 +505,6 @@ export class CathedralAudioBus {
     g.connect(this.sfxWet);
     osc.start(now);
     osc.stop(now + 0.095);
-  }
-
-  playKeystroke() {
-    if (!this.enabled) return;
-    const { ctx } = this;
-    const now = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    osc.type = 'triangle';
-    const base = 1450 + Math.random() * 450;
-    osc.frequency.setValueAtTime(base, now);
-    osc.frequency.exponentialRampToValueAtTime(380, now + 0.016);
-    const g = ctx.createGain();
-    g.gain.setValueAtTime(0.018, now);
-    g.gain.exponentialRampToValueAtTime(0.0001, now + 0.018);
-    osc.connect(g);
-    g.connect(this.sfxDry);
-    osc.start(now);
-    osc.stop(now + 0.022);
   }
 
   playLightboxTone(opening = true) {

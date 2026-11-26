@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
 import { getProceduralTextures } from './proceduralTextures.js';
+import { NAVE_END_Z, naveFloorY } from '../data/chapels.js';
 
-// Nave slopes along Y from +1.6 at z=+6 down to -3.2 at z=-160.
-export function naveFloorY(z) {
-  return 1.6 - ((-z + 6) / 166) * 4.8 - 2.2;
-}
+const FLOOR_START_Z = 20;
+const FLOOR_END_Z = NAVE_END_Z - 10;
+const FLOOR_LEN = FLOOR_START_Z - FLOOR_END_Z;
+const FLOOR_MID_Z = (FLOOR_START_Z + FLOOR_END_Z) / 2;
+const FLOOR_MID_Y = naveFloorY(FLOOR_MID_Z) - 0.05;
 
 function buildLancetArchGeometry() {
   const outer = new THREE.Shape();
@@ -108,7 +110,7 @@ export default function GothicNave({ isMobile }) {
 
   const bays = useMemo(() => {
     const arr = [];
-    for (let z = 6; z >= -166; z -= stepZ) {
+    for (let z = 6; z >= NAVE_END_Z; z -= stepZ) {
       arr.push(z);
     }
     return arr;
@@ -196,26 +198,32 @@ export default function GothicNave({ isMobile }) {
     <group>
       {/* Obsidian wet flagstone cathedral aisle */}
       <mesh
-        position={[0, -3.05, -77]}
+        position={[0, FLOOR_MID_Y, FLOOR_MID_Z]}
         rotation={[-Math.PI / 2 - floorSlope, 0, 0]}
         receiveShadow
       >
-        <planeGeometry args={[12.5, 194]} />
-        <meshStandardMaterial
+        <planeGeometry args={[12.5, FLOOR_LEN]} />
+        {/* At grazing angles the glossy tiles mirrored the bone key lights as beige
+            patches. specularIntensity caps that grazing (F90) reflectance, and the
+            red specularColor keeps the head-on sheen in palette. */}
+        <meshPhysicalMaterial
           color="#0e0e12"
-          metalness={0.08}
+          metalness={0}
           roughness={0.82}
           roughnessMap={textures.floorRoughness}
+          specularColor="#ff3352"
+          specularIntensity={0.28}
+          envMapIntensity={0.04}
         />
       </mesh>
 
       {/* Recessed center crimson aisle veins */}
-      <mesh position={[-1.65, -3.03, -77]} rotation={[-Math.PI / 2 - floorSlope, 0, 0]}>
-        <planeGeometry args={[0.035, 188]} />
+      <mesh position={[-1.65, FLOOR_MID_Y + 0.02, FLOOR_MID_Z]} rotation={[-Math.PI / 2 - floorSlope, 0, 0]}>
+        <planeGeometry args={[0.035, FLOOR_LEN - 6]} />
         <meshBasicMaterial color={[1.25, 0.12, 0.22]} toneMapped={false} transparent opacity={0.45} />
       </mesh>
-      <mesh position={[1.65, -3.03, -77]} rotation={[-Math.PI / 2 - floorSlope, 0, 0]}>
-        <planeGeometry args={[0.035, 188]} />
+      <mesh position={[1.65, FLOOR_MID_Y + 0.02, FLOOR_MID_Z]} rotation={[-Math.PI / 2 - floorSlope, 0, 0]}>
+        <planeGeometry args={[0.035, FLOOR_LEN - 6]} />
         <meshBasicMaterial color={[1.25, 0.12, 0.22]} toneMapped={false} transparent opacity={0.45} />
       </mesh>
 

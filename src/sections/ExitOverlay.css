@@ -1,23 +1,6 @@
-.exit-diegetic {
-  position: relative;
+.exit-text {
   width: min(740px, calc(100vw - 56px));
-  max-height: calc(100vh - 140px);
-  overflow-y: auto;
   padding: 6px 0;
-  pointer-events: auto;
-}
-
-.exit-diegetic-wash {
-  position: absolute;
-  inset: -44px -52px -32px;
-  background: radial-gradient(
-    ellipse at 50% 62%,
-    rgba(6, 4, 5, 0.9) 0%,
-    rgba(6, 4, 5, 0.56) 62%,
-    transparent 84%
-  );
-  pointer-events: none;
-  z-index: -1;
 }
 
 .exit-title {
@@ -78,9 +61,8 @@
 
 .exit-side {
   min-width: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+  display: flex;
+  gap: 32px;
 }
 
 .exit-counters {
@@ -128,9 +110,8 @@
 }
 
 @media (max-width: 767px) {
-  .exit-diegetic {
+  .exit-text {
     width: 100%;
-    max-height: calc(100vh - 150px);
   }
 
   .exit-grid {
@@ -139,7 +120,6 @@
   }
 
   .exit-side {
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 24px;
   }
 }

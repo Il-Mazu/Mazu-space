@@ -1,7 +1,6 @@
 import { commits, buildDate } from 'virtual:git-info';
 import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from '../data/games.js';
-import { TRACKS } from '../data/tracks.js';
 import { LINKS, SITE } from '../data/content.js';
 import { jumpToSection } from '../state/sceneBus.js';
 import { playClickHit, playHoverTick } from '../audio/AudioEngine.js';
@@ -9,14 +8,13 @@ import './ExitOverlay.css';
 
 export default function ExitOverlay() {
   const counters = [
-    ['music', TRACKS.length],
     ['dump', dumpCount],
     ['games', gamesCount],
   ];
 
   return (
-    <article className="exit-diegetic ui-depth-plane" aria-labelledby="exit-heading">
-      <div className="exit-diegetic-wash" aria-hidden="true" />
+    <article className="chapel-text exit-text ui-depth-plane" aria-labelledby="exit-heading">
+      <div className="chapel-scrim" aria-hidden="true" />
       <h2 id="exit-heading" className="chapel-title exit-title">carved ledger</h2>
 
       <div className="exit-grid">

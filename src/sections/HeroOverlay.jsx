@@ -3,21 +3,16 @@ import { jumpToSection } from '../state/sceneBus.js';
 import { playClickHit, playHoverTick } from '../audio/AudioEngine.js';
 import './HeroOverlay.css';
 
-export default function HeroOverlay({ ogMode = false, isMobile = false, forceInline = false }) {
-  // Desktop WebGL Hero lives in 3D space via DiegeticStageUI
-  if (!isMobile && !ogMode && !forceInline) {
-    return null;
-  }
-
+export default function HeroOverlay({ ogMode = false }) {
   return (
-    <div className="hero-diegetic">
-      <div className="hero-diegetic-wash" aria-hidden="true" />
-      <h1 className="hero-diegetic-title">{SITE.title}</h1>
-      <p className="hero-diegetic-sub">code, art &amp; noise · digital reliquary</p>
+    <div className="chapel-text hero-text ui-depth-plane">
+      <div className="chapel-scrim" aria-hidden="true" />
+      <h1 className="hero-title">{SITE.title}</h1>
+      <p className="chapel-copy hero-sub">code, art &amp; noise · digital reliquary</p>
       {!ogMode && (
         <button
           type="button"
-          className="ink-trigger hero-diegetic-cta"
+          className="ink-trigger hero-cta"
           onMouseEnter={playHoverTick}
           onClick={() => {
             playClickHit();
@@ -28,7 +23,7 @@ export default function HeroOverlay({ ogMode = false, isMobile = false, forceInl
           <span>descend</span>
         </button>
       )}
-      <div className="hero-diegetic-motto">{SITE.motto}</div>
+      <p className="chapel-meta hero-motto">{SITE.motto}</p>
     </div>
   );
 }

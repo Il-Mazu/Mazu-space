@@ -1,52 +1,24 @@
-.hero-diegetic {
-  position: relative;
-  pointer-events: auto;
-  max-width: min(440px, 100%);
-  padding-bottom: 4px;
+.hero-text {
+  width: min(460px, 100%);
 }
 
-.hero-diegetic-wash {
-  position: absolute;
-  inset: -36px -44px -32px -28px;
-  background: radial-gradient(
-    ellipse at 35% 58%,
-    rgba(6, 4, 5, 0.8) 0%,
-    rgba(6, 4, 5, 0.36) 58%,
-    transparent 80%
-  );
-  pointer-events: none;
-  z-index: -1;
-}
-
-.hero-diegetic-title {
+.hero-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(2.8rem, 7vw, 4.4rem);
+  font-size: clamp(3rem, 5.6vw, 5rem);
   line-height: 0.9;
   color: var(--bone);
   text-shadow:
     3px 0 24px rgba(255, 51, 82, 0.52),
     -1px 0 rgba(255, 51, 82, 0.28),
     0 4px 16px rgba(0, 0, 0, 0.96);
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
-.hero-diegetic-sub {
-  font-family: var(--font-body);
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text);
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.96);
-  margin-bottom: 14px;
+.hero-sub {
+  margin-bottom: 16px;
 }
 
-.hero-diegetic-cta {
-  margin-bottom: 14px;
-}
-
-.hero-diegetic-motto {
-  font-family: var(--font-body);
-  font-size: 11px;
-  color: var(--text-dim);
-  text-shadow: 0 1px 8px #000;
+.hero-cta {
+  margin-bottom: 16px;
 }

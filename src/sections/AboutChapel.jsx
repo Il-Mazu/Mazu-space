@@ -3,8 +3,8 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { ANGEL_ART, CROSS_SWORD_ART } from '../data/ascii.js';
 import { getProceduralTextures } from '../scenes/proceduralTextures.js';
-import { naveFloorY } from '../scenes/GothicNave.jsx';
 import { sceneBus } from '../state/sceneBus.js';
+import { MONO, useFontsReady } from '../utils/fonts.js';
 
 // Each Braille glyph (0x2800..0x28FF) encodes a 2x4 sub-pixel bitmask.
 function buildAngelPoints() {
@@ -64,7 +64,7 @@ function buildCrossStoneTexture() {
   ctx.lineWidth = 3;
   ctx.strokeRect(14, 14, 484, 228);
 
-  ctx.font = '13px monospace';
+  ctx.font = `13px ${MONO}`;
   ctx.fillStyle = '#e9e4da';
   const lines = CROSS_SWORD_ART.split('\n');
   lines.forEach((line, idx) => {
@@ -77,10 +77,11 @@ function buildCrossStoneTexture() {
   return tex;
 }
 
-export default function AboutChapel({ isMobile }) {
+export default function AboutChapel({ chapel, isMobile }) {
   const { stoneBump, chromeRoughness, ashSprite } = useMemo(() => getProceduralTextures(), []);
   const angelGeo = useMemo(() => buildAngelPoints(), []);
-  const crossTex = useMemo(() => buildCrossStoneTexture(), []);
+  const fontsReady = useFontsReady();
+  const crossTex = useMemo(() => buildCrossStoneTexture(), [fontsReady]);
   const angelRef = useRef(null);
 
   useEffect(() => () => {
@@ -95,9 +96,10 @@ export default function AboutChapel({ isMobile }) {
     angelRef.current.rotation.y = -0.18 + Math.sin(t * 0.55) * 0.08 + sceneBus.pointer.x * 0.1;
   });
 
-  const floorY = naveFloorY(-22);
-  const pos = isMobile ? [0, floorY + 0.65, -22] : [1.25, floorY, -22];
-  const scale = isMobile ? 0.72 : 1;
+  const { floorY, z } = chapel;
+  // On mobile the text takes the lower half of the screen, so the altar sits higher.
+  const pos = isMobile ? [0.4, floorY + 1.7, z - 0.6] : [1.25, floorY, z];
+  const scale = isMobile ? 0.6 : 1;
 
   return (
     <group position={pos} scale={scale}>

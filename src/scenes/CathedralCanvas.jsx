@@ -1,12 +1,13 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
-import { SECTIONS } from '../data/content.js';
+import { CAMERA_STOPS, CHAPELS } from '../data/chapels.js';
 import { sampleAudio } from '../audio/AudioEngine.js';
 import { sceneBus } from '../state/sceneBus.js';
 import CameraRig from './CameraRig.jsx';
 import CathedralLighting from './CathedralLighting.jsx';
+import ChapelStage from './ChapelStage.jsx';
 import GothicNave from './GothicNave.jsx';
 import HangingChains from './HangingChains.jsx';
 import NaveSmoke from './NaveSmoke.jsx';
@@ -17,9 +18,7 @@ import PresenceChapel from '../sections/PresenceChapel.jsx';
 import MusicChapel from '../sections/MusicChapel.jsx';
 import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
-import TerminalChapel from '../sections/TerminalChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
-import DiegeticStageUI from '../ui/DiegeticStageUI.jsx';
 
 function AudioSampler() {
   useFrame(() => {
@@ -28,20 +27,37 @@ function AudioSampler() {
   return null;
 }
 
+function ChapelScene({ chapel, isMobile, lanyard, onOpenLightbox, onOpenCrypt }) {
+  switch (chapel.id) {
+    case 'about':
+      return <AboutChapel chapel={chapel} isMobile={isMobile} />;
+    case 'live':
+      return (
+        <>
+          <PresenceChapel chapel={chapel} isMobile={isMobile} lanyard={lanyard} />
+          <MusicChapel chapel={chapel} isMobile={isMobile} listening={Boolean(lanyard?.listening_to_spotify)} />
+        </>
+      );
+    case 'dump':
+      return <DumpChapel chapel={chapel} isMobile={isMobile} onOpenLightbox={onOpenLightbox} />;
+    case 'games':
+      return <GamesChapel chapel={chapel} isMobile={isMobile} onOpenCrypt={onOpenCrypt} />;
+    case 'exit':
+      return <ExitChapel chapel={chapel} isMobile={isMobile} />;
+    default:
+      return null;
+  }
+}
+
 export default function CathedralCanvas({
   isMobile,
   entered = true,
   lanyard = null,
-  cryptOpen = false,
-  terminalOpen = false,
-  lightboxOpen = false,
   onOpenLightbox,
-  onOpenTerminal,
   onOpenCrypt,
   onContextLost,
 }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
-  const canvasRootRef = useRef(null);
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
 
@@ -60,10 +76,10 @@ export default function CathedralCanvas({
   };
 
   return (
-    <div id="canvas-root" ref={canvasRootRef} aria-hidden="true">
+    <div id="canvas-root" aria-hidden="true">
       <Canvas
         dpr={[1, perfTier === 'low' ? 1 : maxDpr]}
-        camera={{ position: SECTIONS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 130 }}
+        camera={{ position: CAMERA_STOPS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 130 }}
         gl={{
           antialias: false,
           powerPreference: 'high-performance',
@@ -79,7 +95,7 @@ export default function CathedralCanvas({
         eventPrefix="client"
       >
         <color attach="background" args={['#060607']} />
-        <fogExp2 attach="fog" args={['#060607', 0.036]} />
+        <fogExp2 attach="fog" args={['#060607', 0.045]} />
 
         <PerformanceMonitor onDecline={downgrade} />
         <AudioSampler />
@@ -89,29 +105,20 @@ export default function CathedralCanvas({
         <HangingChains isMobile={isMobile} />
         <NaveSmoke isMobile={isMobile} />
 
-        <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
-        {entered && (
-          <>
-            <AboutChapel isMobile={isMobile} />
-            <PresenceChapel isMobile={isMobile} lanyard={lanyard} portalRef={canvasRootRef} />
-            <MusicChapel isMobile={isMobile} />
-            <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
-            <GamesChapel isMobile={isMobile} onOpenCrypt={onOpenCrypt} />
-            <TerminalChapel isMobile={isMobile} onOpenTerminal={onOpenTerminal} />
-            <ExitChapel isMobile={isMobile} />
-            <DiegeticStageUI
+        <ChapelStage chapel={CHAPELS[0]}>
+          <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
+        </ChapelStage>
+        {entered && CHAPELS.slice(1).map((chapel) => (
+          <ChapelStage key={chapel.id} chapel={chapel}>
+            <ChapelScene
+              chapel={chapel}
               isMobile={isMobile}
-              entered={entered}
-              cryptOpen={cryptOpen}
-              terminalOpen={terminalOpen}
-              lightboxOpen={lightboxOpen}
-              portalRef={canvasRootRef}
+              lanyard={lanyard}
               onOpenLightbox={onOpenLightbox}
               onOpenCrypt={onOpenCrypt}
-              onOpenTerminal={onOpenTerminal}
             />
-          </>
-        )}
+          </ChapelStage>
+        ))}
 
         <PostFX perfTier={perfTier} />
       </Canvas>

@@ -22,23 +22,12 @@ const SORTS = [
   ['year', 'year'],
 ];
 
-export default function GamesCryptOverlay({ isMobile = false, forceInline = false, onOpen }) {
-  if (!isMobile && !forceInline) {
-    return (
-      <article className="sr-only" aria-labelledby="games-heading-sr">
-        <h2 id="games-heading-sr">the crypt</h2>
-        <p>{GAMES_DISCLAIMER}</p>
-        <p>{GAMES_TOTAL} relics · {FAVORITES_COUNT} favored · {PLAYING_COUNT} active</p>
-        <button type="button" onClick={onOpen}>open the crypt ({GAMES_TOTAL})</button>
-      </article>
-    );
-  }
-
+export default function GamesCryptOverlay({ onOpen }) {
   return (
-    <article className="games-diegetic" aria-labelledby="games-heading">
-      <div className="games-diegetic-wash" aria-hidden="true" />
-      <h2 id="games-heading" className="chapel-title">the crypt</h2>
-      <p className="games-diegetic-counts">
+    <article className="chapel-text games-text ui-depth-plane" aria-labelledby="games-heading">
+      <div className="chapel-scrim" aria-hidden="true" />
+      <h2 id="games-heading" className="chapel-title">hall of fame</h2>
+      <p className="chapel-copy games-counts">
         {GAMES_TOTAL} relics · {FAVORITES_COUNT} favored · {PLAYING_COUNT} active
       </p>
       <button

@@ -8,8 +8,6 @@ export const sceneBus = {
   pointer: { x: 0, y: 0, vx: 0, vy: 0 },
   glitchIntensity: 0,
   lastGlitchAt: 0,
-  terminalFocus: 0,
-  terminalOpen: false,
   eyeClose: 0,
   entered: false,
   bootPhase: 'closed', // 'closed' | 'opening' | 'eye-on' | 'done'

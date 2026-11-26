@@ -1,11 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
-import { TRACKS } from '../data/tracks.js';
-import { useAudioState } from '../audio/AudioEngine.js';
 import { getProceduralTextures } from '../scenes/proceduralTextures.js';
-import { naveFloorY } from '../scenes/GothicNave.jsx';
-import Oscilloscope3D from '../scenes/Oscilloscope3D.jsx';
 import { sceneBus } from '../state/sceneBus.js';
 
 function createVinylTexture() {
@@ -34,57 +30,30 @@ function createVinylTexture() {
   return tex;
 }
 
-export default function MusicChapel({ isMobile }) {
-  const audio = useAudioState();
+// Turntable altar of the Live chapel. `listening` spins the record and drops the tonearm.
+export default function MusicChapel({ chapel, isMobile, listening = false }) {
   const { stoneBump, chromeRoughness } = useMemo(() => getProceduralTextures(), []);
   const vinylTex = useMemo(() => createVinylTexture(), []);
-  const coverCacheRef = useRef(new Map());
   const labelMatRef = useRef(null);
   const discRef = useRef(null);
   const armRef = useRef(null);
 
-  useEffect(() => {
-    const track = TRACKS[audio.currentTrack];
-    if (!track?.cover || !labelMatRef.current) return;
-
-    const cached = coverCacheRef.current.get(track.cover);
-    if (cached) {
-      labelMatRef.current.map = cached;
-      labelMatRef.current.needsUpdate = true;
-      return;
-    }
-
-    const loader = new THREE.TextureLoader();
-    loader.load(track.cover, (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      coverCacheRef.current.set(track.cover, tex);
-      if (labelMatRef.current) {
-        labelMatRef.current.map = tex;
-        labelMatRef.current.needsUpdate = true;
-      }
-    });
-  }, [audio.currentTrack]);
-
-  useEffect(() => () => {
-    vinylTex.dispose();
-    coverCacheRef.current.forEach((tex) => tex.dispose());
-    coverCacheRef.current.clear();
-  }, [vinylTex]);
+  useEffect(() => () => vinylTex.dispose(), [vinylTex]);
 
   useFrame((_, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
-    if (discRef.current && audio.playing && !sceneBus.reducedMotion) {
+    if (discRef.current && listening && !sceneBus.reducedMotion) {
       discRef.current.rotation.y -= dt * (1.2 + sceneBus.audioMetrics.bass * 0.35);
     }
     if (armRef.current) {
-      const targetArm = audio.playing ? -0.34 : 0.06;
+      const targetArm = listening ? -0.34 : 0.06;
       armRef.current.rotation.y = THREE.MathUtils.damp(armRef.current.rotation.y, targetArm, 6.0, dt);
     }
   });
 
-  const floorY = naveFloorY(-64);
-  const altarPos = isMobile ? [0, floorY + 1.45, -64] : [1.18, floorY + 0.25, -64];
-  const altarScale = isMobile ? 0.68 : 1.04;
+  const { floorY, z } = chapel;
+  const altarPos = [0, floorY + (isMobile ? 0.9 : 0.25), z + 0.8];
+  const altarScale = isMobile ? 0.68 : 0.92;
 
   return (
     <group>
@@ -122,7 +91,7 @@ export default function MusicChapel({ isMobile }) {
             </mesh>
             <mesh position={[0, 0.015, 0]} rotation={[-Math.PI / 2, 0, 0]}>
               <circleGeometry args={[0.33, 36]} />
-              <meshStandardMaterial ref={labelMatRef} color="#ffffff" roughness={0.45} metalness={0.15} />
+              <meshStandardMaterial ref={labelMatRef} color="#8a0f1f" roughness={0.45} metalness={0.15} />
             </mesh>
             {/* Chrome center spindle */}
             <mesh position={[0, 0.035, 0]}>
@@ -149,12 +118,6 @@ export default function MusicChapel({ isMobile }) {
         </group>
       </group>
 
-      {/* Wide 3D neon waveform oscilloscope spanning the arch */}
-      <Oscilloscope3D
-        position={[0, floorY + (isMobile ? 3.95 : 2.95), -67.8]}
-        width={isMobile ? 5.6 : 8.4}
-        height={isMobile ? 1.5 : 2.1}
-      />
     </group>
   );
 }

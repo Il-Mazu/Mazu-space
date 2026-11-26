@@ -44,7 +44,18 @@
   --cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='19' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M0 0h1v1h-1zM0 1h2v1h-2zM0 2h1v1h-1zM2 2h1v1h-1zM0 3h1v1h-1zM3 3h1v1h-1zM0 4h1v1h-1zM4 4h1v1h-1zM0 5h1v1h-1zM5 5h1v1h-1zM0 6h1v1h-1zM6 6h1v1h-1zM0 7h1v1h-1zM7 7h1v1h-1zM0 8h1v1h-1zM8 8h1v1h-1zM0 9h1v1h-1zM9 9h1v1h-1zM0 10h1v1h-1zM10 10h1v1h-1zM0 11h1v1h-1zM7 11h5v1h-5zM0 12h1v1h-1zM4 12h1v1h-1zM7 12h1v1h-1zM0 13h1v1h-1zM3 13h2v1h-2zM7 13h1v1h-1zM0 14h1v1h-1zM2 14h1v1h-1zM5 14h1v1h-1zM8 14h1v1h-1zM0 15h2v1h-2zM5 15h1v1h-1zM8 15h1v1h-1zM0 16h1v1h-1zM6 16h1v1h-1zM9 16h1v1h-1zM6 17h1v1h-1zM9 17h1v1h-1zM7 18h2v1h-2z'/%3E%3Cpath fill='%23fff' d='M1 2h1v1h-1zM1 3h2v1h-2zM1 4h3v1h-3zM1 5h4v1h-4zM1 6h5v1h-5zM1 7h6v1h-6zM1 8h7v1h-7zM1 9h8v1h-8zM1 10h9v1h-9zM1 11h6v1h-6zM1 12h3v1h-3zM5 12h2v1h-2zM1 13h2v1h-2zM5 13h2v1h-2zM1 14h1v1h-1zM6 14h2v1h-2zM6 15h2v1h-2zM7 16h2v1h-2zM7 17h2v1h-2z'/%3E%3C/svg%3E") 0 0, default;
   --cursor-pointer: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='19' shape-rendering='crispEdges'%3E%3Cpath fill='%23000' d='M0 0h1v1h-1zM0 1h2v1h-2zM0 2h1v1h-1zM2 2h1v1h-1zM0 3h1v1h-1zM3 3h1v1h-1zM0 4h1v1h-1zM4 4h1v1h-1zM0 5h1v1h-1zM5 5h1v1h-1zM0 6h1v1h-1zM6 6h1v1h-1zM0 7h1v1h-1zM7 7h1v1h-1zM0 8h1v1h-1zM8 8h1v1h-1zM0 9h1v1h-1zM9 9h1v1h-1zM0 10h1v1h-1zM10 10h1v1h-1zM0 11h1v1h-1zM7 11h5v1h-5zM0 12h1v1h-1zM4 12h1v1h-1zM7 12h1v1h-1zM0 13h1v1h-1zM3 13h2v1h-2zM7 13h1v1h-1zM0 14h1v1h-1zM2 14h1v1h-1zM5 14h1v1h-1zM8 14h1v1h-1zM0 15h2v1h-2zM5 15h1v1h-1zM8 15h1v1h-1zM0 16h1v1h-1zM6 16h1v1h-1zM9 16h1v1h-1zM6 17h1v1h-1zM9 17h1v1h-1zM7 18h2v1h-2z'/%3E%3Cpath fill='%23ff3352' d='M1 2h1v1h-1zM1 3h2v1h-2zM1 4h3v1h-3zM1 5h4v1h-4zM1 6h5v1h-5zM1 7h6v1h-6zM1 8h7v1h-7zM1 9h8v1h-8zM1 10h9v1h-9zM1 11h6v1h-6zM1 12h3v1h-3zM5 12h2v1h-2zM1 13h2v1h-2zM5 13h2v1h-2zM1 14h1v1h-1zM6 14h2v1h-2zM6 15h2v1h-2zM7 16h2v1h-2zM7 17h2v1h-2z'/%3E%3C/svg%3E") 0 0, pointer;
 
+  --ui-scale: 1;
+
   color-scheme: dark;
+}
+
+/* 1440p/4K monitors at 100% OS scaling: px-sized type would be tiny. */
+@media (min-width: 2300px) {
+  :root { --ui-scale: 1.35; }
+}
+
+@media (min-width: 3200px) {
+  :root { --ui-scale: 1.8; }
 }
 
 /* ── RESET ───────────────────────────────────────────────────────────────── */
@@ -203,14 +214,33 @@ img {
   text-shadow: 0 0 10px rgba(255, 51, 82, 0.65);
 }
 
+/* Chapel text drifts a few pixels against the camera parallax. Translation only:
+   3D transforms on text layers get split by the compositor and tear. */
 .ui-depth-plane {
-  transform-style: preserve-3d;
-  transform:
-    perspective(1100px)
-    rotateY(calc(var(--ui-px, 0) * 3.2deg))
-    rotateX(calc(var(--ui-py, 0) * -2.2deg))
-    translate3d(calc(var(--ui-px, 0) * -6px), calc(var(--ui-py, 0) * 4px), 0);
-  transition: transform 0.08s linear;
+  transform: translate(calc(var(--ui-px, 0) * -8px), calc(var(--ui-py, 0) * 5px));
+}
+
+/* Soft local darkening behind chapel text. closest-side makes it reach zero
+   before the box edge, so there is never a visible rectangle. */
+.chapel-scrim {
+  position: absolute;
+  inset: -64px -80px;
+  background: radial-gradient(
+    closest-side,
+    rgba(6, 4, 5, 0.82) 0%,
+    rgba(6, 4, 5, 0.6) 45%,
+    rgba(6, 4, 5, 0.22) 75%,
+    rgba(6, 4, 5, 0) 100%
+  );
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The one deliberate tilt. Only small labels, at most a couple per chapel. */
+.tilt-label {
+  display: inline-block;
+  transform: rotate(-3deg);
+  transform-origin: left center;
 }
 
 /* ── FIXED 3D STAGE & SCROLL LANDMARKS ───────────────────────────────────── */
@@ -259,9 +289,10 @@ img {
     visibility 0.38s;
 }
 
+/* Opacity only (no visibility: hidden) so inactive chapels stay in the
+   accessibility tree; focusing into one scrolls the camera to it. */
 .chapel-sticky--inactive {
   opacity: 0;
-  visibility: hidden;
   clip-path: inset(0 0 16% 0);
   transform: translate3d(0, 10px, 0);
 }
@@ -270,20 +301,44 @@ img {
   pointer-events: none !important;
 }
 
+.chapel-sticky--left {
+  justify-content: flex-start;
+}
+
 .chapel-sticky--right {
   justify-content: flex-end;
 }
 
-.chapel-sticky--top-left {
-  justify-content: flex-start;
-  align-items: flex-start;
-  padding-top: 66px;
-}
-
-.chapel-sticky--exit {
+.chapel-sticky--center {
   justify-content: center;
   align-items: flex-end;
   padding-bottom: 62px;
+}
+
+.chapel-text {
+  position: relative;
+  scale: var(--ui-scale);
+  pointer-events: auto;
+  width: min(420px, 100%);
+}
+
+.chapel-sticky--left .chapel-text { transform-origin: left center; }
+.chapel-sticky--right .chapel-text { transform-origin: right center; }
+.chapel-sticky--center .chapel-text { transform-origin: center bottom; }
+
+.chapel-copy {
+  font-family: var(--font-body);
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.96);
+}
+
+.chapel-meta {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-dim);
+  text-shadow: 0 1px 8px #000;
 }
 
 .chapel-title {
@@ -302,17 +357,16 @@ img {
   }
 
   .chapel-sticky,
+  .chapel-sticky--left,
   .chapel-sticky--right,
-  .chapel-sticky--exit {
+  .chapel-sticky--center {
     align-items: flex-end;
     justify-content: flex-start;
     padding: 64px 48px 76px 16px;
   }
 
-  .chapel-sticky--top-left {
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding: 62px 48px 76px 16px;
+  .chapel-scrim {
+    inset: -40px -24px;
   }
 }
 

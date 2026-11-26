@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { naveFloorY } from './GothicNave.jsx';
+import { NAVE_END_Z, naveFloorY } from '../data/chapels.js';
 import { patchChainSwayMaterial } from '../shaders/chainSwayShader.js';
 import { sceneBus } from '../state/sceneBus.js';
 
@@ -46,7 +46,7 @@ export default function HangingChains({ isMobile }) {
   const anchors = useMemo(() => {
     const list = [];
     const step = isMobile ? 16 : 11;
-    for (let z = 4; z >= -156; z -= step) {
+    for (let z = 4; z >= NAVE_END_Z + 4; z -= step) {
       const fy = naveFloorY(z);
       list.push({ x: -3.25, y: fy + 7.4, z, scale: 1.0 });
       list.push({ x: 3.25, y: fy + 7.4, z: z - 2.4, scale: 0.95 });

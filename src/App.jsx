@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react'
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SECTIONS } from './data/content.js';
+import { CAMERA_STOPS, CHAPELS } from './data/chapels.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
 import { isWebGLAvailable } from './utils/webgl.js';
@@ -13,6 +13,7 @@ import {
   subscribeJump,
   subscribeSceneState,
   triggerGlitch,
+  jumpToSection,
 } from './state/sceneBus.js';
 import UiFilmLayer from './ui/UiFilmLayer.jsx';
 import HudMinimal from './ui/HudMinimal.jsx';
@@ -20,12 +21,10 @@ import CursorTrail from './hud/CursorTrail.jsx';
 import DoorsOnboarding from './sections/DoorsOnboarding.jsx';
 import HeroOverlay from './sections/HeroOverlay.jsx';
 import AboutOverlay from './sections/AboutOverlay.jsx';
-import PresenceOverlay from './sections/PresenceOverlay.jsx';
-import MusicOverlay from './sections/MusicOverlay.jsx';
+import LiveOverlay from './sections/LiveOverlay.jsx';
 import DumpOverlay from './sections/DumpOverlay.jsx';
 import DumpLightbox from './sections/DumpLightbox.jsx';
 import GamesCryptOverlay, { GamesCryptModal } from './sections/GamesCryptOverlay.jsx';
-import TerminalOverlay from './sections/TerminalOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
 const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
@@ -52,7 +51,6 @@ export default function App() {
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
-  const [terminalOpen, setTerminalOpen] = useState(false);
   const [cryptOpen, setCryptOpen] = useState(false);
   const [webglOk, setWebglOk] = useState(() => isWebGLAvailable());
   const [{ og: ogMode }] = useState(() => initialFlags());
@@ -119,8 +117,8 @@ export default function App() {
       let bestDist = Infinity;
       if (!webglOk) {
         const midY = window.innerHeight * 0.45;
-        for (let i = 0; i < SECTIONS.length; i++) {
-          const el = document.getElementById(`chapel-${SECTIONS[i].id}`);
+        for (let i = 0; i < CHAPELS.length; i++) {
+          const el = document.getElementById(`chapel-${CHAPELS[i].id}`);
           if (!el) continue;
           const rect = el.getBoundingClientRect();
           const d = Math.abs(rect.top + rect.height * 0.35 - midY);
@@ -130,11 +128,11 @@ export default function App() {
           }
         }
       } else {
-        for (let i = 0; i < SECTIONS.length; i++) {
-          const d = Math.abs(progress - SECTIONS[i].scrollPos);
+        for (let i = 0; i < CAMERA_STOPS.length; i++) {
+          const d = Math.abs(progress - CAMERA_STOPS[i].scrollPos);
           if (d < bestDist) {
             bestDist = d;
-            nearest = i;
+            nearest = CAMERA_STOPS[i].chapel;
           }
         }
       }
@@ -160,8 +158,8 @@ export default function App() {
       const idx =
         typeof idOrIdx === 'number'
           ? idOrIdx
-          : SECTIONS.findIndex((s) => s.id === idOrIdx);
-      const sec = SECTIONS[Math.max(0, Math.min(SECTIONS.length - 1, idx))];
+          : CHAPELS.findIndex((s) => s.id === idOrIdx);
+      const sec = CHAPELS[Math.max(0, Math.min(CHAPELS.length - 1, idx))];
 
       if (!webglOk) {
         const el = document.getElementById(`chapel-${sec.id}`);
@@ -197,48 +195,27 @@ export default function App() {
     };
   }, [webglOk]);
 
-  const openTerminal = useCallback(() => {
-    sceneBus.terminalOpen = true;
-    setTerminalOpen(true);
-  }, []);
-
-  const closeTerminal = useCallback(() => {
-    sceneBus.terminalOpen = false;
-    setTerminalOpen(false);
-  }, []);
-
   const openCrypt = useCallback(() => setCryptOpen(true), []);
   const closeCrypt = useCallback(() => setCryptOpen(false), []);
 
   useEffect(() => {
     if (!lenisRef.current) return;
-    if (lightboxIdx !== null || terminalOpen || cryptOpen) lenisRef.current.stop();
+    if (lightboxIdx !== null || cryptOpen) lenisRef.current.stop();
     else lenisRef.current.start();
-  }, [lightboxIdx, terminalOpen, cryptOpen]);
+  }, [lightboxIdx, cryptOpen]);
 
   const renderSectionContent = (sec) => {
     switch (sec.id) {
       case 'hero':
-        return <HeroOverlay ogMode={ogMode} isMobile={isMobile} />;
+        return <HeroOverlay ogMode={ogMode} />;
       case 'about':
-        return <AboutOverlay isMobile={isMobile} />;
-      case 'presence':
-        return <PresenceOverlay lanyard={lanyard} />;
-      case 'music':
-        return <MusicOverlay lanyard={lanyard} />;
+        return <AboutOverlay />;
+      case 'live':
+        return <LiveOverlay lanyard={lanyard} />;
       case 'dump':
-        return <DumpOverlay isMobile={isMobile} onOpenLightbox={setLightboxIdx} />;
+        return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
       case 'games':
-        return <GamesCryptOverlay isMobile={isMobile} onOpen={openCrypt} />;
-      case 'terminal':
-        return (
-          <TerminalOverlay
-            open={false}
-            isMobile={isMobile}
-            onOpen={openTerminal}
-            onClose={closeTerminal}
-          />
-        );
+        return <GamesCryptOverlay onOpen={openCrypt} />;
       case 'exit':
         return <ExitOverlay />;
       default:
@@ -258,11 +235,7 @@ export default function App() {
             isMobile={isMobile}
             entered={entered}
             lanyard={lanyard}
-            cryptOpen={cryptOpen}
-            terminalOpen={terminalOpen}
-            lightboxOpen={lightboxIdx !== null}
             onOpenLightbox={setLightboxIdx}
-            onOpenTerminal={openTerminal}
             onOpenCrypt={openCrypt}
             onContextLost={() => setWebglOk(false)}
           />
@@ -283,44 +256,34 @@ export default function App() {
 
       <GamesCryptModal open={cryptOpen} onClose={closeCrypt} />
 
-      {terminalOpen && (
-        <TerminalOverlay
-          open
-          isMobile={isMobile}
-          onOpen={openTerminal}
-          onClose={closeTerminal}
-        />
-      )}
-
       {!webglOk ? (
         entered ? (
           <Suspense fallback={null}>
             <Fallback2D
               lanyard={lanyard}
               onOpenLightbox={setLightboxIdx}
-              onOpenTerminal={openTerminal}
+              onOpenCrypt={openCrypt}
             />
           </Suspense>
         ) : null
       ) : (
         <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
-          {SECTIONS.map((sec, idx) => {
-            const stickyMod =
-              sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
-                : sec.id === 'presence' ? ' chapel-sticky--top-left'
-                  : sec.id === 'exit' ? ' chapel-sticky--exit'
-                    : '';
-            const overlayBlocking = cryptOpen || terminalOpen || lightboxIdx !== null;
+          {CHAPELS.map((sec, idx) => {
+            const overlayBlocking = cryptOpen || lightboxIdx !== null;
             const isActive = entered && activeIdx === idx && !overlayBlocking;
             return (
               <section
                 key={sec.id}
                 id={`chapel-${sec.id}`}
                 className="chapel-anchor"
+                style={{ height: `${120 * sec.beats.length}vh` }}
                 aria-label={`${sec.roman}. ${sec.name}`}
+                onFocus={() => {
+                  if (sceneBus.activeSection !== idx) jumpToSection(idx);
+                }}
               >
                 <div
-                  className={`chapel-sticky${stickyMod}${isActive ? '' : ' chapel-sticky--inactive'}`}
+                  className={`chapel-sticky chapel-sticky--${sec.side}${isActive ? '' : ' chapel-sticky--inactive'}`}
                 >
                   {renderSectionContent(sec)}
                 </div>

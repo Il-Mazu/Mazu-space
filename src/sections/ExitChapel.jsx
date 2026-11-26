@@ -1,11 +1,10 @@
 import { useMemo, useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { getProceduralTextures } from '../scenes/proceduralTextures.js';
-import { naveFloorY } from '../scenes/GothicNave.jsx';
 import HeroEye from './HeroEye.jsx';
 import { sceneBus } from '../state/sceneBus.js';
 
-export default function ExitChapel({ isMobile }) {
+export default function ExitChapel({ chapel, isMobile }) {
   const { stoneBump, chromeRoughness } = useMemo(() => getProceduralTextures(), []);
   const sigilGroupRef = useRef(null);
 
@@ -18,13 +17,13 @@ export default function ExitChapel({ isMobile }) {
     });
   });
 
-  const floorY = naveFloorY(-152);
+  const { floorY, z } = chapel;
   const spread = isMobile ? 2.15 : 3.2;
 
   return (
     <group>
       {/* Carved basalt ledger monoliths flanking the exit apse */}
-      <group position={[0, floorY, -152]}>
+      <group position={[0, floorY, z]}>
         {[-spread, spread].map((x, idx) => (
           <group key={idx} position={[x, 1.45, 0]} rotation={[0, idx === 0 ? 0.3 : -0.3, 0]}>
             <mesh>
@@ -43,9 +42,10 @@ export default function ExitChapel({ isMobile }) {
         ))}
 
         {/* Orbiting chrome link sigils */}
-        <group ref={sigilGroupRef} position={[0, 0.5, 1.8]}>
-          {[-1.5, 0, 1.5].map((x, i) => (
-            <mesh key={i} position={[x, 0.7, i === 1 ? -0.8 : 0.4]}>
+        {/* kept up beside the eye, clear of the ledger text below it */}
+        <group ref={sigilGroupRef} position={[0, 2.1, 0.6]}>
+          {[-2.2, 2.2].map((x, i) => (
+            <mesh key={i} position={[x, 0.7, 0]}>
               <octahedronGeometry args={[0.24, 0]} />
               <meshStandardMaterial color="#6a6a78" metalness={0.98} roughness={0.12} />
             </mesh>
@@ -55,7 +55,7 @@ export default function ExitChapel({ isMobile }) {
 
       {/* Closing Eye at the very end of the nave */}
       <HeroEye
-        position={[0, floorY + 3.45, -153.5]}
+        position={[0, floorY + 3.45, z - 1.5]}
         scale={isMobile ? 0.72 : 0.88}
         spectral
         isMobile={isMobile}

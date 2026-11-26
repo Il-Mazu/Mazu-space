@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { createSmokeMaterial } from '../shaders/smokeShader.js';
 import { getProceduralTextures } from './proceduralTextures.js';
-import { naveFloorY } from './GothicNave.jsx';
+import { NAVE_END_Z, naveFloorY } from '../data/chapels.js';
 import { sceneBus } from '../state/sceneBus.js';
 
 export default function NaveSmoke({ isMobile }) {
@@ -12,7 +12,7 @@ export default function NaveSmoke({ isMobile }) {
   const plumes = useMemo(() => {
     const arr = [];
     const step = isMobile ? 22 : 16;
-    for (let z = 3; z >= -156; z -= step) {
+    for (let z = 3; z >= NAVE_END_Z + 4; z -= step) {
       const fy = naveFloorY(z);
       arr.push({
         pos: [((arr.length % 2) - 0.5) * 1.4, fy + 1.05, z],
@@ -44,7 +44,7 @@ export default function NaveSmoke({ isMobile }) {
     const red = new THREE.Color('#ff3352');
 
     for (let i = 0; i < ashCount; i++) {
-      const z = 8 - Math.random() * 172;
+      const z = 8 - Math.random() * (8 - NAVE_END_Z);
       const fy = naveFloorY(z);
       positions[i * 3] = (Math.random() - 0.5) * 9.0;
       positions[i * 3 + 1] = fy + 0.3 + Math.random() * 7.2;

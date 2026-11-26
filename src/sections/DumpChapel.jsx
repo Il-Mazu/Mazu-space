@@ -3,7 +3,6 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { images } from 'virtual:dump-images';
 import { createStainedGlassMaterial } from '../shaders/stainedGlassShader.js';
-import { naveFloorY } from '../scenes/GothicNave.jsx';
 import { sceneBus } from '../state/sceneBus.js';
 
 function createShardGeometry(seed, w = 1.25, h = 1.65) {
@@ -138,16 +137,16 @@ function Shard({ img, idx, total, position, rotationY, loadedEnabled, onSelect }
   );
 }
 
-export default function DumpChapel({ isMobile, onOpenLightbox }) {
+export default function DumpChapel({ chapel, isMobile, onOpenLightbox }) {
   const [loadedEnabled, setLoadedEnabled] = useState(false);
 
   useFrame(() => {
-    if (!loadedEnabled && sceneBus.scrollProgress > 0.36) {
+    if (!loadedEnabled && sceneBus.activeSection >= chapel.index - 1) {
       setLoadedEnabled(true);
     }
   });
 
-  const floorY = naveFloorY(-86);
+  const { floorY, z: chapelZ } = chapel;
   const layout = useMemo(() => {
     const count = images.length;
     const cols = Math.min(4, Math.max(2, Math.ceil(count / 2)));
@@ -155,14 +154,14 @@ export default function DumpChapel({ isMobile, onOpenLightbox }) {
       const row = Math.floor(i / cols);
       const col = i % cols;
       const spreadX = isMobile ? 1.38 : 1.52;
-      const x = (col - (cols - 1) / 2) * spreadX + (isMobile ? 0 : -0.75);
+      const x = (col - (cols - 1) / 2) * spreadX + (isMobile ? 0 : -1.7);
       const archCurve = Math.cos(((col - (cols - 1) / 2) / Math.max(1, cols / 2)) * 0.9) * 0.45;
       const y = floorY + (row === 0 ? 3.1 : 1.35) + archCurve + (isMobile ? 0.55 : 0);
-      const z = -86.2 - Math.abs(col - (cols - 1) / 2) * 0.65;
+      const z = chapelZ - 0.2 - Math.abs(col - (cols - 1) / 2) * 0.65;
       const rotY = (col - (cols - 1) / 2) * -0.14;
       return { img, position: [x, y, z], rotationY: rotY };
     });
-  }, [floorY, isMobile]);
+  }, [floorY, chapelZ, isMobile]);
 
   return (
     <group>

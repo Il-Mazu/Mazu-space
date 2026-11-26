@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Environment, Lightformer } from '@react-three/drei';
-import { SECTIONS } from '../data/content.js';
+import { CHAPELS } from '../data/chapels.js';
 import { sceneBus } from '../state/sceneBus.js';
 
 export default function CathedralLighting({ isMobile }) {
@@ -19,8 +19,8 @@ export default function CathedralLighting({ isMobile }) {
     }
 
     // Track active section smoothly with one moving crimson pool so dynamic light count stays lean.
-    const idx = Math.min(SECTIONS.length - 1, Math.max(0, sceneBus.activeSection));
-    const sec = SECTIONS[idx];
+    const idx = Math.min(CHAPELS.length - 1, Math.max(0, sceneBus.activeSection));
+    const sec = CHAPELS[idx];
     if (followerRedRef.current) {
       followerRedRef.current.position.set(0, sec.lookAt[1] + 0.6, sec.z + 4.5);
       followerRedRef.current.intensity = 13.0 * flicker;

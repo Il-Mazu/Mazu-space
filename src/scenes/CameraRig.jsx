@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import * as THREE from 'three';
-import { SECTIONS } from '../data/content.js';
+import { CAMERA_STOPS } from '../data/chapels.js';
 import { sceneBus } from '../state/sceneBus.js';
 
 export default function CameraRig({ isMobile }) {
@@ -9,17 +9,17 @@ export default function CameraRig({ isMobile }) {
 
   const { posCurve, lookCurve } = useMemo(() => {
     const xScale = isMobile ? 0.45 : 1.0;
-    const posPoints = SECTIONS.map((s) => new THREE.Vector3(s.camPos[0] * xScale, s.camPos[1], s.camPos[2]));
-    const lookPoints = SECTIONS.map((s) => new THREE.Vector3(s.lookAt[0] * xScale, s.lookAt[1], s.lookAt[2]));
+    const posPoints = CAMERA_STOPS.map((s) => new THREE.Vector3(s.camPos[0] * xScale, s.camPos[1], s.camPos[2]));
+    const lookPoints = CAMERA_STOPS.map((s) => new THREE.Vector3(s.lookAt[0] * xScale, s.lookAt[1], s.lookAt[2]));
     return {
       posCurve: new THREE.CatmullRomCurve3(posPoints, false, 'catmullrom', 0.45),
       lookCurve: new THREE.CatmullRomCurve3(lookPoints, false, 'catmullrom', 0.45),
     };
   }, [isMobile]);
 
-  const targetPos = useRef(new THREE.Vector3(...SECTIONS[0].camPos));
-  const targetLook = useRef(new THREE.Vector3(...SECTIONS[0].lookAt));
-  const currentLook = useRef(new THREE.Vector3(...SECTIONS[0].lookAt));
+  const targetPos = useRef(new THREE.Vector3(...CAMERA_STOPS[0].camPos));
+  const targetLook = useRef(new THREE.Vector3(...CAMERA_STOPS[0].lookAt));
+  const currentLook = useRef(new THREE.Vector3(...CAMERA_STOPS[0].lookAt));
   const parallax = useRef(new THREE.Vector2(0, 0));
 
   useEffect(() => {
@@ -34,20 +34,16 @@ export default function CameraRig({ isMobile }) {
     const dt = Math.min(rawDelta, 0.14);
     const t = THREE.MathUtils.clamp(sceneBus.scrollProgress, 0, 1);
 
-    const targetTerm = sceneBus.terminalOpen ? 1 : 0;
-    sceneBus.terminalFocus = sceneBus.reducedMotion
-      ? targetTerm
-      : THREE.MathUtils.damp(sceneBus.terminalFocus, targetTerm, 7.5, dt);
-
-    posCurve.getPointAt(t, targetPos.current);
-    lookCurve.getPointAt(t, targetLook.current);
+    // getPoint (not getPointAt) so each scroll stop lands exactly on its camera stop.
+    posCurve.getPoint(t, targetPos.current);
+    lookCurve.getPoint(t, targetLook.current);
 
     if (!sceneBus.reducedMotion && sceneBus.doorPush < 0.999) {
       const pushEase = 1 - Math.pow(1 - Math.max(0, Math.min(1, sceneBus.doorPush)), 3);
       targetPos.current.z += (1 - pushEase) * 4.4;
     }
 
-    if (!sceneBus.reducedMotion && !sceneBus.terminalOpen) {
+    if (!sceneBus.reducedMotion) {
       const pxTarget = sceneBus.pointer.x * (isMobile ? 0.14 : 0.38);
       const pyTarget = sceneBus.pointer.y * (isMobile ? 0.10 : 0.24);
       parallax.current.x = THREE.MathUtils.damp(parallax.current.x, pxTarget, 5.0, dt);
@@ -56,19 +52,12 @@ export default function CameraRig({ isMobile }) {
       targetPos.current.y += parallax.current.y;
     }
 
-    if (sceneBus.terminalFocus > 0.001) {
-      const termPos = new THREE.Vector3(0, -2.5, -127.6);
-      const termLook = new THREE.Vector3(0, -2.5, -130.0);
-      targetPos.current.lerp(termPos, sceneBus.terminalFocus);
-      targetLook.current.lerp(termLook, sceneBus.terminalFocus);
-    }
-
     if (sceneBus.reducedMotion) {
       camera.position.copy(targetPos.current);
       currentLook.current.copy(targetLook.current);
     } else {
       const distZ = Math.abs(camera.position.z - targetPos.current.z);
-      const dampLambda = sceneBus.terminalFocus > 0.05 ? 9.5 : distZ > 15 ? 24.0 : 9.0;
+      const dampLambda = distZ > 15 ? 24.0 : 9.0;
       camera.position.x = THREE.MathUtils.damp(camera.position.x, targetPos.current.x, dampLambda, dt);
       camera.position.y = THREE.MathUtils.damp(camera.position.y, targetPos.current.y, dampLambda, dt);
       camera.position.z = THREE.MathUtils.damp(camera.position.z, targetPos.current.z, dampLambda, dt);
