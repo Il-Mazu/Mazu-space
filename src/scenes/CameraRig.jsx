@@ -31,7 +31,7 @@ export default function CameraRig({ isMobile }) {
   }, [camera, isMobile]);
 
   useFrame((_, rawDelta) => {
-    const dt = Math.min(rawDelta, 0.05);
+    const dt = Math.min(rawDelta, 0.14);
     const t = THREE.MathUtils.clamp(sceneBus.scrollProgress, 0, 1);
 
     posCurve.getPointAt(t, targetPos.current);
@@ -40,8 +40,8 @@ export default function CameraRig({ isMobile }) {
     if (!sceneBus.reducedMotion && !sceneBus.terminalOpen) {
       const pxTarget = sceneBus.pointer.x * (isMobile ? 0.14 : 0.38);
       const pyTarget = sceneBus.pointer.y * (isMobile ? 0.10 : 0.24);
-      parallax.current.x = THREE.MathUtils.damp(parallax.current.x, pxTarget, 4.5, dt);
-      parallax.current.y = THREE.MathUtils.damp(parallax.current.y, pyTarget, 4.5, dt);
+      parallax.current.x = THREE.MathUtils.damp(parallax.current.x, pxTarget, 5.0, dt);
+      parallax.current.y = THREE.MathUtils.damp(parallax.current.y, pyTarget, 5.0, dt);
       targetPos.current.x += parallax.current.x;
       targetPos.current.y += parallax.current.y;
     }
@@ -57,7 +57,8 @@ export default function CameraRig({ isMobile }) {
       camera.position.copy(targetPos.current);
       currentLook.current.copy(targetLook.current);
     } else {
-      const dampLambda = sceneBus.terminalFocus > 0.05 ? 7.0 : 6.0;
+      const distZ = Math.abs(camera.position.z - targetPos.current.z);
+      const dampLambda = sceneBus.terminalFocus > 0.05 ? 9.5 : distZ > 15 ? 24.0 : 9.0;
       camera.position.x = THREE.MathUtils.damp(camera.position.x, targetPos.current.x, dampLambda, dt);
       camera.position.y = THREE.MathUtils.damp(camera.position.y, targetPos.current.y, dampLambda, dt);
       camera.position.z = THREE.MathUtils.damp(camera.position.z, targetPos.current.z, dampLambda, dt);

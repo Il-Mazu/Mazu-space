@@ -1,0 +1,88 @@
+.presence-card {
+  position: relative;
+  width: min(440px, calc(100vw - 36px));
+  padding: 22px 24px;
+  pointer-events: auto;
+  background: rgba(8, 8, 11, 0.92);
+  border: 1px solid var(--border-hi);
+  border-right: 3px solid var(--accent);
+  box-shadow: -6px 6px 0 rgba(0, 0, 0, 0.9), inset 0 0 32px rgba(138, 15, 31, 0.16);
+}
+
+.presence-user-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 0;
+  border-top: 1px dashed var(--border-hi);
+  border-bottom: 1px dashed var(--border-hi);
+  margin: 12px 0;
+}
+
+.presence-avatar-wrap {
+  width: 56px;
+  height: 56px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-hi);
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.presence-avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.presence-avatar-fallback {
+  font-family: var(--font-display);
+  font-size: 26px;
+  color: var(--bone);
+}
+
+.presence-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.presence-username {
+  font-size: 16px;
+  color: var(--bone);
+}
+
+.presence-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.presence-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.presence-spotify {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+@media (max-width: 767px) {
+  .presence-card {
+    width: 100%;
+    padding: 16px 18px;
+  }
+}

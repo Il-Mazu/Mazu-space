@@ -1,0 +1,80 @@
+.about-card {
+  width: min(460px, calc(100vw - 36px));
+  padding: 24px 26px 22px;
+  pointer-events: auto;
+}
+
+.about-prompt {
+  font-size: 12px;
+  color: var(--bone);
+  margin-bottom: 14px;
+  letter-spacing: 0.04em;
+}
+
+.about-greeting {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  line-height: 1.55;
+  margin-bottom: 18px;
+}
+
+.about-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 7px 18px;
+  padding: 14px 0;
+  border-top: 1px dashed var(--border-hi);
+  border-bottom: 1px dashed var(--border-hi);
+  margin-bottom: 16px;
+  font-size: 13px;
+}
+
+.about-fact-key {
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.about-fact-val {
+  color: var(--bone);
+}
+
+.about-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.about-motto {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  color: var(--bone);
+  text-shadow: -1px 0 rgba(255, 51, 82, 0.55);
+}
+
+.about-stamp {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  border: 1px solid var(--border);
+  padding: 4px 8px;
+}
+
+@media (max-width: 767px) {
+  .about-card {
+    width: 100%;
+    padding: 16px 18px;
+  }
+
+  .about-facts {
+    gap: 5px 12px;
+    font-size: 12px;
+    padding: 10px 0;
+    margin-bottom: 12px;
+  }
+}

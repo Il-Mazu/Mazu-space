@@ -245,6 +245,16 @@ img {
   transition: opacity 0.25s ease;
 }
 
+.chapel-sticky--right {
+  justify-content: flex-end;
+}
+
+.chapel-sticky--exit {
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 74px;
+}
+
 .chapel-card {
   pointer-events: auto;
   max-width: min(440px, calc(100vw - 36px));
@@ -281,7 +291,9 @@ img {
 }
 
 @media (max-width: 767px) {
-  .chapel-sticky {
+  .chapel-sticky,
+  .chapel-sticky--right,
+  .chapel-sticky--exit {
     align-items: flex-end;
     justify-content: center;
     padding: 72px 16px 88px;

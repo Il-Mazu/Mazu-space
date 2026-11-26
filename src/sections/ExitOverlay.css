@@ -1,0 +1,141 @@
+.exit-panel {
+  position: relative;
+  width: min(680px, calc(100vw - 36px));
+  max-height: calc(100vh - 156px);
+  overflow-y: auto;
+  padding: 20px 24px;
+  pointer-events: auto;
+  background: rgba(6, 6, 8, 0.93);
+  border: 1px solid var(--border-hi);
+  border-top: 3px solid var(--accent);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.92), inset 0 0 42px rgba(138, 15, 31, 0.18);
+}
+
+.exit-grid {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr;
+  gap: 20px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-hi);
+}
+
+.exit-subhead {
+  font-family: var(--font-label);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.exit-commits {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+}
+
+.exit-commit-row {
+  display: flex;
+  gap: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exit-commit-hash {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.exit-commit-msg {
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exit-build-date {
+  margin-top: 10px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.exit-side {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.exit-counters {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.exit-links {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.exit-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--bone);
+  text-decoration: none;
+  padding: 4px 0;
+}
+
+.exit-footer {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--border-hi);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.exit-motto {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+  color: var(--bone);
+  text-shadow: -2px 0 rgba(255, 51, 82, 0.55);
+}
+
+.exit-top-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: var(--chrome);
+  border: 1px solid var(--border-hi);
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--bone);
+}
+
+.exit-top-btn:hover,
+.exit-top-btn:focus-visible {
+  border-color: var(--accent);
+}
+
+@media (max-width: 767px) {
+  .exit-panel {
+    width: 100%;
+    padding: 14px 16px;
+    max-height: calc(100vh - 165px);
+    overflow-y: auto;
+  }
+
+  .exit-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+}
