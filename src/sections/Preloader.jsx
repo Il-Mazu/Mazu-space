@@ -110,7 +110,14 @@ export default function Preloader({ onEnterComplete }) {
           ))}
         </div>
 
-        <div className="boot-progress-row" role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct}>
+        <div
+          className="boot-progress-row"
+          role="progressbar"
+          aria-label="Loading cathedral assets"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={pct}
+        >
           <div className="boot-progress-track">
             <div className="boot-progress-fill" style={{ width: `${pct}%` }} />
           </div>

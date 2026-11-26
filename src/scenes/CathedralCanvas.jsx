@@ -28,7 +28,7 @@ function AudioSampler() {
   return null;
 }
 
-export default function CathedralCanvas({ isMobile, onOpenLightbox, onOpenTerminal, onContextLost }) {
+export default function CathedralCanvas({ isMobile, entered = true, onOpenLightbox, onOpenTerminal, onContextLost }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
@@ -79,13 +79,17 @@ export default function CathedralCanvas({ isMobile, onOpenLightbox, onOpenTermin
 
         <MazuEmblem3D isMobile={isMobile} />
         <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
-        <AboutChapel isMobile={isMobile} />
-        <PresenceChapel isMobile={isMobile} />
-        <MusicChapel isMobile={isMobile} />
-        <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
-        <GamesChapel isMobile={isMobile} />
-        <TerminalChapel isMobile={isMobile} onOpenTerminal={onOpenTerminal} />
-        <ExitChapel isMobile={isMobile} />
+        {entered && (
+          <>
+            <AboutChapel isMobile={isMobile} />
+            <PresenceChapel isMobile={isMobile} />
+            <MusicChapel isMobile={isMobile} />
+            <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
+            <GamesChapel isMobile={isMobile} />
+            <TerminalChapel isMobile={isMobile} onOpenTerminal={onOpenTerminal} />
+            <ExitChapel isMobile={isMobile} />
+          </>
+        )}
 
         <PostFX perfTier={perfTier} />
       </Canvas>

@@ -1,8 +1,9 @@
 import { SITE } from '../data/content.js';
 import { jumpToSection } from '../state/sceneBus.js';
+import { playHoverTick } from '../audio/AudioEngine.js';
 import './HeroOverlay.css';
 
-export default function HeroOverlay() {
+export default function HeroOverlay({ ogMode = false }) {
   return (
     <div className="hero-overlay">
       <div className="hero-meta-tag">
@@ -15,14 +16,17 @@ export default function HeroOverlay() {
       <p className="hero-subtitle">{SITE.subtitle}</p>
 
       <div className="hero-footer-row">
-        <button
-          type="button"
-          className="hero-cta xerox-hover"
-          onClick={() => jumpToSection(1)}
-        >
-          <span className="c-red" aria-hidden="true">♰</span>
-          <span>DESCEND INTO THE NAVE</span>
-        </button>
+        {!ogMode && (
+          <button
+            type="button"
+            className="hero-cta xerox-hover"
+            onMouseEnter={playHoverTick}
+            onClick={() => jumpToSection(1)}
+          >
+            <span className="c-red" aria-hidden="true">♰</span>
+            <span>DESCEND INTO THE NAVE</span>
+          </button>
+        )}
 
         <span className="hero-motto">{SITE.motto}</span>
       </div>

@@ -1,3 +1,7 @@
+.boot-frame {
+  min-height: 360px;
+}
+
 .boot-screen {
   transition: opacity 0.22s ease;
 }

@@ -145,7 +145,7 @@ function bootShellPlugin() {
     name: 'boot-shell',
     transformIndexHtml: (html) => html.replace(
       '<div id="root"></div>',
-      `<div id="root"><main id="boot" class="boot-screen"><div class="boot-frame"><pre class="boot-logo">${esc(BOOT_LOGO)}</pre><div class="boot-status-row">&gt; loading cathedral...</div></div></main></div>`,
+      `<div id="root"><main id="boot" class="boot-screen"><div class="boot-frame" style="min-height:360px;display:flex;flex-direction:column;justify-content:space-between"><pre class="boot-logo">${esc(BOOT_LOGO)}</pre><div class="boot-status-row">&gt; loading cathedral...</div></div></main></div>`,
     ),
   };
 }

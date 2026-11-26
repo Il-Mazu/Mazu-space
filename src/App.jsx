@@ -6,6 +6,7 @@ import { SECTIONS } from './data/content.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
 import { isWebGLAvailable } from './utils/webgl.js';
+import { playCutNoise } from './audio/AudioEngine.js';
 import {
   sceneBus,
   setActiveSection,
@@ -35,10 +36,11 @@ if (typeof window !== 'undefined') {
 
 gsap.registerPlugin(ScrollTrigger);
 
-function initialBootDone() {
-  if (typeof window === 'undefined') return false;
+function initialFlags() {
+  if (typeof window === 'undefined') return { skip: false, og: false };
   const params = new URLSearchParams(window.location.search);
-  return params.get('skipBoot') === '1';
+  const og = params.get('og') === '1';
+  return { skip: og || params.get('skipBoot') === '1', og };
 }
 
 export default function App() {
@@ -51,8 +53,9 @@ export default function App() {
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
   const [webglOk, setWebglOk] = useState(() => isWebGLAvailable());
+  const [{ og: ogMode }] = useState(() => initialFlags());
   const [entered, setEntered] = useState(() => {
-    const skip = initialBootDone();
+    const { skip } = initialFlags();
     if (skip) {
       sceneBus.bootPhase = 'done';
       sceneBus.entered = true;
@@ -169,6 +172,7 @@ export default function App() {
 
       if (Math.abs(idx - sceneBus.activeSection) > 1) {
         triggerGlitch(0.75);
+        playCutNoise();
       }
 
       if (sceneBus.reducedMotion || !lenisRef.current) {
@@ -208,7 +212,7 @@ export default function App() {
   const renderSectionContent = (sec) => {
     switch (sec.id) {
       case 'hero':
-        return <HeroOverlay />;
+        return <HeroOverlay ogMode={ogMode} />;
       case 'about':
         return <AboutOverlay />;
       case 'presence':
@@ -238,6 +242,7 @@ export default function App() {
         <Suspense fallback={null}>
           <CathedralCanvas
             isMobile={isMobile}
+            entered={entered}
             onOpenLightbox={setLightboxIdx}
             onOpenTerminal={openTerminal}
             onContextLost={() => setWebglOk(false)}
@@ -248,7 +253,7 @@ export default function App() {
 
       {!entered && <Preloader onEnterComplete={() => setEntered(true)} />}
 
-      {entered && <Hud onProgressRef={setProgressEl} />}
+      {entered && !ogMode && <Hud onProgressRef={setProgressEl} />}
 
       <DumpLightbox
         index={lightboxIdx}

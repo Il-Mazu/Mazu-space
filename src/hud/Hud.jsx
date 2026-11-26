@@ -2,7 +2,14 @@ import { useEffect, useRef, useState } from 'react';
 import { SECTIONS, SITE } from '../data/content.js';
 import { TRACKS } from '../data/tracks.js';
 import { jumpToSection, subscribeSection } from '../state/sceneBus.js';
-import { nextTrack, prevTrack, togglePlay, toggleSound, useAudioState } from '../audio/AudioEngine.js';
+import {
+  nextTrack,
+  playHoverTick,
+  prevTrack,
+  togglePlay,
+  toggleSound,
+  useAudioState,
+} from '../audio/AudioEngine.js';
 import './Hud.css';
 
 function Icon({ name }) {
@@ -65,6 +72,7 @@ export default function Hud({ onProgressRef }) {
                   aria-current={active === idx ? 'location' : undefined}
                   aria-label={`${sec.roman}. ${sec.name}`}
                   title={sec.label}
+                  onMouseEnter={playHoverTick}
                   onClick={() => jumpToSection(idx)}
                 >
                   {sec.roman}
