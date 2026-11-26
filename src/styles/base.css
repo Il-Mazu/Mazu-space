@@ -258,6 +258,11 @@ img {
   justify-content: flex-end;
 }
 
+.chapel-sticky--top-left {
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
 .chapel-sticky--exit {
   justify-content: center;
   align-items: flex-end;
@@ -306,6 +311,12 @@ img {
     align-items: flex-end;
     justify-content: center;
     padding: 72px 16px 88px;
+  }
+
+  .chapel-sticky--top-left {
+    align-items: flex-start;
+    justify-content: flex-start;
+    padding: 68px 16px 88px;
   }
 
   .chapel-card {

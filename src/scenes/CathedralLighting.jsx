@@ -67,6 +67,23 @@ export default function CathedralLighting({ isMobile }) {
           rotation={[-Math.PI / 2, 0, 0]}
           scale={[22, 16, 1]}
         />
+        {/* Front-facing reflection panels so +Z chrome bevels (like MAZU) catch sharp highlights */}
+        <Lightformer
+          form="rect"
+          intensity={4.2}
+          color="#f4f2ec"
+          position={[0, 4.5, 11]}
+          rotation={[0.25, Math.PI, 0]}
+          scale={[24, 3.2, 1]}
+        />
+        <Lightformer
+          form="rect"
+          intensity={3.6}
+          color="#ff3352"
+          position={[0, -3.5, 10]}
+          rotation={[-0.25, Math.PI, 0]}
+          scale={[22, 4.0, 1]}
+        />
       </Environment>
 
       <ambientLight intensity={0.22} color="#241f24" />

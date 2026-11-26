@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
@@ -28,8 +28,9 @@ function AudioSampler() {
   return null;
 }
 
-export default function CathedralCanvas({ isMobile, entered = true, onOpenLightbox, onOpenTerminal, onContextLost }) {
+export default function CathedralCanvas({ isMobile, entered = true, lanyard = null, onOpenLightbox, onOpenTerminal, onContextLost }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
+  const canvasRootRef = useRef(null);
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
 
@@ -48,7 +49,7 @@ export default function CathedralCanvas({ isMobile, entered = true, onOpenLightb
   };
 
   return (
-    <div id="canvas-root" aria-hidden="true">
+    <div id="canvas-root" ref={canvasRootRef} aria-hidden="true">
       <Canvas
         dpr={[1, perfTier === 'low' ? 1 : maxDpr]}
         camera={{ position: SECTIONS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 130 }}
@@ -82,7 +83,7 @@ export default function CathedralCanvas({ isMobile, entered = true, onOpenLightb
         {entered && (
           <>
             <AboutChapel isMobile={isMobile} />
-            <PresenceChapel isMobile={isMobile} />
+            <PresenceChapel isMobile={isMobile} lanyard={lanyard} portalRef={canvasRootRef} />
             <MusicChapel isMobile={isMobile} />
             <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
             <GamesChapel isMobile={isMobile} />

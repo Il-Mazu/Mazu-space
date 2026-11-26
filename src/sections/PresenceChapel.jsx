@@ -1,10 +1,18 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
+import { Html } from '@react-three/drei';
 import * as THREE from 'three';
 import { WING_ART } from '../data/ascii.js';
+import { PRESENCE } from '../data/content.js';
 import { getProceduralTextures } from '../scenes/proceduralTextures.js';
 import { naveFloorY } from '../scenes/GothicNave.jsx';
-import { sceneBus } from '../state/sceneBus.js';
+import { sceneBus, subscribeSection } from '../state/sceneBus.js';
+
+function avatarUrl(user) {
+  if (!user?.id || !user?.avatar) return null;
+  const ext = user.avatar.startsWith('a_') ? 'gif' : 'png';
+  return `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.${ext}`;
+}
 
 function buildWingTexture(mirrored = false) {
   const canvas = document.createElement('canvas');
@@ -34,10 +42,11 @@ function buildWingTexture(mirrored = false) {
   return tex;
 }
 
-export default function PresenceChapel({ isMobile }) {
+export default function PresenceChapel({ isMobile, lanyard, portalRef }) {
   const { chromeRoughness } = useMemo(() => getProceduralTextures(), []);
   const leftWingTex = useMemo(() => buildWingTexture(false), []);
   const rightWingTex = useMemo(() => buildWingTexture(true), []);
+  const [activeSec, setActiveSec] = useState(sceneBus.activeSection);
 
   const haloMatRef = useRef(null);
   const innerRingMatRef = useRef(null);
@@ -45,6 +54,17 @@ export default function PresenceChapel({ isMobile }) {
   const rightWingRef = useRef(null);
   const haloRef = useRef(null);
   const targetColor = useMemo(() => new THREE.Color('#8a8a94'), []);
+
+  const user = lanyard?.discord_user;
+  const status = lanyard?.discord_status || 'offline';
+  const statusColor = PRESENCE.statusColors[status] || PRESENCE.statusColors.offline;
+  const avatarSrc = avatarUrl(user);
+
+  useEffect(() => subscribeSection(setActiveSec), []);
+
+  useEffect(() => {
+    sceneBus.presenceColor = statusColor;
+  }, [statusColor]);
 
   useEffect(() => () => {
     leftWingTex.dispose();
@@ -57,7 +77,7 @@ export default function PresenceChapel({ isMobile }) {
     targetColor.set(sceneBus.presenceColor || '#8a8a94');
 
     if (haloMatRef.current) {
-      haloMatRef.current.color.lerp(targetColor, Math.min(1, dt * 4)).multiplyScalar(1.0);
+      haloMatRef.current.color.lerp(targetColor, Math.min(1, dt * 4));
       haloMatRef.current.emissive.lerp(targetColor, Math.min(1, dt * 4));
     }
     if (innerRingMatRef.current) {
@@ -70,14 +90,16 @@ export default function PresenceChapel({ isMobile }) {
       if (rightWingRef.current) rightWingRef.current.rotation.y = -0.24 - flap;
       if (haloRef.current) {
         haloRef.current.rotation.z = t * 0.28;
-        haloRef.current.position.y = 1.65 + Math.sin(t * 1.4) * 0.06;
+        haloRef.current.position.y = 1.68 + Math.sin(t * 1.4) * 0.06;
       }
     }
   });
 
   const floorY = naveFloorY(-42);
-  const pos = isMobile ? [0, floorY + 1.65, -42] : [-1.25, floorY + 0.55, -42];
-  const scale = isMobile ? 0.72 : 1.08;
+  const pos = isMobile ? [0, floorY + 1.35, -42] : [0, floorY + 0.78, -42];
+  const scale = isMobile ? 0.78 : 1.12;
+  const nearPresence = activeSec >= 1 && activeSec <= 3;
+  const htmlOpacity = activeSec === 2 ? 1 : 0;
 
   return (
     <group position={pos} scale={scale}>
@@ -101,8 +123,64 @@ export default function PresenceChapel({ isMobile }) {
         <meshStandardMaterial color="#0b0b0e" metalness={0.7} roughness={0.3} />
       </mesh>
 
+      {/* Discord avatar embedded inside the chrome circle */}
+      {nearPresence && (
+        <Html
+          portal={portalRef}
+          transform
+          center
+          distanceFactor={4}
+          position={[0, 0.55, 0.01]}
+          zIndexRange={[8, 2]}
+        >
+          <div className="presence-3d-avatar-frame" style={{ opacity: htmlOpacity }}>
+            {avatarSrc ? (
+              <img
+                className="presence-3d-avatar"
+                src={avatarSrc}
+                alt={user?.username || 'mazu avatar'}
+              />
+            ) : (
+              <span className="presence-3d-avatar-fallback" aria-hidden="true">M</span>
+            )}
+            <div className="presence-3d-avatar-vignette" aria-hidden="true" />
+          </div>
+        </Html>
+      )}
+
+      {/* Username, live status, and Spotify line centered between the wings */}
+      {nearPresence && (
+        <Html
+          portal={portalRef}
+          transform
+          center
+          distanceFactor={4}
+          position={[0, -0.72, 0.08]}
+          zIndexRange={[8, 2]}
+        >
+          <div
+            className="presence-3d-plate"
+            style={{ opacity: htmlOpacity, borderTopColor: statusColor }}
+          >
+            <div className="presence-3d-user">{user?.username || 'mazu'}</div>
+            <div className="presence-3d-status" style={{ color: statusColor }}>
+              <span className="presence-3d-dot" style={{ background: statusColor }} aria-hidden="true" />
+              <span>discord: {lanyard ? status : 'loading...'}</span>
+            </div>
+            {lanyard?.listening_to_spotify && lanyard.spotify && (
+              <div className="presence-3d-spotify">
+                <span className="c-red" aria-hidden="true">♪ </span>
+                <span className="c-dim">i&apos;m currently listening to: </span>
+                <span className="c-bone">{lanyard.spotify.song}</span>
+                <span className="c-dim"> — {lanyard.spotify.artist}</span>
+              </div>
+            )}
+          </div>
+        </Html>
+      )}
+
       {/* Live status halo ring hovering above */}
-      <group ref={haloRef} position={[0, 1.65, 0]} rotation={[Math.PI * 0.43, 0, 0]}>
+      <group ref={haloRef} position={[0, 1.68, 0]} rotation={[Math.PI * 0.43, 0, 0]}>
         <mesh>
           <torusGeometry args={[0.72, 0.036, 12, 48]} />
           <meshStandardMaterial
@@ -115,19 +193,19 @@ export default function PresenceChapel({ isMobile }) {
         </mesh>
       </group>
 
-      {/* Left & Right 3D Wing Art panels */}
-      <mesh ref={leftWingRef} position={[-1.95, 0.7, -0.15]} rotation={[0, 0.24, 0]}>
+      {/* Left & Right 3D Wing Art panels flanking the medallion */}
+      <mesh ref={leftWingRef} position={[-1.78, 0.72, -0.14]} rotation={[0, 0.24, 0]}>
         <planeGeometry args={[2.35, 2.35]} />
         <meshBasicMaterial map={leftWingTex} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
-      <mesh ref={rightWingRef} position={[1.95, 0.7, -0.15]} rotation={[0, -0.24, 0]}>
+      <mesh ref={rightWingRef} position={[1.78, 0.72, -0.14]} rotation={[0, -0.24, 0]}>
         <planeGeometry args={[2.35, 2.35]} />
         <meshBasicMaterial map={rightWingTex} transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Pedestal base */}
-      <mesh position={[0, -0.65, 0]}>
-        <cylinderGeometry args={[0.55, 0.85, 1.1, 8]} />
+      {/* Low stone plinth beneath the nameplate */}
+      <mesh position={[0, -1.28, -0.08]}>
+        <cylinderGeometry args={[0.48, 0.78, 0.55, 8]} />
         <meshStandardMaterial color="#18181f" metalness={0.55} roughness={0.48} />
       </mesh>
     </group>

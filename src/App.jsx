@@ -243,6 +243,7 @@ export default function App() {
           <CathedralCanvas
             isMobile={isMobile}
             entered={entered}
+            lanyard={lanyard}
             onOpenLightbox={setLightboxIdx}
             onOpenTerminal={openTerminal}
             onContextLost={() => setWebglOk(false)}
@@ -279,9 +280,10 @@ export default function App() {
         <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
           {SECTIONS.map((sec, idx) => {
             const stickyMod =
-              sec.id === 'presence' || sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
-                : sec.id === 'exit' ? ' chapel-sticky--exit'
-                  : '';
+              sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
+                : sec.id === 'presence' ? ' chapel-sticky--top-left'
+                  : sec.id === 'exit' ? ' chapel-sticky--exit'
+                    : '';
             const isActive = entered && activeIdx === idx && !terminalOpen;
             return (
               <section

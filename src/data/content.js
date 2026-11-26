@@ -75,8 +75,8 @@ export const SECTIONS = [
     label: 'III. PRESENCE',
     z: -42,
     scrollPos: 0.286,
-    camPos: [1.9, 0.6, -33.5],
-    lookAt: [-0.2, 0.4, -42.0],
+    camPos: [0.15, 0.7, -34.2],
+    lookAt: [0, 0.38, -42.0],
   },
   {
     id: 'music',

@@ -1,88 +1,112 @@
-.presence-card {
+.presence-header-card {
   position: relative;
-  width: min(440px, calc(100vw - 36px));
-  padding: 22px 24px;
+  padding: 12px 16px 10px;
+  background: rgba(8, 8, 11, 0.78);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
   pointer-events: auto;
-  background: rgba(8, 8, 11, 0.92);
-  border: 1px solid var(--border-hi);
-  border-right: 3px solid var(--accent);
-  box-shadow: -6px 6px 0 rgba(0, 0, 0, 0.9), inset 0 0 32px rgba(138, 15, 31, 0.16);
 }
 
-.presence-user-row {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 12px 0;
-  border-top: 1px dashed var(--border-hi);
-  border-bottom: 1px dashed var(--border-hi);
-  margin: 12px 0;
+.presence-title {
+  margin-bottom: 0;
+  font-size: clamp(1.7rem, 3.2vw, 2.5rem);
 }
 
-.presence-avatar-wrap {
-  width: 56px;
-  height: 56px;
-  flex-shrink: 0;
-  border: 1px solid var(--border-hi);
-  background: var(--surface);
+/* 3D-projected elements inside PresenceChapel (<Html transform>) */
+.presence-3d-avatar-frame {
+  position: relative;
+  width: 142px;
+  height: 142px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #09090c;
   display: grid;
   place-items: center;
-  overflow: hidden;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.18s ease;
 }
 
-.presence-avatar {
+.presence-3d-avatar {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
 }
 
-.presence-avatar-fallback {
+.presence-3d-avatar-fallback {
   font-family: var(--font-display);
-  font-size: 26px;
+  font-size: 56px;
   color: var(--bone);
 }
 
-.presence-meta {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
+.presence-3d-avatar-vignette {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow: inset 0 0 22px rgba(6, 6, 7, 0.75);
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0 2px,
+    rgba(0, 0, 0, 0.18) 2px 3px
+  );
+  pointer-events: none;
 }
 
-.presence-username {
-  font-size: 16px;
+.presence-3d-plate {
+  min-width: 210px;
+  max-width: 290px;
+  padding: 9px 12px;
+  background: rgba(8, 8, 11, 0.92);
+  border: 1px solid var(--border-hi);
+  border-top: 2px solid var(--text-dim);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.85);
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.18s ease;
+}
+
+.presence-3d-user {
+  font-family: var(--font-body);
+  font-size: 14px;
   color: var(--bone);
+  letter-spacing: 0.04em;
 }
 
-.presence-status {
+.presence-3d-status {
+  margin-top: 4px;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
+  gap: 6px;
   font-family: var(--font-label);
-  font-size: 10px;
+  font-size: 9px;
   letter-spacing: 0.1em;
 }
 
-.presence-dot {
-  width: 8px;
-  height: 8px;
+.presence-3d-dot {
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
   box-shadow: 0 0 8px currentColor;
 }
 
-.presence-spotify {
-  margin-top: 8px;
-  padding: 10px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-left: 2px solid var(--accent);
-  font-size: 12px;
-  line-height: 1.5;
+.presence-3d-spotify {
+  margin-top: 7px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.4;
 }
 
 @media (max-width: 767px) {
-  .presence-card {
-    width: 100%;
-    padding: 16px 18px;
+  .presence-header-card {
+    padding: 9px 12px 8px;
+  }
+
+  .presence-title {
+    font-size: 1.55rem;
   }
 }
