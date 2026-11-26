@@ -1,4 +1,4 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { execSync } from 'child_process';
 import fs from 'fs';
@@ -92,26 +92,208 @@ function dumpImagesPlugin() {
   };
 }
 
-// Fetches game covers from RAWG once per build so the API key never reaches the
-// browser. Without a key (e.g. local dev) the cards render without covers.
-function gameCoversPlugin(apiKey) {
+// Fetches game covers, release years, and genres from Wikipedia at build time
+// with no API key required, caching results in node_modules/.cache.
+function gameCoversPlugin() {
   const VIRTUAL_ID = 'virtual:game-covers';
   const RESOLVED_ID = '\0' + VIRTUAL_ID;
+  const WIKI_API = 'https://en.wikipedia.org/w/api.php';
+  const WIKI_HEADERS = { 'User-Agent': 'mazu-space/3.0 (https://mazu.is-a.dev)' };
+  const CACHE_PATH = path.resolve(process.cwd(), 'node_modules/.cache/mazu-game-covers.json');
+  const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+  const ROMAN = { ii: '2', iii: '3', iv: '4', v: '5', vi: '6', vii: '7', viii: '8' };
   let covers;
 
-  async function fetchCover(game) {
-    const q = encodeURIComponent(game.search || game.name);
-    const res = await fetch(`https://api.rawg.io/api/games?key=${apiKey}&search=${q}&page_size=1`, {
+  const wikiGet = async (params) => {
+    const res = await fetch(`${WIKI_API}?${new URLSearchParams({ format: 'json', ...params })}`, {
+      headers: WIKI_HEADERS,
       signal: AbortSignal.timeout(15000),
     });
-    const found = res.ok && (await res.json()).results?.[0];
-    if (!found) return null;
-    return {
-      // RAWG serves 1920px originals; its resize path returns a card-sized image.
-      background_image: found.background_image?.replace('/media/games/', '/media/resize/420/-/games/') || null,
-      released: found.released,
-      genres: (found.genres || []).map(g => g.name),
-    };
+    return res.ok ? res.json() : null;
+  };
+
+  const norm = (s) => s
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\b(ii|iii|iv|v|vi|vii|viii)\b/g, (m) => ROMAN[m]);
+
+  const stripParens = (s) => s.replace(/\s*\([^)]*\)$/, '');
+  const cleanMarkup = (s) => s
+    .replace(/<ref[\s\S]*?<\/ref>/gi, '')
+    .replace(/<ref[^>]*\/>/gi, '')
+    .replace(/<!--[\s\S]*?-->/g, '');
+
+  function parseYear(raw) {
+    const text = cleanMarkup(raw);
+    const rel = text.match(
+      /^[ \t]*\|\s*(?:released?|first_release(?:_date)?)\s*=\s*([\s\S]*?)(?=\n[ \t]*\|\s*(?:genre|modes?|platforms?|publisher|developer|designer|director|producer|engine|series|composer|writer|artist|programmer|arcade|latest_release)\s*=|\n[ \t]*\}\})/mi,
+    );
+    const m = (rel ? rel[1] : text).match(/\b(19[789]\d|20[0-2]\d)\b/);
+    return m ? m[1] : null;
+  }
+
+  function parseGenres(raw) {
+    const text = cleanMarkup(raw);
+    const m = text.match(/^[ \t]*\|\s*genres?\s*=\s*([\s\S]*?)(?=\n[ \t]*\|\s*[a-z_]+\s*=|\n[ \t]*\}\})/mi);
+    if (!m) return [];
+    const cleaned = m[1]
+      .replace(/\[\[(?:[^\]|]*\|)?([^\]]+)\]\]/g, '$1')
+      .replace(/\{\{\s*(?:efn|cite|sfn|note)[^}]*\}\}/gi, '')
+      .replace(/\{\{\s*(?:flatlist|plainlist|unbulleted list|ubl|hlist|nowrap|vgrelease)\s*\|?/gi, '\n')
+      .replace(/\{\{[^}]*\}\}/g, '')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/[{}]/g, '');
+    const out = [];
+    const seen = new Set();
+    for (const part of cleaned.split(/[\n,*•;|/]+/)) {
+      const item = part.replace(/^[\s\-–—]+|[\s\-–—.()]+$/g, '').replace(/\s+/g, ' ');
+      if (!item || item.length > 30 || /^\d+$/.test(item)) continue;
+      const key = item.toLowerCase();
+      if (!seen.has(key)) {
+        seen.add(key);
+        out.push(item[0].toUpperCase() + item.slice(1));
+      }
+      if (out.length === 3) break;
+    }
+    return out;
+  }
+
+  async function runPool(items, concurrency, fn) {
+    let idx = 0;
+    await Promise.all(Array.from({ length: concurrency }, async () => {
+      while (idx < items.length) {
+        const i = idx++;
+        await fn(items[i], i);
+      }
+    }));
+  }
+
+  async function fetchAllCovers(unique) {
+    const titleByGame = new Map();
+    const notMedia = (t) => !/\((?:film|tv series|television|soundtrack|novel|comic|episode|song|album)\)$/i.test(t);
+
+    await runPool(unique, 6, async (game) => {
+      const q = game.search || game.name;
+      const data = await wikiGet({ action: 'query', list: 'search', srsearch: `${q} video game`, srlimit: '5' });
+      const hits = data?.query?.search || [];
+      const want = norm(q);
+      const pick =
+        hits.find((h) => notMedia(h.title) && norm(stripParens(h.title)) === want) ||
+        hits.find((h) => notMedia(h.title) && norm(stripParens(h.title)).startsWith(want)) ||
+        hits.find((h) => notMedia(h.title)) ||
+        hits[0];
+      if (pick) titleByGame.set(game.name, pick.title);
+    });
+
+    const uniqueTitles = [...new Set(titleByGame.values())];
+    const pagesByTitle = new Map();
+    for (let i = 0; i < uniqueTitles.length; i += 40) {
+      const batch = uniqueTitles.slice(i, i + 40);
+      const data = await wikiGet({
+        action: 'query',
+        titles: batch.join('|'),
+        prop: 'pageimages|revisions',
+        pilicense: 'any',
+        pithumbsize: '420',
+        rvprop: 'content',
+        rvslots: 'main',
+        rvsection: '0',
+        redirects: '1',
+      });
+      const normMap = new Map((data?.query?.normalized || []).map((x) => [x.from, x.to]));
+      const redirMap = new Map((data?.query?.redirects || []).map((x) => [x.from, x.to]));
+      const byTitle = new Map(Object.values(data?.query?.pages || {}).map((p) => [p.title, p]));
+      for (const t of batch) {
+        const mapped = normMap.get(t) || t;
+        const finalTitle = redirMap.get(mapped) || mapped;
+        if (byTitle.has(finalTitle)) pagesByTitle.set(t, byTitle.get(finalTitle));
+      }
+    }
+
+    const result = {};
+    const missingCoverGames = [];
+    for (const game of unique) {
+      const pageTitle = titleByGame.get(game.name);
+      const page = pageTitle ? pagesByTitle.get(pageTitle) : null;
+      if (!page) continue;
+      const wt = page.revisions?.[0]?.slots?.main?.['*'] || '';
+      const background_image = page.thumbnail?.source?.replace(/\?.*$/, '') || null;
+      result[game.name] = {
+        background_image,
+        released: parseYear(wt),
+        genres: parseGenres(wt),
+      };
+      if (!background_image) missingCoverGames.push({ game, pageTitle });
+    }
+
+    if (missingCoverGames.length) {
+      const fileForGame = new Map();
+      await runPool(missingCoverGames, 5, async ({ game, pageTitle }) => {
+        const cleanTitle = stripParens(pageTitle);
+        const data = await wikiGet({
+          action: 'query',
+          list: 'search',
+          srnamespace: '6',
+          srsearch: `"${cleanTitle}" cover`,
+          srlimit: '5',
+        });
+        const re = new RegExp(`^${norm(cleanTitle)} (?:cover|box|key|save the world)`);
+        const hit = (data?.query?.search || []).find((h) => {
+          if (!/\.(?:jpe?g|png|webp)$/i.test(h.title)) return false;
+          const base = h.title.replace(/^File:/i, '').replace(/\.[^.]+$/, '');
+          return re.test(norm(base));
+        });
+        if (hit) fileForGame.set(game.name, hit.title);
+      });
+
+      const fileTitles = [...new Set(fileForGame.values())];
+      const urlByFile = new Map();
+      for (let i = 0; i < fileTitles.length; i += 40) {
+        const batch = fileTitles.slice(i, i + 40);
+        const data = await wikiGet({
+          action: 'query',
+          titles: batch.join('|'),
+          prop: 'imageinfo',
+          iiprop: 'url',
+          iiurlwidth: '420',
+        });
+        for (const p of Object.values(data?.query?.pages || {})) {
+          const info = p.imageinfo?.[0];
+          const url = (info?.thumburl || info?.url)?.replace(/\?.*$/, '');
+          if (url) urlByFile.set(p.title, url);
+        }
+      }
+
+      const stillMissing = [];
+      for (const { game } of missingCoverGames) {
+        const url = urlByFile.get(fileForGame.get(game.name));
+        if (url) result[game.name].background_image = url;
+        else stillMissing.push(game);
+      }
+
+      await runPool(stillMissing, 4, async (game) => {
+        try {
+          const q = game.search || game.name;
+          const res = await fetch(
+            `https://itunes.apple.com/search?term=${encodeURIComponent(q)}&entity=software&limit=3`,
+            { signal: AbortSignal.timeout(10000) },
+          );
+          if (!res.ok) return;
+          const json = await res.json();
+          const want = norm(q);
+          const hit = (json.results || []).find((x) => norm(x.trackName).startsWith(want));
+          const art = hit?.artworkUrl512 || hit?.artworkUrl100;
+          if (art) result[game.name].background_image = art;
+        } catch {
+          // Optional fallback; keep entry with null cover on timeout.
+        }
+      });
+    }
+
+    return result;
   }
 
   return {
@@ -122,14 +304,39 @@ function gameCoversPlugin(apiKey) {
     async load(id) {
       if (id !== RESOLVED_ID) return;
       if (!covers) {
-        covers = {};
-        if (apiKey) {
-          const unique = [...new Map(GAMES.map(g => [g.name, g])).values()];
-          const results = await Promise.allSettled(unique.map(fetchCover));
-          results.forEach((r, i) => { if (r.value) covers[unique[i].name] = r.value; });
-          console.log(`[game-covers] fetched ${Object.keys(covers).length}/${unique.length} game covers`);
-        } else {
-          this.warn('RAWG_API_KEY not set, game covers disabled');
+        const unique = [...new Map(GAMES.map((g) => [g.name, g])).values()];
+        const cacheKey = unique.map((g) => `${g.name}\t${g.search || ''}`).join('\n');
+        let staleCovers = null;
+
+        try {
+          const cached = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
+          if (cached?.key === cacheKey && Object.keys(cached.covers || {}).length > 0) {
+            staleCovers = cached.covers;
+            if (Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+              covers = cached.covers;
+              console.log(`[game-covers] loaded ${Object.keys(covers).length}/${unique.length} game covers from cache`);
+            }
+          }
+        } catch {
+          // No valid cache yet.
+        }
+
+        if (!covers) {
+          try {
+            covers = await fetchAllCovers(unique);
+            const entries = Object.values(covers);
+            const imgCount = entries.filter((e) => e.background_image).length;
+            const yearCount = entries.filter((e) => e.released).length;
+            const genreCount = entries.filter((e) => e.genres?.length).length;
+            console.log(`[game-covers] fetched ${imgCount}/${unique.length} covers (${yearCount} years, ${genreCount} genres)`);
+            if (Object.keys(covers).length > 0) {
+              fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
+              fs.writeFileSync(CACHE_PATH, JSON.stringify({ key: cacheKey, fetchedAt: Date.now(), covers }));
+            }
+          } catch (err) {
+            covers = staleCovers || {};
+            this.warn(`failed to fetch game covers (${err?.message || err}); using ${staleCovers ? 'stale cache' : 'empty covers'}`);
+          }
         }
       }
       return `export default ${JSON.stringify(covers)};`;
@@ -150,28 +357,25 @@ function bootShellPlugin() {
   };
 }
 
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, process.cwd(), '');
-  return {
-    plugins: [
-      react(),
-      bootShellPlugin(),
-      gitInfoPlugin(),
-      dumpImagesPlugin(),
-      gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY),
-    ],
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks(id) {
-            if (!id.includes('node_modules')) return;
-            if (id.includes('/three/') || id.includes('three-stdlib')) return 'three-core';
-            if (id.includes('@react-three/postprocessing') || id.includes('/postprocessing/')) return 'postfx';
-            if (id.includes('@react-three/')) return 'r3f';
-            if (id.includes('/gsap/') || id.includes('/lenis/')) return 'motion';
-          },
+export default defineConfig(() => ({
+  plugins: [
+    react(),
+    bootShellPlugin(),
+    gitInfoPlugin(),
+    dumpImagesPlugin(),
+    gameCoversPlugin(),
+  ],
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return;
+          if (id.includes('/three/') || id.includes('three-stdlib')) return 'three-core';
+          if (id.includes('@react-three/postprocessing') || id.includes('/postprocessing/')) return 'postfx';
+          if (id.includes('@react-three/')) return 'r3f';
+          if (id.includes('/gsap/') || id.includes('/lenis/')) return 'motion';
         },
       },
     },
-  };
-});
+  },
+}));

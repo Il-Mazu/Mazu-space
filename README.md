@@ -10,7 +10,7 @@ Personal portfolio rebuilt as a continuous dark gothic-punk 3D cathedral nave. V
 - Boot preloader with real loading progress, sound toggle, and ASCII-to-3D chrome shatter transition.
 - Live Discord presence and Spotify status via Lanyard, framed by 3D wings and a status-colored halo.
 - Lazy-loaded Web Audio music player driving bloom, light flicker, floor smoke, eye pupil dilation, and a 128-sample 3D red neon oscilloscope.
-- Automatic `public/Dump/` stained-glass gallery with fullscreen lightbox, plus a virtualized 110-game crypt with category filters, sorting, and condemned badges.
+- Automatic `public/Dump/` stained-glass gallery with fullscreen lightbox, plus a virtualized 110-game crypt with category filters, sorting, condemned badges, and build-time Wikipedia metadata (no API key required).
 - Zoomed-in CRT confessional terminal (`help`, `about`, `ls`, `date`, `clear`, `echo`, `glitch`, `sysinfo`, `fastfetch`, `cmatrix`, section jumps).
 - Mobile camera/layout tuning, `prefers-reduced-motion` support, keyboard navigation, and a full 2D fallback when WebGL is unavailable.
 
@@ -32,12 +32,6 @@ npm run build     # production build in dist/
 npm run preview   # preview dist/ locally
 npm run thumbs    # regenerate public/Dump/thumbs/*.webp (needs ImageMagick)
 ```
-
-## Environment variables
-
-| Variable | Purpose |
-| --- | --- |
-| `RAWG_API_KEY` | Optional build-time RAWG API key used by `vite.config.js` to fetch game covers, release years, and genres without exposing the key to the browser. Without it, game plaques render styled monochrome fallbacks. |
 
 ## Keyboard
 

@@ -3,7 +3,7 @@ import {
   GAMES,
   GAMES_DISCLAIMER,
   GAME_CATEGORIES,
-  RAWG_ATTRIBUTION,
+  COVERS_ATTRIBUTION,
 } from '../data/games.js';
 import { GAMES_ASCII } from '../data/ascii.js';
 import covers from 'virtual:game-covers';
@@ -187,8 +187,8 @@ export default function GamesCryptOverlay() {
 
       <div className="games-footer-attr">
         Game data sourced from{' '}
-        <a href={RAWG_ATTRIBUTION.href} target="_blank" rel="noopener noreferrer">
-          {RAWG_ATTRIBUTION.label}
+        <a href={COVERS_ATTRIBUTION.href} target="_blank" rel="noopener noreferrer">
+          {COVERS_ATTRIBUTION.label}
         </a>
       </div>
     </article>

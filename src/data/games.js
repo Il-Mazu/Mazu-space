@@ -1,4 +1,4 @@
-// Game list with personal votes. Covers are fetched from RAWG at build time (see vite.config.js).
+// Game list with personal votes. Covers are fetched from Wikipedia at build time (see vite.config.js).
 export const GAMES = [
   { name: 'Cyberpunk 2077', category: 'favorites', vote: 99 },
   { name: 'Celeste', category: 'favorites', vote: 97 },
@@ -124,7 +124,7 @@ export const GAME_CATEGORIES = [
 export const GAMES_DISCLAIMER =
   "// This section lists every game I've ever played, each with a personal grade I decided to give. Obviously, it's just my opinion and shouldn't be taken too seriously.";
 
-export const RAWG_ATTRIBUTION = {
-  label: 'RAWG',
-  href: 'https://rawg.io/',
+export const COVERS_ATTRIBUTION = {
+  label: 'Wikipedia',
+  href: 'https://en.wikipedia.org/',
 };
