@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { TERMINAL_CONFIG } from '../data/content.js';
 import { jumpToSection, triggerGlitch } from '../state/sceneBus.js';
-import { playCutNoise } from '../audio/AudioEngine.js';
+import { playClickHit, playGlitchBurst, playHoverTick, playKeystroke } from '../audio/AudioEngine.js';
 import './TerminalOverlay.css';
 
 const MATRIX_CHARS =
@@ -31,7 +31,7 @@ function buildFastfetch() {
     .join('\n');
 }
 
-export default function TerminalOverlay({ open, onOpen, onClose }) {
+export default function TerminalOverlay({ open, isMobile = false, forceInline = false, onOpen, onClose }) {
   const [entries, setEntries] = useState(() => [
     { tone: 'dim', text: TERMINAL_CONFIG.banner[0] },
     { tone: 'dim', text: TERMINAL_CONFIG.banner[1] },
@@ -179,7 +179,7 @@ export default function TerminalOverlay({ open, onOpen, onClose }) {
     } else if (lower === 'glitch') {
       response = '// glitching the matrix...';
       triggerGlitch(1.0);
-      playCutNoise();
+      playGlitchBurst();
     } else if (lower === 'fastfetch') {
       response = buildFastfetch();
     } else if (lower === 'date') {
@@ -225,6 +225,7 @@ export default function TerminalOverlay({ open, onOpen, onClose }) {
       const nextIdx = histIdx === -1 ? history.length - 1 : Math.max(0, histIdx - 1);
       setHistIdx(nextIdx);
       setInput(history[nextIdx]);
+      playKeystroke();
     } else if (e.key === 'ArrowDown') {
       e.preventDefault();
       if (histIdx === -1) return;
@@ -236,26 +237,38 @@ export default function TerminalOverlay({ open, onOpen, onClose }) {
         setHistIdx(nextIdx);
         setInput(history[nextIdx]);
       }
+      playKeystroke();
+    } else if (e.key === 'Enter' || e.key === 'Backspace') {
+      playKeystroke();
     }
   };
 
   if (!open) {
+    if (!isMobile && !forceInline) {
+      return (
+        <article className="sr-only" aria-labelledby="term-heading-sr">
+          <h2 id="term-heading-sr">cmd.exe</h2>
+          <p>Click the 3D CRT monitor or activate below to open the confessional terminal.</p>
+          <button type="button" onClick={onOpen}>open terminal</button>
+        </article>
+      );
+    }
+
     return (
-      <article className="term-invite-card" aria-labelledby="term-heading">
-        <div className="chapel-tag">
-          <span className="chapel-tag-cross" aria-hidden="true">♰</span>
-          <span>CHAPEL VII // CONFESSIONAL</span>
-        </div>
-
-        <h2 id="term-heading" className="chapel-title">cmd.exe</h2>
-
-        <p className="chapel-copy c-dim">
-          // click the CRT glass or enter below to take over the terminal (help, fastfetch, cmatrix, glitch, section jumps).
-        </p>
-
-        <button type="button" className="term-enter-btn xerox-hover" onClick={onOpen}>
-          <span className="c-red" aria-hidden="true">♰</span>
-          <span>ENTER TERMINAL</span>
+      <article className="term-diegetic" aria-labelledby="term-heading">
+        <div className="term-diegetic-wash" aria-hidden="true" />
+        <h2 id="term-heading" className="chapel-title term-diegetic-title">cmd.exe</h2>
+        <button
+          type="button"
+          className="ink-trigger"
+          onMouseEnter={playHoverTick}
+          onClick={() => {
+            playClickHit();
+            onOpen?.();
+          }}
+        >
+          <span className="ink-cross" aria-hidden="true">♰</span>
+          <span>touch the CRT glass</span>
         </button>
       </article>
     );
@@ -271,12 +284,20 @@ export default function TerminalOverlay({ open, onOpen, onClose }) {
     >
       <div className="term-crt-shell" onClick={(e) => e.stopPropagation()}>
         <div className="term-crt-bar">
-          <span>
-            <span className="c-red" aria-hidden="true">♰ </span>
-            cmd.exe // mazu-term v{TERMINAL_CONFIG.version}
+          <span className="term-crt-label">
+            <span className="ink-cross" aria-hidden="true">♰</span>
+            <span>cmd.exe · mazu-term v{TERMINAL_CONFIG.version}</span>
           </span>
-          <button type="button" className="term-crt-close" onClick={onClose}>
-            ESC // LEAVE
+          <button
+            type="button"
+            className="ink-trigger term-crt-close"
+            onMouseEnter={playHoverTick}
+            onClick={() => {
+              playClickHit();
+              onClose();
+            }}
+          >
+            <span>leave [esc]</span>
           </button>
         </div>
 
@@ -309,7 +330,10 @@ export default function TerminalOverlay({ open, onOpen, onClose }) {
               type="text"
               className="term-prompt-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                setInput(e.target.value);
+                playKeystroke();
+              }}
               onKeyDown={onInputKeyDown}
               aria-label="Terminal command input"
               autoComplete="off"

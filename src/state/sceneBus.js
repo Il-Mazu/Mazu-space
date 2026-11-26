@@ -12,7 +12,9 @@ export const sceneBus = {
   terminalOpen: false,
   eyeClose: 0,
   entered: false,
-  bootPhase: 'idle', // 'idle' | 'shattering' | 'done'
+  bootPhase: 'closed', // 'closed' | 'opening' | 'eye-on' | 'done'
+  doorPush: 0,
+  eyePower: 0,
   bootProgress: 0,
   perfTier: 'high', // 'high' | 'medium' | 'low'
   reducedMotion: false,

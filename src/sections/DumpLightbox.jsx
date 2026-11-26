@@ -1,18 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { images } from 'virtual:dump-images';
+import { playClickHit, playHoverTick, playLightboxTone } from '../audio/AudioEngine.js';
 import './Dump.css';
 
 export default function DumpLightbox({ index, onClose, onChange }) {
   const [swipeOffset, setSwipeOffset] = useState({ x: 0, y: 0 });
   const touchStart = useRef(null);
+  const wasActiveRef = useRef(false);
   const total = images.length;
   const active = index !== null && index >= 0 && index < total ? images[index] : null;
 
+  useEffect(() => {
+    const isNowActive = Boolean(active);
+    if (isNowActive && !wasActiveRef.current) {
+      playLightboxTone(true);
+    } else if (!isNowActive && wasActiveRef.current) {
+      playLightboxTone(false);
+    }
+    wasActiveRef.current = isNowActive;
+  }, [active]);
+
   const prev = useCallback(() => {
+    playClickHit();
     onChange((index - 1 + total) % total);
   }, [index, total, onChange]);
 
   const next = useCallback(() => {
+    playClickHit();
     onChange((index + 1) % total);
   }, [index, total, onChange]);
 
@@ -75,10 +89,18 @@ export default function DumpLightbox({ index, onClose, onChange }) {
     >
       <div className="dump-lb-topbar" onClick={(e) => e.stopPropagation()}>
         <span className="dump-lb-counter">
-          ♰ {String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')} // {active.label}
+          <span className="ink-cross" aria-hidden="true">♰</span>
+          <span>{String(index + 1).padStart(2, '0')} / {String(total).padStart(2, '0')} · {active.label}</span>
         </span>
-        <button type="button" className="dump-lb-close xerox-hover" onClick={onClose} autoFocus>
-          ESC // CLOSE
+        <button
+          type="button"
+          className="ink-trigger dump-lb-close"
+          onMouseEnter={playHoverTick}
+          onClick={onClose}
+          autoFocus
+        >
+          <span className="ink-cross" aria-hidden="true">♰</span>
+          <span>close [esc]</span>
         </button>
       </div>
 
@@ -101,11 +123,23 @@ export default function DumpLightbox({ index, onClose, onChange }) {
       </div>
 
       <div className="dump-lb-nav" onClick={(e) => e.stopPropagation()}>
-        <button type="button" className="dump-lb-btn" onClick={prev} aria-label="Previous image">
-          ← PREV
+        <button
+          type="button"
+          className="ink-trigger dump-lb-btn"
+          onMouseEnter={playHoverTick}
+          onClick={prev}
+          aria-label="Previous image"
+        >
+          ← prev
         </button>
-        <button type="button" className="dump-lb-btn" onClick={next} aria-label="Next image">
-          NEXT →
+        <button
+          type="button"
+          className="ink-trigger dump-lb-btn"
+          onMouseEnter={playHoverTick}
+          onClick={next}
+          aria-label="Next image"
+        >
+          next →
         </button>
       </div>
     </div>

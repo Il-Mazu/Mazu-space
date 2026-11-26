@@ -10,7 +10,6 @@ import CathedralLighting from './CathedralLighting.jsx';
 import GothicNave from './GothicNave.jsx';
 import HangingChains from './HangingChains.jsx';
 import NaveSmoke from './NaveSmoke.jsx';
-import MazuEmblem3D from './MazuEmblem3D.jsx';
 import PostFX from './PostFX.jsx';
 import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
@@ -20,6 +19,7 @@ import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
 import TerminalChapel from '../sections/TerminalChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
+import DiegeticStageUI from '../ui/DiegeticStageUI.jsx';
 
 function AudioSampler() {
   useFrame(() => {
@@ -28,7 +28,18 @@ function AudioSampler() {
   return null;
 }
 
-export default function CathedralCanvas({ isMobile, entered = true, lanyard = null, onOpenLightbox, onOpenTerminal, onContextLost }) {
+export default function CathedralCanvas({
+  isMobile,
+  entered = true,
+  lanyard = null,
+  cryptOpen = false,
+  terminalOpen = false,
+  lightboxOpen = false,
+  onOpenLightbox,
+  onOpenTerminal,
+  onOpenCrypt,
+  onContextLost,
+}) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
   const canvasRootRef = useRef(null);
   const maxDpr = isMobile ? 1.5 : 2;
@@ -78,7 +89,6 @@ export default function CathedralCanvas({ isMobile, entered = true, lanyard = nu
         <HangingChains isMobile={isMobile} />
         <NaveSmoke isMobile={isMobile} />
 
-        <MazuEmblem3D isMobile={isMobile} />
         <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
         {entered && (
           <>
@@ -86,9 +96,20 @@ export default function CathedralCanvas({ isMobile, entered = true, lanyard = nu
             <PresenceChapel isMobile={isMobile} lanyard={lanyard} portalRef={canvasRootRef} />
             <MusicChapel isMobile={isMobile} />
             <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
-            <GamesChapel isMobile={isMobile} />
+            <GamesChapel isMobile={isMobile} onOpenCrypt={onOpenCrypt} />
             <TerminalChapel isMobile={isMobile} onOpenTerminal={onOpenTerminal} />
             <ExitChapel isMobile={isMobile} />
+            <DiegeticStageUI
+              isMobile={isMobile}
+              entered={entered}
+              cryptOpen={cryptOpen}
+              terminalOpen={terminalOpen}
+              lightboxOpen={lightboxOpen}
+              portalRef={canvasRootRef}
+              onOpenLightbox={onOpenLightbox}
+              onOpenCrypt={onOpenCrypt}
+              onOpenTerminal={onOpenTerminal}
+            />
           </>
         )}
 

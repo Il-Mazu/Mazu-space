@@ -1,0 +1,235 @@
+.doors-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  overflow: hidden;
+  background: #060607;
+  perspective: 1400px;
+  transform-style: preserve-3d;
+  transition: background-color 0.25s ease;
+}
+
+.doors-screen.is-opening {
+  background: transparent;
+  pointer-events: none;
+}
+
+.doors-screen.is-fading {
+  opacity: 0;
+}
+
+/* Red light leaking beneath and through the center seam */
+.doors-floor-leak {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: min(680px, 90vw);
+  height: 36vh;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    ellipse at 50% 100%,
+    rgba(255, 51, 82, calc(0.08 + var(--load-frac, 0.2) * 0.24)) 0%,
+    rgba(138, 15, 31, 0.14) 38%,
+    transparent 74%
+  );
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.5s ease;
+}
+
+.doors-seam-glow {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: var(--slit-w, 2px);
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 51, 82, 0.1) 0%,
+    rgba(255, 110, 128, 0.92) 48%,
+    rgba(255, 51, 82, 0.95) 88%,
+    #ff3352 100%
+  );
+  box-shadow:
+    0 0 calc(10px + var(--load-frac, 0.2) * 34px) rgba(255, 51, 82, 0.72),
+    0 0 calc(32px + var(--load-frac, 0.2) * 78px) rgba(138, 15, 31, 0.52);
+  z-index: 1;
+  pointer-events: none;
+  transition: width 0.22s ease, opacity 0.45s ease, transform 0.6s ease;
+}
+
+.doors-screen.is-ready .doors-seam-glow {
+  animation: doors-seam-pulse 3.2s ease-in-out infinite;
+}
+
+.doors-screen.is-opening .doors-seam-glow {
+  width: 34vw;
+  opacity: 0;
+  transition: width 0.65s ease, opacity 0.7s ease 0.15s;
+}
+
+@keyframes doors-seam-pulse {
+  0%, 100% { filter: brightness(0.95); }
+  50% { filter: brightness(1.22); }
+}
+
+/* Twin monumental door panels */
+.doors-leaf {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  z-index: 2;
+  background:
+    radial-gradient(ellipse at 50% 50%, #0b090b 0%, #060607 82%);
+  will-change: transform;
+  backface-visibility: hidden;
+  pointer-events: none;
+}
+
+.doors-leaf--left {
+  left: 0;
+  transform-origin: left center;
+  border-right: 1px solid rgba(255, 51, 82, calc(0.24 + var(--load-frac, 0.2) * 0.5));
+  box-shadow: inset -18px 0 42px rgba(255, 51, 82, calc(0.04 + var(--load-frac, 0.2) * 0.14));
+}
+
+.doors-leaf--right {
+  right: 0;
+  transform-origin: right center;
+  border-left: 1px solid rgba(255, 51, 82, calc(0.24 + var(--load-frac, 0.2) * 0.5));
+  box-shadow: inset 18px 0 42px rgba(255, 51, 82, calc(0.04 + var(--load-frac, 0.2) * 0.14));
+}
+
+.doors-screen--returning .doors-leaf {
+  transition-duration: 0.48s;
+}
+
+.doors-screen--returning .doors-leaf--left {
+  transform: rotateY(-7deg);
+}
+
+.doors-screen--returning .doors-leaf--right {
+  transform: rotateY(7deg);
+}
+
+.door-relief {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: rgba(145, 36, 52, 0.14);
+  stroke-width: 1.5;
+}
+
+.doors-dust {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.doors-screen.is-opening .doors-dust,
+.doors-screen.is-opening .doors-floor-leak,
+.doors-screen.is-opening .doors-hud-low {
+  opacity: 0;
+  transition: opacity 0.28s ease;
+}
+
+/* Bottom percentage and entry choices */
+.doors-hud-low {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: clamp(32px, 6vh, 64px);
+  z-index: 6;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+}
+
+.doors-pct {
+  font-family: var(--font-body);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  text-shadow: 0 2px 10px #000;
+  transition: opacity 0.25s ease;
+}
+
+.doors-pct.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.doors-choices {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 14px 28px;
+  opacity: 0;
+  transform: translateY(6px);
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.doors-choices.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.doors-choice {
+  font-size: 13px;
+}
+
+.doors-choice.is-secondary {
+  color: var(--text-dim);
+}
+
+.doors-choice.is-secondary::after {
+  opacity: 0.45;
+}
+
+.doors-skip {
+  position: fixed;
+  right: clamp(16px, 3vw, 32px);
+  bottom: clamp(18px, 3vw, 28px);
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-dim);
+  background: none;
+  border: 0;
+  opacity: 0.65;
+  transition: opacity 0.16s ease, color 0.16s ease;
+}
+
+.doors-skip:hover {
+  opacity: 1;
+  color: var(--bone);
+}
+
+@media (max-width: 767px) {
+  .doors-choices {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .doors-leaf,
+  .doors-seam-glow {
+    display: none;
+  }
+
+  .doors-screen.is-fading {
+    opacity: 0;
+    transition: opacity 0.24s linear !important;
+  }
+}

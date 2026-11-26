@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { images } from 'virtual:dump-images';
 import { ANGEL_ART, CROSS_SWORD_ART, WING_ART } from '../data/ascii.js';
 import { sampleAudio, useAudioState } from '../audio/AudioEngine.js';
@@ -8,7 +8,7 @@ import AboutOverlay from '../sections/AboutOverlay.jsx';
 import PresenceOverlay from '../sections/PresenceOverlay.jsx';
 import MusicOverlay from '../sections/MusicOverlay.jsx';
 import DumpOverlay from '../sections/DumpOverlay.jsx';
-import GamesCryptOverlay from '../sections/GamesCryptOverlay.jsx';
+import GamesCryptOverlay, { GamesCryptModal } from '../sections/GamesCryptOverlay.jsx';
 import TerminalOverlay from '../sections/TerminalOverlay.jsx';
 import ExitOverlay from '../sections/ExitOverlay.jsx';
 import './Fallback2D.css';
@@ -65,7 +65,7 @@ function ScopeCanvas2D() {
   return (
     <div className="fb2d-scope-box">
       <div className="fb2d-scope-label">
-        ♰ OSCILLOSCOPE // {audio.playing ? 'LIVE WAVEFORM' : 'IDLE STATIC'}
+        ♰ oscilloscope · {audio.playing ? 'live waveform' : 'idle static'}
       </div>
       <canvas ref={canvasRef} className="fb2d-scope-canvas" />
     </div>
@@ -73,22 +73,24 @@ function ScopeCanvas2D() {
 }
 
 export default function Fallback2D({ lanyard, onOpenLightbox, onOpenTerminal }) {
+  const [cryptOpen, setCryptOpen] = useState(false);
+
   return (
     <main id="main-content" className="fb2d-root">
       <div className="fb2d-container">
         <div className="fb2d-notice">
-          ♰ 2D RELIQUARY MODE // WebGL unavailable or disabled — full archive active
+          ♰ 2d reliquary mode // webgl unavailable — full archive active
         </div>
 
         <section id="chapel-hero" className="fb2d-section" aria-label="I. the eye">
-          <HeroOverlay />
+          <HeroOverlay forceInline />
           <div className="fb2d-eye-frame">
             <img src="/wallpapers/eye.webp" alt="Mazu pixel eye" />
           </div>
         </section>
 
         <section id="chapel-about" className="fb2d-section" aria-label="II. whoami">
-          <AboutOverlay />
+          <AboutOverlay forceInline />
           <div className="fb2d-ascii-box">
             <pre className="fb2d-ascii-pre">{ANGEL_ART}</pre>
             <pre className="fb2d-ascii-pre" style={{ marginTop: 14, fontSize: 6.5 }}>{CROSS_SWORD_ART}</pre>
@@ -100,11 +102,11 @@ export default function Fallback2D({ lanyard, onOpenLightbox, onOpenTerminal }) 
             <pre className="fb2d-ascii-pre">{WING_ART}</pre>
             <pre className="fb2d-ascii-pre fb2d-wing-mirrored">{WING_ART}</pre>
           </div>
-          <PresenceOverlay lanyard={lanyard} />
+          <PresenceOverlay lanyard={lanyard} forceInline />
         </section>
 
         <section id="chapel-music" className="fb2d-section" aria-label="IV. altar of noise">
-          <MusicOverlay lanyard={lanyard} />
+          <MusicOverlay lanyard={lanyard} forceInline />
           <ScopeCanvas2D />
         </section>
 
@@ -122,21 +124,23 @@ export default function Fallback2D({ lanyard, onOpenLightbox, onOpenTerminal }) 
               </button>
             ))}
           </div>
-          <DumpOverlay onOpenLightbox={onOpenLightbox} />
+          <DumpOverlay forceInline onOpenLightbox={onOpenLightbox} />
         </section>
 
         <section id="chapel-games" className="fb2d-section fb2d-section--full" aria-label="VI. the crypt">
-          <GamesCryptOverlay />
+          <GamesCryptOverlay forceInline onOpen={() => setCryptOpen(true)} />
         </section>
 
         <section id="chapel-terminal" className="fb2d-section fb2d-section--full" aria-label="VII. confessional">
-          <TerminalOverlay open={false} onOpen={onOpenTerminal} onClose={() => {}} />
+          <TerminalOverlay open={false} forceInline onOpen={onOpenTerminal} onClose={() => {}} />
         </section>
 
         <section id="chapel-exit" className="fb2d-section fb2d-section--full" aria-label="VIII. log and links">
           <ExitOverlay />
         </section>
       </div>
+
+      <GamesCryptModal open={cryptOpen} onClose={() => setCryptOpen(false)} />
     </main>
   );
 }

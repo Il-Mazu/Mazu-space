@@ -4,7 +4,6 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { GAMES } from './src/data/games.js';
-import { BOOT_LOGO } from './src/bootLogo.js';
 
 function gitInfoPlugin() {
   const VIRTUAL_ID = 'virtual:git-info';
@@ -371,15 +370,13 @@ function gameCoversPlugin() {
   };
 }
 
-// Static copy of the boot screen's logo; React replaces it once the bundle
-// runs, keeping the initial ASCII paint as early LCP.
+// Minimal pitch-black closed-doors shell painted before JS runs.
 function bootShellPlugin() {
-  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return {
     name: 'boot-shell',
     transformIndexHtml: (html) => html.replace(
       '<div id="root"></div>',
-      `<div id="root"><main id="boot" class="boot-screen"><div class="boot-frame" style="min-height:360px;display:flex;flex-direction:column;justify-content:space-between"><pre class="boot-logo">${esc(BOOT_LOGO)}</pre><div class="boot-status-row">&gt; loading cathedral...</div></div></main></div>`,
+      '<div id="root"><main id="boot" class="doors-screen doors-shell" style="position:fixed;inset:0;z-index:500;background:#060607"><div style="position:absolute;top:0;bottom:0;left:50%;width:1px;background:linear-gradient(180deg,transparent 4%,#ff3352 50%,transparent 96%);opacity:0.45;transform:translateX(-50%)"></div></main></div>',
     ),
   };
 }

@@ -29,6 +29,7 @@ export const eyeFragmentShader = /* glsl */ `
   uniform float uAudioBass;
   uniform float uClose;
   uniform float uSpectral;
+  uniform float uPowerOn;
   varying vec2 vUv;
   varying vec3 vNormal;
   varying vec3 vViewDir;
@@ -132,6 +133,24 @@ export const eyeFragmentShader = /* glsl */ `
       col = mix(col, vec3(col.r * 1.15, col.g * 0.65, col.b * 0.7), uSpectral * 0.45);
     }
 
+    if (uPowerOn < 0.999 && uSpectral < 0.01) {
+      float p = clamp(uPowerOn, 0.0, 1.0);
+      float lineOn = smoothstep(0.14, 0.24, p);
+      float halfH = mix(0.016, 0.58, smoothstep(0.42, 0.94, p));
+      float halfW = mix(0.06, 0.56, smoothstep(0.16, 0.42, p));
+      float vDist = abs(cuv.y - 0.5);
+      float hDist = abs(cuv.x - 0.5);
+      float beamMask = (1.0 - smoothstep(halfH - 0.012, halfH + 0.012, vDist))
+        * (1.0 - smoothstep(halfW - 0.02, halfW + 0.02, hDist))
+        * lineOn;
+      float flicker = 0.78 + 0.22 * sin(uTime * 68.0 + p * 24.0);
+      float hLine = smoothstep(0.028, 0.0, vDist) * smoothstep(0.16, 0.42, p) * (1.0 - smoothstep(0.50, 0.80, p));
+      float surge = smoothstep(0.40, 0.58, p) * (1.0 - smoothstep(0.68, 0.98, p));
+      col *= beamMask * flicker;
+      col += (vec3(1.15, 0.96, 0.92) * hLine + vec3(0.85, 0.22, 0.30) * (surge * 0.65 + hLine * 0.5)) * (1.0 - smoothstep(0.88, 1.0, p));
+      col = max(col, vec3(0.015, 0.012, 0.016));
+    }
+
     gl_FragColor = vec4(col, 1.0);
   }
 `;
@@ -147,6 +166,7 @@ export function createEyeMaterial(fallbackTex) {
       uAudioBass: { value: 0 },
       uClose: { value: 0 },
       uSpectral: { value: 0 },
+      uPowerOn: { value: 1 },
     },
     vertexShader: eyeVertexShader,
     fragmentShader: eyeFragmentShader,

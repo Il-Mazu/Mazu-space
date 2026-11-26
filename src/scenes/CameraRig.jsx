@@ -42,6 +42,11 @@ export default function CameraRig({ isMobile }) {
     posCurve.getPointAt(t, targetPos.current);
     lookCurve.getPointAt(t, targetLook.current);
 
+    if (!sceneBus.reducedMotion && sceneBus.doorPush < 0.999) {
+      const pushEase = 1 - Math.pow(1 - Math.max(0, Math.min(1, sceneBus.doorPush)), 3);
+      targetPos.current.z += (1 - pushEase) * 4.4;
+    }
+
     if (!sceneBus.reducedMotion && !sceneBus.terminalOpen) {
       const pxTarget = sceneBus.pointer.x * (isMobile ? 0.14 : 0.38);
       const pyTarget = sceneBus.pointer.y * (isMobile ? 0.10 : 0.24);

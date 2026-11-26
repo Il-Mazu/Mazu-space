@@ -1,8 +1,8 @@
 import { useSyncExternalStore } from 'react';
-import { AMBIENT_SOUND, BOOT_SOUND, TRACKS } from '../data/tracks.js';
-import { sceneBus } from '../state/sceneBus.js';
+import { TRACKS } from '../data/tracks.js';
+import { sceneBus, subscribeSection } from '../state/sceneBus.js';
+import { CathedralAudioBus } from './cathedralSynth.js';
 
-const AMBIENT_VOL = 0.06;
 const listeners = new Set();
 
 const state = {
@@ -13,27 +13,28 @@ const state = {
   loopMode: 0, // 0=off, 1=all, 2=one
   soundEnabled: false,
   currentTime: 0,
-  duration: TRACKS[0].duration,
+  duration: 0,
+  durations: TRACKS.map(() => 0),
   unlocked: false,
 };
 
 let snapshot = { ...state };
 let audioEl = null;
-let ambientEl = null;
 
-// Single Web Audio graph shared across the session (createMediaElementSource can only bind once).
+// Single Web Audio graph shared across the session (createMediaElementSource binds once).
 let graph = null;
+let sectionSubscribed = false;
+let probedDurations = false;
 const timeDomainBuf = new Uint8Array(128);
 const freqBuf = new Uint8Array(128);
 
 function emit() {
-  snapshot = { ...state };
+  snapshot = { ...state, durations: [...state.durations] };
   listeners.forEach((fn) => fn());
 }
 
-function ensureAudioElements() {
+function ensureAudioElement() {
   if (typeof Audio === 'undefined') return null;
-
   if (!audioEl) {
     audioEl = new Audio();
     audioEl.preload = 'none';
@@ -48,6 +49,7 @@ function ensureAudioElements() {
     audioEl.addEventListener('loadedmetadata', () => {
       if (Number.isFinite(audioEl.duration) && audioEl.duration > 0) {
         state.duration = audioEl.duration;
+        state.durations[state.currentTrack] = audioEl.duration;
         emit();
       }
     });
@@ -68,23 +70,29 @@ function ensureAudioElements() {
       nextTrack();
     });
   }
-
-  if (!ambientEl) {
-    ambientEl = new Audio();
-    ambientEl.preload = 'none';
-    ambientEl.loop = true;
-    ambientEl.volume = AMBIENT_VOL;
-  }
-
   return audioEl;
 }
 
+function ensureSectionSync() {
+  if (sectionSubscribed) return;
+  sectionSubscribed = true;
+  subscribeSection((idx) => {
+    if (graph) {
+      graph.cathedral.setChapelTint(idx);
+      if (state.unlocked && state.soundEnabled && !sceneBus.reducedMotion && sceneBus.bootPhase === 'done') {
+        graph.cathedral.playSectionShift();
+      }
+    }
+  });
+}
+
 function ensureGraph() {
+  ensureSectionSync();
   if (graph) {
     if (graph.ctx.state === 'suspended') graph.ctx.resume().catch(() => {});
     return graph;
   }
-  const el = ensureAudioElements();
+  const el = ensureAudioElement();
   if (!el || typeof window === 'undefined') return null;
   const AudioCtx = window.AudioContext || window.webkitAudioContext;
   if (!AudioCtx) return null;
@@ -103,7 +111,8 @@ function ensureGraph() {
     analyser.connect(musicGain);
     musicGain.connect(ctx.destination);
 
-    graph = { ctx, analyser, musicGain };
+    const cathedral = new CathedralAudioBus(ctx);
+    graph = { ctx, analyser, musicGain, cathedral };
   } catch {
     graph = null;
   }
@@ -115,23 +124,43 @@ function syncGains() {
   if (g) {
     const target = state.soundEnabled ? state.volume : 0;
     g.musicGain.gain.setTargetAtTime(target, g.ctx.currentTime, 0.05);
+    g.cathedral.setActive({
+      unlocked: state.unlocked,
+      enabled: state.soundEnabled,
+      musicPlaying: state.playing,
+      chapelIndex: sceneBus.activeSection,
+    });
   } else if (audioEl) {
     audioEl.volume = state.soundEnabled ? state.volume : 0;
   }
+}
 
-  if (ambientEl) {
-    const wantAmbient = state.unlocked && state.soundEnabled && !state.playing;
-    if (wantAmbient) {
-      if (!ambientEl.getAttribute('data-loaded')) {
-        ambientEl.src = AMBIENT_SOUND;
-        ambientEl.setAttribute('data-loaded', '1');
+export function probeTrackDurations() {
+  if (probedDurations || typeof Audio === 'undefined') return;
+  probedDurations = true;
+  TRACKS.forEach((track, i) => {
+    if (state.durations[i] > 0 || !track?.src) return;
+    const probe = new Audio();
+    probe.preload = 'metadata';
+    const cleanup = () => {
+      probe.removeEventListener('loadedmetadata', onMeta);
+      probe.removeEventListener('error', cleanup);
+      probe.src = '';
+    };
+    const onMeta = () => {
+      if (Number.isFinite(probe.duration) && probe.duration > 0) {
+        state.durations[i] = probe.duration;
+        if (i === state.currentTrack && state.duration === 0) {
+          state.duration = probe.duration;
+        }
+        emit();
       }
-      ambientEl.volume = AMBIENT_VOL;
-      ambientEl.play().catch(() => {});
-    } else {
-      ambientEl.pause();
-    }
-  }
+      cleanup();
+    };
+    probe.addEventListener('loadedmetadata', onMeta);
+    probe.addEventListener('error', cleanup);
+    probe.src = track.src;
+  });
 }
 
 function pickIndex(dir) {
@@ -146,14 +175,15 @@ function pickIndex(dir) {
 }
 
 function loadCurrentSource(autoPlay) {
-  const el = ensureAudioElements();
+  const el = ensureAudioElement();
   if (!el) return;
   const track = TRACKS[state.currentTrack];
+  if (!track) return;
   if (el.getAttribute('data-track') !== String(state.currentTrack)) {
     el.src = track.src;
     el.setAttribute('data-track', String(state.currentTrack));
     state.currentTime = 0;
-    state.duration = track.duration;
+    state.duration = state.durations[state.currentTrack] || 0;
   }
   if (autoPlay) {
     state.unlocked = true;
@@ -171,53 +201,55 @@ export function unlockAudio(enableSound) {
   state.unlocked = true;
   state.soundEnabled = Boolean(enableSound);
   sceneBus.soundEnabled = state.soundEnabled;
-  ensureAudioElements();
+  ensureAudioElement();
+  ensureSectionSync();
   if (state.soundEnabled) ensureGraph();
   syncGains();
   emit();
 }
 
-export function playBootSound() {
-  if (!state.soundEnabled || typeof Audio === 'undefined') return;
-  const boot = new Audio(BOOT_SOUND);
-  boot.volume = 0.2;
-  boot.play().catch(() => {});
+export function playDoorEntry() {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playDoorEntry();
+}
+
+export function playCrtPowerOn() {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playCrtPowerOn();
 }
 
 export function playHoverTick() {
   if (!state.soundEnabled || sceneBus.reducedMotion) return;
-  const g = ensureGraph();
-  if (!g) return;
-  const now = g.ctx.currentTime;
-  const osc = g.ctx.createOscillator();
-  const gain = g.ctx.createGain();
-  osc.type = 'square';
-  osc.frequency.setValueAtTime(1150, now);
-  osc.frequency.exponentialRampToValueAtTime(420, now + 0.03);
-  gain.gain.setValueAtTime(0.025, now);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.032);
-  osc.connect(gain);
-  gain.connect(g.ctx.destination);
-  osc.start(now);
-  osc.stop(now + 0.035);
+  ensureGraph()?.cathedral.playHoverTick();
+}
+
+export function playClickHit() {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playClickHit();
+}
+
+export function playSectionShift() {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playSectionShift();
+}
+
+export function playGlitchBurst() {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playGlitchBurst();
 }
 
 export function playCutNoise() {
+  playGlitchBurst();
+}
+
+export function playKeystroke() {
   if (!state.soundEnabled || sceneBus.reducedMotion) return;
-  const g = ensureGraph();
-  if (!g) return;
-  const now = g.ctx.currentTime;
-  const osc = g.ctx.createOscillator();
-  const gain = g.ctx.createGain();
-  osc.type = 'sawtooth';
-  osc.frequency.setValueAtTime(140, now);
-  osc.frequency.exponentialRampToValueAtTime(48, now + 0.09);
-  gain.gain.setValueAtTime(0.04, now);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.095);
-  osc.connect(gain);
-  gain.connect(g.ctx.destination);
-  osc.start(now);
-  osc.stop(now + 0.1);
+  ensureGraph()?.cathedral.playKeystroke();
+}
+
+export function playLightboxTone(opening = true) {
+  if (!state.soundEnabled || sceneBus.reducedMotion) return;
+  ensureGraph()?.cathedral.playLightboxTone(opening);
 }
 
 export function setSoundEnabled(next) {
@@ -230,11 +262,13 @@ export function setSoundEnabled(next) {
 }
 
 export function toggleSound() {
-  setSoundEnabled(!state.soundEnabled);
+  const next = !state.soundEnabled;
+  setSoundEnabled(next);
+  if (next) playClickHit();
 }
 
 export function togglePlay() {
-  const el = ensureAudioElements();
+  const el = ensureAudioElement();
   if (!el) return;
   state.playing = !state.playing;
   sceneBus.audioMetrics.isPlaying = state.playing;
@@ -262,7 +296,7 @@ export function prevTrack() {
   if (state.playing) loadCurrentSource(true);
   else {
     state.currentTime = 0;
-    state.duration = TRACKS[nextIdx].duration;
+    state.duration = state.durations[nextIdx] || 0;
   }
   emit();
 }
@@ -273,7 +307,7 @@ export function nextTrack() {
   if (state.playing) loadCurrentSource(true);
   else {
     state.currentTime = 0;
-    state.duration = TRACKS[nextIdx].duration;
+    state.duration = state.durations[nextIdx] || 0;
   }
   emit();
 }
@@ -285,9 +319,10 @@ export function setVolume(vol) {
 }
 
 export function seekTrack(secs) {
-  const el = ensureAudioElements();
+  const el = ensureAudioElement();
   if (!el) return;
-  const clamped = Math.max(0, Math.min(state.duration, secs));
+  const maxDur = state.duration || state.durations[state.currentTrack] || 0;
+  const clamped = Math.max(0, Math.min(maxDur, secs));
   if (el.src) el.currentTime = clamped;
   state.currentTime = clamped;
   emit();
@@ -308,43 +343,37 @@ export function sampleAudio() {
   const active = Boolean(state.playing && state.soundEnabled && audioEl && !audioEl.paused && graph);
   metrics.isPlaying = active;
 
-  if (!active) {
-    metrics.rms *= 0.88;
-    metrics.bass *= 0.88;
-    metrics.mid *= 0.88;
-    metrics.high *= 0.88;
+  if (!active || !graph) {
+    metrics.rms *= 0.85;
+    metrics.bass *= 0.85;
+    metrics.mid *= 0.85;
+    metrics.high *= 0.85;
     return;
   }
 
-  graph.analyser.getByteTimeDomainData(timeDomainBuf);
-  graph.analyser.getByteFrequencyData(freqBuf);
-  metrics.timeDomain.set(timeDomainBuf);
+  const { analyser } = graph;
+  analyser.getByteFrequencyData(freqBuf);
+  analyser.getByteTimeDomainData(timeDomainBuf);
 
   let bassSum = 0;
-  for (let i = 0; i < 8; i++) bassSum += freqBuf[i];
   let midSum = 0;
-  for (let i = 8; i < 40; i++) midSum += freqBuf[i];
   let highSum = 0;
-  for (let i = 40; i < 96; i++) highSum += freqBuf[i];
-  let tdSum = 0;
-  for (let i = 0; i < timeDomainBuf.length; i++) tdSum += Math.abs(timeDomainBuf[i] / 128 - 1);
+  for (let i = 0; i < 10; i++) bassSum += freqBuf[i];
+  for (let i = 10; i < 42; i++) midSum += freqBuf[i];
+  for (let i = 42; i < 96; i++) highSum += freqBuf[i];
 
-  const bass = Math.min(1, bassSum / (8 * 255));
-  const mid = Math.min(1, midSum / (32 * 255));
-  const high = Math.min(1, highSum / (56 * 255));
-  const rms = Math.min(1, (tdSum / timeDomainBuf.length) * 2.4);
-
-  metrics.bass = metrics.bass * 0.65 + bass * 0.35;
-  metrics.mid = metrics.mid * 0.65 + mid * 0.35;
-  metrics.high = metrics.high * 0.65 + high * 0.35;
-  metrics.rms = metrics.rms * 0.6 + rms * 0.4;
+  metrics.bass = bassSum / (10 * 255);
+  metrics.mid = midSum / (32 * 255);
+  metrics.high = highSum / (54 * 255);
+  metrics.rms = metrics.bass * 0.5 + metrics.mid * 0.35 + metrics.high * 0.15;
+  metrics.timeDomain = timeDomainBuf;
 }
 
 export function useAudioState() {
   return useSyncExternalStore(
-    (fn) => {
-      listeners.add(fn);
-      return () => listeners.delete(fn);
+    (cb) => {
+      listeners.add(cb);
+      return () => listeners.delete(cb);
     },
     () => snapshot,
   );

@@ -1,40 +1,49 @@
 import { images, count } from 'virtual:dump-images';
+import { playClickHit, playHoverTick } from '../audio/AudioEngine.js';
 import './Dump.css';
 
-export default function DumpOverlay({ onOpenLightbox }) {
+export default function DumpOverlay({ onOpenLightbox, isMobile = false, forceInline = false }) {
+  if (!isMobile && !forceInline) {
+    return (
+      <article className="sr-only" aria-labelledby="dump-heading-sr">
+        <h2 id="dump-heading-sr">dump/</h2>
+        <p>{count} stained glass shards</p>
+        {images.map((img, i) => (
+          <button key={img.src} type="button" onClick={() => onOpenLightbox(i)}>
+            {img.label}
+          </button>
+        ))}
+      </article>
+    );
+  }
+
   return (
-    <article className="dump-panel" aria-labelledby="dump-heading">
-      <div className="chapel-tag">
-        <span className="chapel-tag-cross" aria-hidden="true">♰</span>
-        <span>CHAPEL V // STAINED GLASS</span>
-      </div>
-
+    <article className="dump-diegetic" aria-labelledby="dump-heading">
+      <div className="dump-diegetic-wash" aria-hidden="true" />
       <h2 id="dump-heading" className="chapel-title">dump/</h2>
-
-      <p className="chapel-copy c-dim">
-        // {count} shards suspended in the bay. click any glass fragment or pick below.
+      <p className="dump-diegetic-copy">
+        {count} stained glass shards · touch any fragment
       </p>
 
-      <div className="dump-grid-mini" role="list" aria-label="Dump gallery shards">
+      <div className="dump-shard-row" role="list" aria-label="Dump gallery shards">
         {images.map((img, i) => (
           <button
             key={img.src}
             type="button"
-            className="dump-thumb-btn"
-            onClick={() => onOpenLightbox(i)}
+            className="ink-trigger dump-shard-link"
+            onMouseEnter={playHoverTick}
+            onClick={() => {
+              playClickHit();
+              onOpenLightbox(i);
+            }}
             aria-label={`Open shard ${i + 1}: ${img.label}`}
           >
-            <img src={img.thumb} alt={img.label} loading="lazy" />
-            <span className="dump-thumb-idx" aria-hidden="true">
-              {String(i + 1).padStart(2, '0')}
-            </span>
+            {String(i + 1).padStart(2, '0')}
           </button>
         ))}
       </div>
 
-      <div className="dump-hint">
-        ← / → navigate &middot; Esc close
-      </div>
+      <div className="dump-diegetic-hint">← / → · esc</div>
     </article>
   );
 }

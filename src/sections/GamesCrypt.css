@@ -1,164 +1,220 @@
-.games-crypt-panel {
+/* ── CLOSED MOBILE / INLINE TRIGGER ──────────────────────────────────────── */
+.games-diegetic {
   position: relative;
-  width: min(560px, calc(100vw - 36px));
-  padding: 18px 20px;
   pointer-events: auto;
-  background: rgba(7, 7, 10, 0.94);
-  border: 1px solid var(--border-hi);
-  border-left: 3px solid var(--accent);
-  box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.92), inset 0 0 36px rgba(138, 15, 31, 0.16);
+  width: min(360px, 100%);
 }
 
-.games-ascii-banner {
-  font-family: ui-monospace, monospace;
-  font-size: 3.3px;
-  line-height: 1.15;
-  color: var(--text-dim);
-  white-space: pre;
-  overflow: hidden;
-  margin-bottom: 10px;
+.games-diegetic-wash {
+  position: absolute;
+  inset: -32px -38px;
+  background: radial-gradient(
+    ellipse at 36% 56%,
+    rgba(6, 4, 5, 0.84) 0%,
+    rgba(6, 4, 5, 0.42) 58%,
+    transparent 82%
+  );
+  pointer-events: none;
+  z-index: -1;
 }
 
-.games-disclaimer {
-  font-size: 11px;
+.games-diegetic-counts {
+  font-size: 12px;
+  color: var(--text);
+  text-shadow: 0 2px 8px #000;
+  margin-bottom: 14px;
+}
+
+/* ── FULLSCREEN DARK CATHEDRAL TILE WALL ─────────────────────────────────── */
+.crypt-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  background: radial-gradient(ellipse at 50% 24%, rgba(56, 8, 16, 0.34), rgba(6, 6, 7, 0.97) 68%);
+  backdrop-filter: blur(8px);
+  display: flex;
+  pointer-events: auto;
+}
+
+.crypt-surface {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(18px, 3vw, 36px) clamp(18px, 4vw, 56px) clamp(16px, 2.4vw, 28px);
+}
+
+.crypt-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 14px;
+}
+
+.crypt-title-block {
+  min-width: 0;
+}
+
+.crypt-heading {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: clamp(2.4rem, 4.6vw, 4rem);
+  line-height: 0.92;
+  color: var(--bone);
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.95), -2px 0 rgba(255, 51, 82, 0.42);
+  margin-bottom: 8px;
+}
+
+.crypt-disclaimer {
+  font-family: var(--font-body);
+  font-size: 11.5px;
   line-height: 1.45;
   color: var(--text-dim);
-  margin-bottom: 12px;
+  max-width: 68ch;
 }
 
-.games-toolbar {
+.crypt-close {
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.crypt-controls {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  padding-bottom: 10px;
-  border-bottom: 1px dashed var(--border-hi);
-  margin-bottom: 10px;
+  gap: 10px 24px;
+  padding: 10px 0 12px;
+  border-bottom: 1px solid rgba(170, 32, 48, 0.3);
+  margin-bottom: 14px;
 }
 
-.games-pill-group {
+.crypt-filter-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  align-items: center;
+  gap: 6px 14px;
 }
 
-.games-pill {
-  padding: 4px 8px;
-  font-family: var(--font-label);
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  border: 1px solid var(--border);
+.crypt-link-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 0 4px;
+  background: none;
+  border: 0;
+  font-family: var(--font-body);
+  font-size: 11.5px;
   color: var(--text-dim);
-  background: var(--surface);
+  transition: color 0.15s ease, text-shadow 0.15s ease;
 }
 
-.games-pill:hover {
+.crypt-link-btn:hover {
   color: var(--bone);
-  border-color: var(--border-hi);
+  text-shadow: -1.5px 0 rgba(255, 51, 82, 0.8), 1.5px 0 rgba(239, 231, 220, 0.4);
 }
 
-.games-pill.active {
-  color: var(--bone);
-  border-color: var(--accent);
-  background: rgba(255, 51, 82, 0.14);
+.crypt-link-btn.active {
+  color: var(--accent);
+  text-shadow: 0 0 12px rgba(255, 51, 82, 0.5);
 }
 
-.games-scroll-box {
-  height: min(360px, 42vh);
+.crypt-link-btn.active::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: var(--accent);
+}
+
+.crypt-link-sym {
+  font-size: 10px;
+}
+
+.crypt-scroll {
+  flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 6px;
+  padding-right: 8px;
 }
 
-.games-virt-canvas {
+.crypt-virt-canvas {
   position: relative;
   width: 100%;
 }
 
-.games-virt-row {
+.crypt-virt-row {
   position: absolute;
   left: 0;
   right: 0;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(var(--crypt-cols, 2), minmax(0, 1fr));
+  gap: 14px;
 }
 
-.game-crypt-card {
+.crypt-item {
   position: relative;
-  display: flex;
-  gap: 10px;
-  height: 104px;
-  padding: 9px 10px;
-  background: var(--surface);
-  border: 1px solid var(--border-hi);
+  height: 262px;
   overflow: hidden;
+  background: #080607;
 }
 
-.game-crypt-card.condemned {
-  background: linear-gradient(135deg, rgba(28, 4, 9, 0.92), rgba(9, 9, 12, 0.96));
-  border-color: var(--accent-deep);
-}
-
-.game-crypt-card.condemned::after {
-  content: '';
+.crypt-item-art {
   position: absolute;
-  left: -10%;
-  right: -10%;
-  top: 50%;
-  height: 2px;
-  background: rgba(255, 51, 82, 0.72);
-  transform: rotate(-11deg);
-  pointer-events: none;
-}
-
-.game-crypt-card.condemned-severe {
-  border-color: var(--accent);
-  box-shadow: inset 0 0 20px rgba(255, 51, 82, 0.25);
-}
-
-.game-crypt-thumb {
-  width: 62px;
-  height: 84px;
-  flex-shrink: 0;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   display: grid;
   place-items: center;
-  overflow: hidden;
 }
 
-.game-crypt-thumb img {
+.crypt-item-art img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  filter: saturate(0.84) contrast(1.06);
+  transition: transform 0.32s ease, filter 0.32s ease;
 }
 
-.game-crypt-sigil {
-  font-family: var(--font-display);
-  font-size: 20px;
-  color: var(--text-dim);
+.crypt-item:hover .crypt-item-art img {
+  transform: scale(1.03);
+  filter: saturate(1) contrast(1.1);
 }
 
-.game-crypt-body {
-  flex: 1;
-  min-width: 0;
+.crypt-item-meta {
+  position: absolute;
+  inset: 0;
+  padding: 14px 14px 12px;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: flex-end;
+  gap: 8px;
+  background: linear-gradient(
+    180deg,
+    rgba(6, 6, 7, 0.06) 0%,
+    rgba(6, 6, 7, 0.26) 44%,
+    rgba(6, 4, 5, 0.94) 100%
+  );
+  border-bottom: 1px solid rgba(170, 32, 48, 0.35);
 }
 
-.game-crypt-name {
-  font-size: 12px;
+.crypt-item-name {
+  font-family: var(--font-body);
+  font-size: 13px;
   line-height: 1.25;
   color: var(--bone);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  text-shadow: 0 2px 8px #000;
 }
 
-.game-crypt-meta {
+.crypt-item-sub {
+  font-family: var(--font-body);
   font-size: 10px;
   color: var(--text-dim);
   white-space: nowrap;
@@ -166,69 +222,81 @@
   text-overflow: ellipsis;
 }
 
-.game-crypt-bottom {
+.crypt-item-foot {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
-  gap: 6px;
+  gap: 8px;
 }
 
-.game-crypt-vote {
-  font-size: 24px;
+.crypt-vote {
+  font-family: var(--font-body);
+  font-size: 30px;
   line-height: 1;
   color: var(--bone);
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
 }
 
-.game-crypt-card.condemned .game-crypt-vote {
-  color: var(--accent);
-}
-
-.game-crypt-max {
+.crypt-vote-max {
   font-size: 10px;
   color: var(--text-dim);
 }
 
-.game-condemned-stamp {
-  font-family: var(--font-label);
-  font-size: 8px;
-  letter-spacing: 0.08em;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  padding: 2px 4px;
-  transform: rotate(-4deg);
+.crypt-item.condemned::after {
+  content: '';
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: 46%;
+  height: 2px;
+  background: rgba(255, 51, 82, 0.82);
+  transform: rotate(-13deg);
+  pointer-events: none;
+  box-shadow: 0 0 12px rgba(255, 51, 82, 0.7);
 }
 
-.game-playing-stamp {
-  font-family: var(--font-label);
-  font-size: 8px;
+.crypt-item.condemned .crypt-item-art img {
+  filter: grayscale(0.45) contrast(1.18) brightness(0.76);
+}
+
+.crypt-item.condemned .crypt-vote {
   color: var(--accent);
 }
 
-.games-footer-attr {
-  margin-top: 10px;
-  font-size: 10px;
+.crypt-stamp,
+.crypt-playing {
+  color: var(--accent);
+  font-size: 10.5px;
+}
+
+.crypt-sigil {
+  font-family: var(--font-display);
+  font-size: 28px;
   color: var(--text-dim);
 }
 
-.games-footer-attr a {
+.crypt-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(170, 32, 48, 0.24);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
+.crypt-footer a {
   color: var(--accent);
 }
 
 @media (max-width: 767px) {
-  .games-crypt-panel {
-    width: 100%;
-    padding: 13px 14px;
+  .crypt-surface {
+    padding: 16px 14px 12px;
   }
 
-  .games-ascii-banner {
-    display: none;
-  }
-
-  .games-scroll-box {
-    height: min(215px, 28vh);
-  }
-
-  .games-virt-row {
-    grid-template-columns: 1fr;
+  .crypt-item {
+    height: 214px;
   }
 }

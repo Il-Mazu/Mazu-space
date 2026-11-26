@@ -56,7 +56,7 @@ function makePlaqueTexture(game) {
   return tex;
 }
 
-function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
+function RelicCase({ game, position, rotationY, textures, loadedEnabled, onOpenCrypt }) {
   const groupRef = useRef(null);
   const plaqueTex = useMemo(() => makePlaqueTexture(game), [game]);
   const [coverTex, setCoverTex] = useState(null);
@@ -93,7 +93,14 @@ function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
   const activeMap = coverTex || plaqueTex;
 
   return (
-    <group ref={groupRef} position={position} rotation={[0, rotationY, 0]}>
+    <group
+      ref={groupRef}
+      position={position}
+      rotation={[0, rotationY, 0]}
+      onClick={onOpenCrypt ? (e) => { e.stopPropagation(); onOpenCrypt(); } : undefined}
+      onPointerOver={onOpenCrypt ? () => { document.body.style.cursor = 'pointer'; } : undefined}
+      onPointerOut={onOpenCrypt ? () => { document.body.style.cursor = ''; } : undefined}
+    >
       <mesh>
         <boxGeometry args={[0.92, 1.28, 0.1]} />
         <meshStandardMaterial
@@ -155,7 +162,10 @@ function PlayingBeacon({ game, position }) {
   );
 }
 
-export default function GamesChapel({ isMobile }) {
+export default function GamesChapel({ isMobile, onOpenCrypt }) {
+  useEffect(() => () => {
+    document.body.style.cursor = '';
+  }, []);
   const textures = useMemo(() => getProceduralTextures(), []);
   const favorites = useMemo(() => GAMES.filter((g) => g.category === 'favorites'), []);
   const playing = useMemo(() => GAMES.filter((g) => g.category === 'playing'), []);
@@ -196,6 +206,7 @@ export default function GamesChapel({ isMobile }) {
             rotationY={-angle * 0.75}
             textures={textures}
             loadedEnabled
+            onOpenCrypt={onOpenCrypt}
           />
         );
       })}

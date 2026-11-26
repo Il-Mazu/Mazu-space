@@ -7,13 +7,6 @@ export const SITE = {
   scrollCue: '♰ DESCEND',
 };
 
-export const BOOT_LINES = [
-  '[ BIOS ] BOIA-BIOS v1.0a ... POST OK',
-  '[ BIOS ] Si va: a letto',
-  '[ SYS  ] mazu/OS v3.0.0 -- Per: forza',
-  '[ NET  ] interface: loopback only',
-];
-
 export const ABOUT = {
   prompt: 'C:\\mazu-space> whoami',
   greeting: [

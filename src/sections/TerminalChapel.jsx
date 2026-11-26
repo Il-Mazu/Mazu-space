@@ -70,6 +70,7 @@ export default function TerminalChapel({ isMobile, onOpenTerminal }) {
   }, []);
 
   useEffect(() => () => {
+    document.body.style.cursor = '';
     screenTex.dispose();
     cableGeo.forEach((g) => g.dispose());
   }, [screenTex, cableGeo]);
@@ -115,9 +116,11 @@ export default function TerminalChapel({ isMobile, onOpenTerminal }) {
         onPointerOver={(e) => {
           e.stopPropagation();
           hoveredRef.current = true;
+          document.body.style.cursor = 'pointer';
         }}
         onPointerOut={() => {
           hoveredRef.current = false;
+          document.body.style.cursor = '';
         }}
         onClick={(e) => {
           e.stopPropagation();

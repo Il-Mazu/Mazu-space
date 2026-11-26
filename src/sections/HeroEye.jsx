@@ -149,8 +149,11 @@ export default function HeroEye({ position = [1.0, 1.65, -0.5], scale = 1, spect
 
     if (spectral) {
       eyeMaterial.uniforms.uClose.value = sceneBus.eyeClose;
+      eyeMaterial.uniforms.uPowerOn.value = 1.0;
     } else {
-      const targetAwake = sceneBus.bootPhase === 'done' ? 0 : 1;
+      eyeMaterial.uniforms.uPowerOn.value = sceneBus.bootPhase === 'done' ? 1.0 : sceneBus.eyePower;
+      const eyeShouldOpen = sceneBus.bootPhase === 'done' || sceneBus.eyePower > 0.58;
+      const targetAwake = eyeShouldOpen ? 0 : 1;
       awakeRef.current = THREE.MathUtils.damp(awakeRef.current, targetAwake, 4.2, dt);
 
       let blinkVal = 0;

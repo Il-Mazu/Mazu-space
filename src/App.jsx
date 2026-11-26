@@ -6,7 +6,7 @@ import { SECTIONS } from './data/content.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
 import { isWebGLAvailable } from './utils/webgl.js';
-import { playCutNoise } from './audio/AudioEngine.js';
+import { playGlitchBurst } from './audio/AudioEngine.js';
 import {
   sceneBus,
   setActiveSection,
@@ -14,16 +14,17 @@ import {
   subscribeSceneState,
   triggerGlitch,
 } from './state/sceneBus.js';
-import Hud from './hud/Hud.jsx';
+import UiFilmLayer from './ui/UiFilmLayer.jsx';
+import HudMinimal from './ui/HudMinimal.jsx';
 import CursorTrail from './hud/CursorTrail.jsx';
-import Preloader from './sections/Preloader.jsx';
+import DoorsOnboarding from './sections/DoorsOnboarding.jsx';
 import HeroOverlay from './sections/HeroOverlay.jsx';
 import AboutOverlay from './sections/AboutOverlay.jsx';
 import PresenceOverlay from './sections/PresenceOverlay.jsx';
 import MusicOverlay from './sections/MusicOverlay.jsx';
 import DumpOverlay from './sections/DumpOverlay.jsx';
 import DumpLightbox from './sections/DumpLightbox.jsx';
-import GamesCryptOverlay from './sections/GamesCryptOverlay.jsx';
+import GamesCryptOverlay, { GamesCryptModal } from './sections/GamesCryptOverlay.jsx';
 import TerminalOverlay from './sections/TerminalOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
@@ -52,12 +53,15 @@ export default function App() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
+  const [cryptOpen, setCryptOpen] = useState(false);
   const [webglOk, setWebglOk] = useState(() => isWebGLAvailable());
   const [{ og: ogMode }] = useState(() => initialFlags());
   const [entered, setEntered] = useState(() => {
     const { skip } = initialFlags();
     if (skip) {
       sceneBus.bootPhase = 'done';
+      sceneBus.doorPush = 1;
+      sceneBus.eyePower = 1;
       sceneBus.entered = true;
     }
     return skip;
@@ -172,7 +176,7 @@ export default function App() {
 
       if (Math.abs(idx - sceneBus.activeSection) > 1) {
         triggerGlitch(0.75);
-        playCutNoise();
+        playGlitchBurst();
       }
 
       if (sceneBus.reducedMotion || !lenisRef.current) {
@@ -203,28 +207,38 @@ export default function App() {
     setTerminalOpen(false);
   }, []);
 
+  const openCrypt = useCallback(() => setCryptOpen(true), []);
+  const closeCrypt = useCallback(() => setCryptOpen(false), []);
+
   useEffect(() => {
     if (!lenisRef.current) return;
-    if (lightboxIdx !== null || terminalOpen) lenisRef.current.stop();
+    if (lightboxIdx !== null || terminalOpen || cryptOpen) lenisRef.current.stop();
     else lenisRef.current.start();
-  }, [lightboxIdx, terminalOpen]);
+  }, [lightboxIdx, terminalOpen, cryptOpen]);
 
   const renderSectionContent = (sec) => {
     switch (sec.id) {
       case 'hero':
-        return <HeroOverlay ogMode={ogMode} />;
+        return <HeroOverlay ogMode={ogMode} isMobile={isMobile} />;
       case 'about':
-        return <AboutOverlay />;
+        return <AboutOverlay isMobile={isMobile} />;
       case 'presence':
         return <PresenceOverlay lanyard={lanyard} />;
       case 'music':
         return <MusicOverlay lanyard={lanyard} />;
       case 'dump':
-        return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
+        return <DumpOverlay isMobile={isMobile} onOpenLightbox={setLightboxIdx} />;
       case 'games':
-        return <GamesCryptOverlay />;
+        return <GamesCryptOverlay isMobile={isMobile} onOpen={openCrypt} />;
       case 'terminal':
-        return <TerminalOverlay open={false} onOpen={openTerminal} onClose={closeTerminal} />;
+        return (
+          <TerminalOverlay
+            open={false}
+            isMobile={isMobile}
+            onOpen={openTerminal}
+            onClose={closeTerminal}
+          />
+        );
       case 'exit':
         return <ExitOverlay />;
       default:
@@ -244,17 +258,22 @@ export default function App() {
             isMobile={isMobile}
             entered={entered}
             lanyard={lanyard}
+            cryptOpen={cryptOpen}
+            terminalOpen={terminalOpen}
+            lightboxOpen={lightboxIdx !== null}
             onOpenLightbox={setLightboxIdx}
             onOpenTerminal={openTerminal}
+            onOpenCrypt={openCrypt}
             onContextLost={() => setWebglOk(false)}
           />
         </Suspense>
       )}
+      <UiFilmLayer />
       <CursorTrail />
 
-      {!entered && <Preloader onEnterComplete={() => setEntered(true)} />}
+      {!entered && <DoorsOnboarding onEnterComplete={() => setEntered(true)} />}
 
-      {entered && !ogMode && <Hud onProgressRef={setProgressEl} />}
+      {entered && !ogMode && <HudMinimal onProgressRef={setProgressEl} />}
 
       <DumpLightbox
         index={lightboxIdx}
@@ -262,8 +281,15 @@ export default function App() {
         onChange={setLightboxIdx}
       />
 
+      <GamesCryptModal open={cryptOpen} onClose={closeCrypt} />
+
       {terminalOpen && (
-        <TerminalOverlay open onOpen={openTerminal} onClose={closeTerminal} />
+        <TerminalOverlay
+          open
+          isMobile={isMobile}
+          onOpen={openTerminal}
+          onClose={closeTerminal}
+        />
       )}
 
       {!webglOk ? (
@@ -284,7 +310,8 @@ export default function App() {
                 : sec.id === 'presence' ? ' chapel-sticky--top-left'
                   : sec.id === 'exit' ? ' chapel-sticky--exit'
                     : '';
-            const isActive = entered && activeIdx === idx && !terminalOpen;
+            const overlayBlocking = cryptOpen || terminalOpen || lightboxIdx !== null;
+            const isActive = entered && activeIdx === idx && !overlayBlocking;
             return (
               <section
                 key={sec.id}

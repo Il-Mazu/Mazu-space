@@ -4,6 +4,7 @@ import { gamesCount } from '../data/games.js';
 import { TRACKS } from '../data/tracks.js';
 import { LINKS, SITE } from '../data/content.js';
 import { jumpToSection } from '../state/sceneBus.js';
+import { playClickHit, playHoverTick } from '../audio/AudioEngine.js';
 import './ExitOverlay.css';
 
 export default function ExitOverlay() {
@@ -14,17 +15,13 @@ export default function ExitOverlay() {
   ];
 
   return (
-    <article className="exit-panel" aria-labelledby="exit-heading">
-      <div className="chapel-tag">
-        <span className="chapel-tag-cross" aria-hidden="true">♰</span>
-        <span>CHAPEL VIII // LOG + LINKS</span>
-      </div>
-
-      <h2 id="exit-heading" className="chapel-title">carved ledger</h2>
+    <article className="exit-diegetic ui-depth-plane" aria-labelledby="exit-heading">
+      <div className="exit-diegetic-wash" aria-hidden="true" />
+      <h2 id="exit-heading" className="chapel-title exit-title">carved ledger</h2>
 
       <div className="exit-grid">
-        <section aria-label="Recent git commits">
-          <div className="exit-subhead">── COMMITS ──</div>
+        <section className="exit-col" aria-label="Recent git commits">
+          <div className="exit-subhead">commits</div>
           <div className="exit-commits">
             {commits.length === 0 ? (
               <div className="c-dim">no commits</div>
@@ -38,26 +35,26 @@ export default function ExitOverlay() {
             )}
           </div>
           <div className="exit-build-date">
-            build: <span className="c-bone">{buildDate || '--'}</span>
+            build <span className="c-bone">{buildDate || '--'}</span>
           </div>
         </section>
 
         <div className="exit-side">
-          <section aria-label="Content index counts">
-            <div className="exit-subhead">── ARCHIVE ──</div>
+          <section className="exit-col" aria-label="Content index counts">
+            <div className="exit-subhead">archive</div>
             <div className="exit-counters">
               {counters.map(([label, n]) => (
-                <div key={label}>
-                  <span className="c-red" aria-hidden="true">♰ </span>
-                  <span className="c-dim">{label}: </span>
+                <div key={label} className="exit-counter-row">
+                  <span className="ink-cross" aria-hidden="true">♰</span>
+                  <span className="c-dim">{label}:</span>
                   <span className="c-bone">{n}</span>
                 </div>
               ))}
             </div>
           </section>
 
-          <section aria-label="External links">
-            <div className="exit-subhead">── LINKS ──</div>
+          <section className="exit-col" aria-label="External links">
+            <div className="exit-subhead">links</div>
             <div className="exit-links">
               {LINKS.map((link) => (
                 <a
@@ -65,9 +62,11 @@ export default function ExitOverlay() {
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="exit-link xerox-hover"
+                  className="ink-trigger exit-link"
+                  onMouseEnter={playHoverTick}
+                  onClick={playClickHit}
                 >
-                  <span className="c-red" aria-hidden="true">&gt;</span>
+                  <span className="ink-cross" aria-hidden="true">&gt;</span>
                   <span>{link.label}</span>
                 </a>
               ))}
@@ -80,11 +79,15 @@ export default function ExitOverlay() {
         <span className="exit-motto">{SITE.motto}</span>
         <button
           type="button"
-          className="exit-top-btn xerox-hover"
-          onClick={() => jumpToSection(0)}
+          className="ink-trigger"
+          onMouseEnter={playHoverTick}
+          onClick={() => {
+            playClickHit();
+            jumpToSection(0);
+          }}
         >
-          <span className="c-red" aria-hidden="true">♰</span>
-          <span>RETURN TO EYE</span>
+          <span className="ink-cross" aria-hidden="true">♰</span>
+          <span>return to eye</span>
         </button>
       </div>
     </article>
