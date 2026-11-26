@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import { TRACKS } from '../data/tracks.js';
+import { BOOT_SOUND, TRACKS } from '../data/tracks.js';
 import { sceneBus } from '../state/sceneBus.js';
 
 const listeners = new Set();
@@ -99,6 +99,13 @@ export function unlockAudio(enableSound) {
     audioEl.volume = state.soundEnabled ? state.volume : 0;
   }
   emit();
+}
+
+export function playBootSound() {
+  if (!state.soundEnabled || typeof Audio === 'undefined') return;
+  const boot = new Audio(BOOT_SOUND);
+  boot.volume = 0.2;
+  boot.play().catch(() => {});
 }
 
 export function setSoundEnabled(next) {

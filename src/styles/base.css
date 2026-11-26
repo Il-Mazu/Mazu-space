@@ -196,9 +196,9 @@ img {
 }
 
 .boot-logo {
-  font-family: ui-monospace, 'Departure Mono', monospace;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
   font-size: clamp(4.2px, 1.05vw, 10px);
-  line-height: 1.25;
+  line-height: 1.15;
   color: var(--bone);
   text-shadow: 0 0 18px rgba(255, 51, 82, 0.25);
   overflow-x: auto;

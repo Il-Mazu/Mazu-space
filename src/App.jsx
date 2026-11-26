@@ -1,21 +1,30 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SECTIONS, SITE } from './data/content.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import {
-  jumpToSection,
   sceneBus,
   setActiveSection,
   subscribeJump,
+  subscribeSceneState,
   triggerGlitch,
 } from './state/sceneBus.js';
 import Hud from './hud/Hud.jsx';
 import CursorTrail from './hud/CursorTrail.jsx';
-import CathedralCanvas from './scenes/CathedralCanvas.jsx';
+import Preloader from './sections/Preloader.jsx';
+import HeroOverlay from './sections/HeroOverlay.jsx';
+
+const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
 
 gsap.registerPlugin(ScrollTrigger);
+
+function initialBootDone() {
+  if (typeof window === 'undefined') return false;
+  const params = new URLSearchParams(window.location.search);
+  return params.get('skipBoot') === '1';
+}
 
 export default function App() {
   const mode = useScreenMode();
@@ -23,9 +32,23 @@ export default function App() {
   const progressBarRef = useRef(null);
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [entered, setEntered] = useState(() => {
+    const skip = initialBootDone();
+    if (skip) {
+      sceneBus.bootPhase = 'done';
+      sceneBus.entered = true;
+    }
+    return skip;
+  });
 
   const setProgressEl = useCallback((el) => {
     progressBarRef.current = el;
+  }, []);
+
+  useEffect(() => {
+    return subscribeSceneState(() => {
+      if (sceneBus.entered) setEntered(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -126,11 +149,16 @@ export default function App() {
         Skip to content
       </a>
 
-      <CathedralCanvas isMobile={isMobile} />
+      <Suspense fallback={null}>
+        <CathedralCanvas isMobile={isMobile} />
+      </Suspense>
       <CursorTrail />
-      <Hud onProgressRef={setProgressEl} />
 
-      <main id="main-content" className="scroll-stage">
+      {!entered && <Preloader onEnterComplete={() => setEntered(true)} />}
+
+      {entered && <Hud onProgressRef={setProgressEl} />}
+
+      <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
         {SECTIONS.map((sec, idx) => (
           <section
             key={sec.id}
@@ -138,31 +166,22 @@ export default function App() {
             className="chapel-anchor"
             aria-label={`${sec.roman}. ${sec.name}`}
           >
-            <div className="chapel-sticky" style={{ opacity: activeIdx === idx ? 1 : 0.15 }}>
-              <div className="chapel-card torn-paper" style={{ padding: '22px 24px' }}>
-                <div className="chapel-tag">
-                  <span className="chapel-tag-cross" aria-hidden="true">♰</span>
-                  <span>{sec.label}</span>
-                </div>
-                {idx === 0 ? (
-                  <h1 className="chapel-title">{SITE.title}</h1>
-                ) : (
+            <div
+              className="chapel-sticky"
+              style={{ opacity: entered && activeIdx === idx ? 1 : 0 }}
+            >
+              {idx === 0 ? (
+                <HeroOverlay />
+              ) : (
+                <div className="chapel-card torn-paper" style={{ padding: '22px 24px' }}>
+                  <div className="chapel-tag">
+                    <span className="chapel-tag-cross" aria-hidden="true">♰</span>
+                    <span>{sec.label}</span>
+                  </div>
                   <h2 className="chapel-title">{sec.name}</h2>
-                )}
-                <p className="chapel-copy c-dim">
-                  {idx === 0 ? SITE.subtitle : `Chapel ${sec.roman} // z=${sec.z}`}
-                </p>
-                {idx === 0 && (
-                  <button
-                    type="button"
-                    className="font-label c-red xerox-hover"
-                    style={{ marginTop: 14, fontSize: 11 }}
-                    onClick={() => jumpToSection(1)}
-                  >
-                    {SITE.scrollCue}
-                  </button>
-                )}
-              </div>
+                  <p className="chapel-copy c-dim">Chapel {sec.roman} // z={sec.z}</p>
+                </div>
+              )}
             </div>
           </section>
         ))}

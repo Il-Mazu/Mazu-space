@@ -1,9 +1,18 @@
-import { useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
+import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import { SECTIONS } from '../data/content.js';
 import { sampleAudio } from '../audio/AudioEngine.js';
+import { sceneBus } from '../state/sceneBus.js';
 import CameraRig from './CameraRig.jsx';
+import CathedralLighting from './CathedralLighting.jsx';
+import GothicNave from './GothicNave.jsx';
+import HangingChains from './HangingChains.jsx';
+import NaveSmoke from './NaveSmoke.jsx';
+import MazuEmblem3D from './MazuEmblem3D.jsx';
+import PostFX from './PostFX.jsx';
+import HeroEye from '../sections/HeroEye.jsx';
 
 function AudioSampler() {
   useFrame(() => {
@@ -12,75 +21,68 @@ function AudioSampler() {
   return null;
 }
 
-function PlaceholderNave() {
-  const bays = useMemo(() => {
-    const arr = [];
-    for (let z = 6; z >= -160; z -= 12) arr.push(z);
-    return arr;
-  }, []);
-
+function ChapelMarkers() {
+  // Temporary subtle red floor beacons for downstream chapels until Phases 3-6 populate them.
   return (
     <group>
-      {bays.map((z) => {
-        const y = 1.6 - ((-z + 6) / 166) * 4.8;
-        return (
-          <group key={z} position={[0, y, z]}>
-            <mesh position={[-4.2, 0, 0]}>
-              <boxGeometry args={[0.35, 8, 0.35]} />
-              <meshStandardMaterial color="#18181d" metalness={0.8} roughness={0.35} />
-            </mesh>
-            <mesh position={[4.2, 0, 0]}>
-              <boxGeometry args={[0.35, 8, 0.35]} />
-              <meshStandardMaterial color="#18181d" metalness={0.8} roughness={0.35} />
-            </mesh>
-            <mesh position={[0, 4.1, 0]}>
-              <boxGeometry args={[8.75, 0.28, 0.28]} />
-              <meshStandardMaterial color="#18181d" metalness={0.8} roughness={0.35} />
-            </mesh>
-          </group>
-        );
-      })}
-
-      {SECTIONS.map((sec, idx) => (
-        <group key={sec.id} position={[0, sec.lookAt[1], sec.z]}>
-          <mesh>
-            <octahedronGeometry args={[0.42, 0]} />
-            <meshStandardMaterial
-              color="#1c1c22"
-              emissive={idx === 0 ? '#ff3352' : '#8a0f1f'}
-              emissiveIntensity={1.6}
-              metalness={0.9}
-              roughness={0.2}
-            />
-          </mesh>
-          <pointLight position={[0, -0.6, 1.5]} color="#ff3352" intensity={3.5} distance={14} decay={2} />
-        </group>
+      {SECTIONS.slice(1).map((sec) => (
+        <mesh key={sec.id} position={[0, sec.lookAt[1] - 0.8, sec.z]}>
+          <octahedronGeometry args={[0.26, 0]} />
+          <meshBasicMaterial color={[1.6, 0.14, 0.25]} toneMapped={false} wireframe />
+        </mesh>
       ))}
     </group>
   );
 }
 
 export default function CathedralCanvas({ isMobile }) {
+  const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
+
+  useEffect(() => {
+    const next = isMobile ? 'medium' : 'high';
+    setPerfTier(next);
+    sceneBus.perfTier = next;
+  }, [isMobile]);
+
+  const downgrade = () => {
+    setPerfTier((cur) => {
+      const next = cur === 'high' ? 'medium' : 'low';
+      sceneBus.perfTier = next;
+      return next;
+    });
+  };
 
   return (
     <div id="canvas-root" aria-hidden="true">
       <Canvas
-        dpr={[1, maxDpr]}
-        camera={{ position: SECTIONS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 120 }}
-        gl={{ antialias: true, powerPreference: 'high-performance', toneMapping: THREE.ACESFilmicToneMapping }}
+        dpr={[1, perfTier === 'low' ? 1 : maxDpr]}
+        camera={{ position: SECTIONS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 130 }}
+        gl={{
+          antialias: false,
+          powerPreference: 'high-performance',
+          toneMapping: THREE.NoToneMapping,
+        }}
         eventSource={eventSource}
         eventPrefix="client"
       >
         <color attach="background" args={['#060607']} />
-        <fogExp2 attach="fog" args={['#060607', 0.038]} />
-        <ambientLight intensity={0.25} color="#d8d2c6" />
-        <directionalLight position={[2, 8, 5]} intensity={0.55} color="#e9e4da" />
+        <fogExp2 attach="fog" args={['#060607', 0.036]} />
 
+        <PerformanceMonitor onDecline={downgrade} />
         <AudioSampler />
         <CameraRig isMobile={isMobile} />
-        <PlaceholderNave />
+        <CathedralLighting isMobile={isMobile} />
+        <GothicNave isMobile={isMobile} />
+        <HangingChains isMobile={isMobile} />
+        <NaveSmoke isMobile={isMobile} />
+
+        <MazuEmblem3D isMobile={isMobile} />
+        <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
+        <ChapelMarkers />
+
+        <PostFX perfTier={perfTier} />
       </Canvas>
     </div>
   );

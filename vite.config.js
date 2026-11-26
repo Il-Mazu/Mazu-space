@@ -165,7 +165,7 @@ export default defineConfig(({ mode }) => {
         output: {
           manualChunks(id) {
             if (!id.includes('node_modules')) return;
-            if (id.includes('/three/')) return 'three-core';
+            if (id.includes('/three/') || id.includes('three-stdlib')) return 'three-core';
             if (id.includes('@react-three/postprocessing') || id.includes('/postprocessing/')) return 'postfx';
             if (id.includes('@react-three/')) return 'r3f';
             if (id.includes('/gsap/') || id.includes('/lenis/')) return 'motion';
