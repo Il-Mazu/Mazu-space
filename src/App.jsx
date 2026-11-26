@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { CAMERA_STOPS, CHAPELS } from './data/chapels.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
+import useMusic from './music/useMusic.js';
 import { isWebGLAvailable } from './utils/webgl.js';
 import { playGlitchBurst } from './audio/AudioEngine.js';
 import {
@@ -47,6 +48,7 @@ export default function App() {
   const mode = useScreenMode();
   const isMobile = mode === 'mobile';
   const lanyard = useLanyard();
+  const music = useMusic(lanyard);
   const progressBarRef = useRef(null);
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -211,7 +213,7 @@ export default function App() {
       case 'about':
         return <AboutOverlay />;
       case 'live':
-        return <LiveOverlay lanyard={lanyard} />;
+        return <LiveOverlay lanyard={lanyard} music={music} compact={isMobile} />;
       case 'dump':
         return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
       case 'games':
@@ -235,6 +237,7 @@ export default function App() {
             isMobile={isMobile}
             entered={entered}
             lanyard={lanyard}
+            music={music}
             onOpenLightbox={setLightboxIdx}
             onOpenCrypt={openCrypt}
             onContextLost={() => setWebglOk(false)}
@@ -246,7 +249,7 @@ export default function App() {
 
       {!entered && <DoorsOnboarding onEnterComplete={() => setEntered(true)} />}
 
-      {entered && !ogMode && <HudMinimal onProgressRef={setProgressEl} />}
+      {entered && !ogMode && <HudMinimal onProgressRef={setProgressEl} music={music} />}
 
       <DumpLightbox
         index={lightboxIdx}
@@ -261,6 +264,7 @@ export default function App() {
           <Suspense fallback={null}>
             <Fallback2D
               lanyard={lanyard}
+              music={music}
               onOpenLightbox={setLightboxIdx}
               onOpenCrypt={openCrypt}
             />

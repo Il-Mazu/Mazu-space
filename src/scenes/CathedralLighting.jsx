@@ -12,7 +12,9 @@ export default function CathedralLighting({ isMobile }) {
   useFrame((state) => {
     const { bass, mid } = sceneBus.audioMetrics;
     const t = state.clock.elapsedTime;
-    const flicker = 1 + Math.sin(t * 7.3) * 0.04 + bass * 0.9 + mid * 0.4;
+    // slow procedural pulse while I'm listening (no audio stream to sync to)
+    const listenPulse = sceneBus.listening && !sceneBus.reducedMotion ? Math.sin(t * 2.2) * 0.08 : 0;
+    const flicker = 1 + Math.sin(t * 7.3) * 0.04 + bass * 0.9 + mid * 0.4 + listenPulse;
 
     if (heroUnderRef.current) {
       heroUnderRef.current.intensity = 11.5 * flicker;

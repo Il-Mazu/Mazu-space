@@ -9,7 +9,7 @@ import GamesCryptOverlay from '../sections/GamesCryptOverlay.jsx';
 import ExitOverlay from '../sections/ExitOverlay.jsx';
 import './Fallback2D.css';
 
-function renderChapel(id, { lanyard, onOpenLightbox, onOpenCrypt }) {
+function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt }) {
   switch (id) {
     case 'hero':
       return (
@@ -37,7 +37,7 @@ function renderChapel(id, { lanyard, onOpenLightbox, onOpenCrypt }) {
             <pre className="fb2d-ascii-pre">{WING_ART}</pre>
             <pre className="fb2d-ascii-pre fb2d-wing-mirrored">{WING_ART}</pre>
           </div>
-          <LiveOverlay lanyard={lanyard} showAvatar />
+          <LiveOverlay lanyard={lanyard} music={music} showAvatar />
         </>
       );
     case 'dump':

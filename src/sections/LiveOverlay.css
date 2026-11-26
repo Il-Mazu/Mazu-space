@@ -1,5 +1,5 @@
 .live-text {
-  width: min(360px, 100%);
+  width: min(380px, 100%);
 }
 
 .live-avatar {
@@ -7,10 +7,15 @@
   height: 72px;
   border-radius: 50%;
   object-fit: cover;
+  filter: grayscale(1) contrast(1.1);
   margin-bottom: 10px;
 }
 
 .live-user {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
   font-family: var(--font-body);
   font-size: 15px;
   color: var(--bone);
@@ -18,10 +23,15 @@
 }
 
 .live-status {
-  margin-top: 4px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
+  font-size: 11px;
+  color: var(--text);
+}
+
+.live-status--offline {
+  color: var(--text-dim);
 }
 
 .live-dot {
@@ -31,6 +41,191 @@
   box-shadow: 0 0 8px currentColor;
 }
 
+.live-status--offline .live-dot {
+  box-shadow: none;
+  opacity: 0.6;
+}
+
+.live-rites {
+  list-style: none;
+  margin-top: 8px;
+  font-size: 11.5px;
+  line-height: 1.55;
+  color: var(--text);
+  text-shadow: 0 1px 8px #000;
+}
+
+.live-music {
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(170, 32, 48, 0.26);
+}
+
+.live-label {
+  margin-bottom: 6px;
+}
+
 .live-track {
-  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-decoration: none;
+  width: fit-content;
+}
+
+.live-track-title {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1;
+  color: var(--bone);
+  text-shadow: 2px 0 16px rgba(255, 51, 82, 0.45), 0 2px 10px #000;
+}
+
+.live-track-artist {
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  color: var(--text);
+  text-shadow: 0 1px 8px #000;
+}
+
+.live-track:hover .live-track-title,
+.live-track:focus-visible .live-track-title {
+  text-shadow: -2px 0 rgba(255, 51, 82, 0.92), 2px 0 rgba(239, 231, 220, 0.55);
+}
+
+.live-track--dim {
+  opacity: 0.55;
+}
+
+.live-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.live-progress-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(138, 15, 31, 0.5);
+}
+
+.live-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 8px rgba(255, 51, 82, 0.8);
+  transform-origin: left center;
+  transform: scaleX(0);
+}
+
+.live-top {
+  margin-top: 16px;
+}
+
+.live-top-summary {
+  list-style: none;
+  margin-bottom: 8px;
+  font-size: 12px;
+}
+
+.live-top-summary::-webkit-details-marker {
+  display: none;
+}
+
+.live-periods {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 8px;
+}
+
+.live-period {
+  font-family: var(--font-body);
+  font-size: 11px;
+  padding: 1px 0 3px;
+  color: var(--text-dim);
+  border-bottom: 1px solid transparent;
+}
+
+.live-period:hover,
+.live-period:focus-visible {
+  color: var(--bone);
+}
+
+.live-period.is-on {
+  color: var(--bone);
+  border-bottom-color: var(--accent);
+}
+
+.live-top-list {
+  list-style: none;
+  counter-reset: top;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+  font-size: 11.5px;
+}
+
+.live-top-list li {
+  counter-increment: top;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.live-top-list li::before {
+  content: counter(top, upper-roman);
+  min-width: 22px;
+  color: var(--accent);
+  font-size: 10.5px;
+}
+
+.live-top-link {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  text-decoration: none;
+  text-shadow: 0 1px 8px #000;
+}
+
+.live-top-link:hover .c-bone,
+.live-top-link:focus-visible .c-bone {
+  color: #fff;
+  text-decoration: underline 1px var(--accent);
+  text-underline-offset: 3px;
+}
+
+.live-plays {
+  color: var(--text-dim);
+  font-size: 10.5px;
+}
+
+/* hover label over a votive candle, drawn by drei <Html> without transform */
+.candle-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  font-family: var(--font-body);
+  text-shadow: 0 0 10px #000, 0 0 3px #000;
+  transform: translateY(-50%);
+}
+
+.candle-label-title {
+  font-size: 13px;
+  color: var(--bone);
+}
+
+.candle-label-meta {
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+@media (max-width: 767px) {
+  .live-track-title {
+    font-size: 1.5rem;
+  }
 }

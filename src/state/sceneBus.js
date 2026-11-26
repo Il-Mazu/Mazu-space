@@ -17,6 +17,7 @@ export const sceneBus = {
   perfTier: 'high', // 'high' | 'medium' | 'low'
   reducedMotion: false,
   soundEnabled: false,
+  listening: false,
   audioMetrics: {
     rms: 0,
     bass: 0,

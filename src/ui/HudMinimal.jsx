@@ -4,7 +4,7 @@ import { jumpToSection, subscribeSection } from '../state/sceneBus.js';
 import { playClickHit, playHoverTick, toggleSound, useAudioState } from '../audio/AudioEngine.js';
 import './HudMinimal.css';
 
-export default function HudMinimal({ onProgressRef }) {
+export default function HudMinimal({ onProgressRef, music }) {
   const [active, setActive] = useState(0);
   const progressBarRef = useRef(null);
   const audio = useAudioState();
@@ -70,6 +70,32 @@ export default function HudMinimal({ onProgressRef }) {
             );
           })}
         </nav>
+
+        <div className="min-hud-bottom">
+          <button
+            type="button"
+            className={`min-hud-now${music.listening ? ' is-live' : ''}`}
+            onMouseEnter={playHoverTick}
+            onClick={() => {
+              playClickHit();
+              jumpToSection('live');
+            }}
+            aria-label={
+              music.now
+                ? `Now playing ${music.now.title} by ${music.now.artist}. Go to the live chapel`
+                : 'Go to the live chapel'
+            }
+          >
+            <span className="min-hud-disc" aria-hidden="true" />
+            <span className="min-hud-now-text">
+              {music.now
+                ? `${music.now.title} — ${music.now.artist}`
+                : music.lastHeard
+                  ? `${music.lastHeard.title} — ${music.lastHeard.artist}`
+                  : 'silence'}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="min-hud-progress-track" aria-hidden="true">

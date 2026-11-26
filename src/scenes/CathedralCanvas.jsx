@@ -14,8 +14,7 @@ import NaveSmoke from './NaveSmoke.jsx';
 import PostFX from './PostFX.jsx';
 import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
-import PresenceChapel from '../sections/PresenceChapel.jsx';
-import MusicChapel from '../sections/MusicChapel.jsx';
+import LiveChapel from '../sections/LiveChapel.jsx';
 import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
@@ -27,17 +26,12 @@ function AudioSampler() {
   return null;
 }
 
-function ChapelScene({ chapel, isMobile, lanyard, onOpenLightbox, onOpenCrypt }) {
+function ChapelScene({ chapel, isMobile, lanyard, music, onOpenLightbox, onOpenCrypt }) {
   switch (chapel.id) {
     case 'about':
       return <AboutChapel chapel={chapel} isMobile={isMobile} />;
     case 'live':
-      return (
-        <>
-          <PresenceChapel chapel={chapel} isMobile={isMobile} lanyard={lanyard} />
-          <MusicChapel chapel={chapel} isMobile={isMobile} listening={Boolean(lanyard?.listening_to_spotify)} />
-        </>
-      );
+      return <LiveChapel chapel={chapel} isMobile={isMobile} lanyard={lanyard} music={music} />;
     case 'dump':
       return <DumpChapel chapel={chapel} isMobile={isMobile} onOpenLightbox={onOpenLightbox} />;
     case 'games':
@@ -53,6 +47,7 @@ export default function CathedralCanvas({
   isMobile,
   entered = true,
   lanyard = null,
+  music,
   onOpenLightbox,
   onOpenCrypt,
   onContextLost,
@@ -114,6 +109,7 @@ export default function CathedralCanvas({
               chapel={chapel}
               isMobile={isMobile}
               lanyard={lanyard}
+              music={music}
               onOpenLightbox={onOpenLightbox}
               onOpenCrypt={onOpenCrypt}
             />
