@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 import { GAMES } from '../data/games.js';
@@ -59,12 +59,11 @@ function makePlaqueTexture(game) {
 function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
   const groupRef = useRef(null);
   const plaqueTex = useMemo(() => makePlaqueTexture(game), [game]);
-  const coverMatRef = useRef(null);
-  const coverTexRef = useRef(null);
+  const [coverTex, setCoverTex] = useState(null);
 
   useEffect(() => {
     const url = covers[game.name]?.background_image;
-    if (!loadedEnabled || !url || coverTexRef.current) return;
+    if (!loadedEnabled || !url) return undefined;
     let cancelled = false;
     const loader = new THREE.TextureLoader();
     loader.setCrossOrigin('anonymous');
@@ -73,11 +72,7 @@ function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
       (tex) => {
         if (cancelled) { tex.dispose(); return; }
         tex.colorSpace = THREE.SRGBColorSpace;
-        coverTexRef.current = tex;
-        if (coverMatRef.current) {
-          coverMatRef.current.map = tex;
-          coverMatRef.current.needsUpdate = true;
-        }
+        setCoverTex(tex);
       },
       undefined,
       () => {},
@@ -85,15 +80,17 @@ function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
     return () => { cancelled = true; };
   }, [loadedEnabled, game.name]);
 
+  useEffect(() => () => plaqueTex.dispose(), [plaqueTex]);
   useEffect(() => () => {
-    plaqueTex.dispose();
-    if (coverTexRef.current) coverTexRef.current.dispose();
-  }, [plaqueTex]);
+    if (coverTex) coverTex.dispose();
+  }, [coverTex]);
 
   useFrame((state) => {
     if (!groupRef.current || sceneBus.reducedMotion) return;
     groupRef.current.position.y = position[1] + Math.sin(state.clock.elapsedTime * 1.1 + position[0]) * 0.08;
   });
+
+  const activeMap = coverTex || plaqueTex;
 
   return (
     <group ref={groupRef} position={position} rotation={[0, rotationY, 0]}>
@@ -108,7 +105,7 @@ function RelicCase({ game, position, rotationY, textures, loadedEnabled }) {
       </mesh>
       <mesh position={[0, 0, 0.055]}>
         <planeGeometry args={[0.82, 1.18]} />
-        <meshStandardMaterial ref={coverMatRef} map={plaqueTex} roughness={0.4} metalness={0.15} />
+        <meshStandardMaterial key={activeMap.uuid} map={activeMap} roughness={0.4} metalness={0.15} />
       </mesh>
       <mesh position={[0, 0.66, 0]}>
         <boxGeometry args={[0.94, 0.025, 0.12]} />

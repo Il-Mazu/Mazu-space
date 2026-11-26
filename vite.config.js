@@ -99,17 +99,33 @@ function gameCoversPlugin() {
   const RESOLVED_ID = '\0' + VIRTUAL_ID;
   const WIKI_API = 'https://en.wikipedia.org/w/api.php';
   const WIKI_HEADERS = { 'User-Agent': 'mazu-space/3.0 (https://mazu.is-a.dev)' };
-  const CACHE_PATH = path.resolve(process.cwd(), 'node_modules/.cache/mazu-game-covers.json');
+  const CACHE_PATH = path.resolve(__dirname, 'node_modules/.cache/mazu-game-covers.json');
   const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
   const ROMAN = { ii: '2', iii: '3', iv: '4', v: '5', vi: '6', vii: '7', viii: '8' };
   let covers;
+  let inFlight = null;
 
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const wikiGet = async (params) => {
-    const res = await fetch(`${WIKI_API}?${new URLSearchParams({ format: 'json', ...params })}`, {
-      headers: WIKI_HEADERS,
-      signal: AbortSignal.timeout(15000),
-    });
-    return res.ok ? res.json() : null;
+    const url = `${WIKI_API}?${new URLSearchParams({ format: 'json', ...params })}`;
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await fetch(url, {
+          headers: WIKI_HEADERS,
+          signal: AbortSignal.timeout(15000),
+        });
+        if (res.ok) return await res.json();
+        if (attempt === 0 && (res.status === 429 || res.status >= 500)) {
+          const ra = Number(res.headers.get('retry-after'));
+          await sleep(Number.isFinite(ra) && ra > 0 ? Math.min(ra * 1000, 5000) : 400);
+          continue;
+        }
+        return null;
+      } catch {
+        if (attempt === 0) await sleep(400);
+      }
+    }
+    return null;
   };
 
   const norm = (s) => s
@@ -303,43 +319,54 @@ function gameCoversPlugin() {
     },
     async load(id) {
       if (id !== RESOLVED_ID) return;
-      if (!covers) {
-        const unique = [...new Map(GAMES.map((g) => [g.name, g])).values()];
-        const cacheKey = unique.map((g) => `${g.name}\t${g.search || ''}`).join('\n');
-        let staleCovers = null;
+      if (covers && Object.keys(covers).length > 0) {
+        return `export default ${JSON.stringify(covers)};`;
+      }
+      if (!inFlight) {
+        inFlight = (async () => {
+          const unique = [...new Map(GAMES.map((g) => [g.name, g])).values()];
+          const cacheKey = unique.map((g) => `${g.name}\t${g.search || ''}`).join('\n');
+          let staleCovers = null;
 
-        try {
-          const cached = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
-          if (cached?.key === cacheKey && Object.keys(cached.covers || {}).length > 0) {
-            staleCovers = cached.covers;
-            if (Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
-              covers = cached.covers;
-              console.log(`[game-covers] loaded ${Object.keys(covers).length}/${unique.length} game covers from cache`);
-            }
-          }
-        } catch {
-          // No valid cache yet.
-        }
-
-        if (!covers) {
           try {
-            covers = await fetchAllCovers(unique);
-            const entries = Object.values(covers);
-            const imgCount = entries.filter((e) => e.background_image).length;
-            const yearCount = entries.filter((e) => e.released).length;
-            const genreCount = entries.filter((e) => e.genres?.length).length;
-            console.log(`[game-covers] fetched ${imgCount}/${unique.length} covers (${yearCount} years, ${genreCount} genres)`);
-            if (Object.keys(covers).length > 0) {
+            const cached = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
+            if (cached?.key === cacheKey && Object.keys(cached.covers || {}).length > 0) {
+              staleCovers = cached.covers;
+              if (Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
+                covers = cached.covers;
+                console.log(`[game-covers] loaded ${Object.keys(covers).length}/${unique.length} game covers from cache`);
+                return covers;
+              }
+            }
+          } catch {
+            // No valid cache yet.
+          }
+
+          try {
+            const fetched = await fetchAllCovers(unique);
+            const entries = Object.values(fetched);
+            if (entries.length > 0) {
+              covers = fetched;
+              const imgCount = entries.filter((e) => e.background_image).length;
+              const yearCount = entries.filter((e) => e.released).length;
+              const genreCount = entries.filter((e) => e.genres?.length).length;
+              console.log(`[game-covers] fetched ${imgCount}/${unique.length} covers (${yearCount} years, ${genreCount} genres)`);
               fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
               fs.writeFileSync(CACHE_PATH, JSON.stringify({ key: cacheKey, fetchedAt: Date.now(), covers }));
+              return covers;
             }
+            this.warn(`fetched 0/${unique.length} game covers; using ${staleCovers ? 'stale cache' : 'empty covers'}`);
+            return staleCovers || {};
           } catch (err) {
-            covers = staleCovers || {};
             this.warn(`failed to fetch game covers (${err?.message || err}); using ${staleCovers ? 'stale cache' : 'empty covers'}`);
+            return staleCovers || {};
           }
-        }
+        })().finally(() => {
+          inFlight = null;
+        });
       }
-      return `export default ${JSON.stringify(covers)};`;
+      const data = await inFlight;
+      return `export default ${JSON.stringify(data)};`;
     },
   };
 }
