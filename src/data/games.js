@@ -111,3 +111,20 @@ export const GAMES = [
   { name: 'Gang Beasts', category: 'played', vote: 76 },
   { name: "Marvel Rivals", category: 'played', vote: 80 },
 ];
+
+export const gamesCount = GAMES.length;
+
+export const GAME_CATEGORIES = [
+  { key: 'all', label: 'ALL', symbol: '♰' },
+  { key: 'favorites', label: 'FAVORITES', symbol: '★' },
+  { key: 'playing', label: 'PLAYING', symbol: '▶' },
+  { key: 'played', label: 'PLAYED', symbol: '✓' },
+];
+
+export const GAMES_DISCLAIMER =
+  "// This section lists every game I've ever played, each with a personal grade I decided to give. Obviously, it's just my opinion and shouldn't be taken too seriously.";
+
+export const RAWG_ATTRIBUTION = {
+  label: 'RAWG',
+  href: 'https://rawg.io/',
+};

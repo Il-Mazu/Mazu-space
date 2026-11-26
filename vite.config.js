@@ -46,15 +46,21 @@ function dumpImagesPlugin() {
     let files = [];
     try {
       files = fs.readdirSync(dumpDir);
-    } catch (e) {
+    } catch {
       return [];
     }
     return files
       .filter(f => exts.includes(path.extname(f).toLowerCase()))
       .sort()
       .map(f => {
-        const thumb = `thumbs/${path.parse(f).name}.webp`;
-        return { src: `/Dump/${f}`, thumb: `/Dump/${fs.existsSync(path.join(dumpDir, thumb)) ? thumb : f}` };
+        const parsed = path.parse(f);
+        const thumbFile = `${parsed.name}.webp`;
+        const hasThumb = fs.existsSync(path.join(dumpDir, 'thumbs', thumbFile));
+        return {
+          src: `/Dump/${encodeURIComponent(f)}`,
+          thumb: hasThumb ? `/Dump/thumbs/${encodeURIComponent(thumbFile)}` : `/Dump/${encodeURIComponent(f)}`,
+          label: parsed.name,
+        };
       });
   }
 
@@ -131,15 +137,15 @@ function gameCoversPlugin(apiKey) {
   };
 }
 
-// Static copy of the boot screen's logo; React replaces it with the identical
-// live boot screen once the bundle runs, so it is the page's early LCP paint.
+// Static copy of the boot screen's logo; React replaces it once the bundle
+// runs, keeping the initial ASCII paint as early LCP.
 function bootShellPlugin() {
   const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   return {
     name: 'boot-shell',
     transformIndexHtml: (html) => html.replace(
       '<div id="root"></div>',
-      `<div id="root"><main id="boot"><div id="boot-terminal"><pre class="ascii-art">${esc(BOOT_LOGO)}</pre><div class="boot-enter c-dim">&gt; loading...</div></div></main></div>`,
+      `<div id="root"><main id="boot" class="boot-screen"><div class="boot-frame"><pre class="boot-logo">${esc(BOOT_LOGO)}</pre><div class="boot-status-row">&gt; loading cathedral...</div></div></main></div>`,
     ),
   };
 }
@@ -147,6 +153,25 @@ function bootShellPlugin() {
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
-    plugins: [react(), bootShellPlugin(), gitInfoPlugin(), dumpImagesPlugin(), gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY)],
+    plugins: [
+      react(),
+      bootShellPlugin(),
+      gitInfoPlugin(),
+      dumpImagesPlugin(),
+      gameCoversPlugin(env.RAWG_API_KEY || env.VITE_RAWG_API_KEY),
+    ],
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (!id.includes('node_modules')) return;
+            if (id.includes('/three/')) return 'three-core';
+            if (id.includes('@react-three/postprocessing') || id.includes('/postprocessing/')) return 'postfx';
+            if (id.includes('@react-three/')) return 'r3f';
+            if (id.includes('/gsap/') || id.includes('/lenis/')) return 'motion';
+          },
+        },
+      },
+    },
   };
 });
