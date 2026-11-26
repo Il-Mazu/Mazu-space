@@ -34,6 +34,11 @@ export default function CameraRig({ isMobile }) {
     const dt = Math.min(rawDelta, 0.14);
     const t = THREE.MathUtils.clamp(sceneBus.scrollProgress, 0, 1);
 
+    const targetTerm = sceneBus.terminalOpen ? 1 : 0;
+    sceneBus.terminalFocus = sceneBus.reducedMotion
+      ? targetTerm
+      : THREE.MathUtils.damp(sceneBus.terminalFocus, targetTerm, 7.5, dt);
+
     posCurve.getPointAt(t, targetPos.current);
     lookCurve.getPointAt(t, targetLook.current);
 

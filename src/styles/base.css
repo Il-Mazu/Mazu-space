@@ -242,7 +242,16 @@ img {
   justify-content: space-between;
   padding: 84px clamp(18px, 4vw, 56px) 92px;
   pointer-events: none;
-  transition: opacity 0.25s ease;
+  transition: opacity 0.12s linear;
+}
+
+.chapel-sticky--inactive {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.chapel-sticky--inactive * {
+  pointer-events: none !important;
 }
 
 .chapel-sticky--right {

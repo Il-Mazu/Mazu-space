@@ -22,6 +22,7 @@ import MusicOverlay from './sections/MusicOverlay.jsx';
 import DumpOverlay from './sections/DumpOverlay.jsx';
 import DumpLightbox from './sections/DumpLightbox.jsx';
 import GamesCryptOverlay from './sections/GamesCryptOverlay.jsx';
+import TerminalOverlay from './sections/TerminalOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
 const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
@@ -42,6 +43,7 @@ export default function App() {
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
+  const [terminalOpen, setTerminalOpen] = useState(false);
   const [entered, setEntered] = useState(() => {
     const skip = initialBootDone();
     if (skip) {
@@ -157,13 +159,23 @@ export default function App() {
     };
   }, []);
 
+  const openTerminal = useCallback(() => {
+    sceneBus.terminalOpen = true;
+    setTerminalOpen(true);
+  }, []);
+
+  const closeTerminal = useCallback(() => {
+    sceneBus.terminalOpen = false;
+    setTerminalOpen(false);
+  }, []);
+
   useEffect(() => {
     if (!lenisRef.current) return;
-    if (lightboxIdx !== null) lenisRef.current.stop();
+    if (lightboxIdx !== null || terminalOpen) lenisRef.current.stop();
     else lenisRef.current.start();
-  }, [lightboxIdx]);
+  }, [lightboxIdx, terminalOpen]);
 
-  const renderSectionContent = (sec, idx) => {
+  const renderSectionContent = (sec) => {
     switch (sec.id) {
       case 'hero':
         return <HeroOverlay />;
@@ -177,19 +189,12 @@ export default function App() {
         return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
       case 'games':
         return <GamesCryptOverlay />;
+      case 'terminal':
+        return <TerminalOverlay open={false} onOpen={openTerminal} onClose={closeTerminal} />;
       case 'exit':
         return <ExitOverlay />;
       default:
-        return (
-          <div className="chapel-card torn-paper" style={{ padding: '22px 24px' }}>
-            <div className="chapel-tag">
-              <span className="chapel-tag-cross" aria-hidden="true">♰</span>
-              <span>{sec.label}</span>
-            </div>
-            <h2 className="chapel-title">{sec.name}</h2>
-            <p className="chapel-copy c-dim">Chapel {sec.roman} // z={sec.z}</p>
-          </div>
-        );
+        return null;
     }
   };
 
@@ -200,7 +205,11 @@ export default function App() {
       </a>
 
       <Suspense fallback={null}>
-        <CathedralCanvas isMobile={isMobile} onOpenLightbox={setLightboxIdx} />
+        <CathedralCanvas
+          isMobile={isMobile}
+          onOpenLightbox={setLightboxIdx}
+          onOpenTerminal={openTerminal}
+        />
       </Suspense>
       <CursorTrail />
 
@@ -214,12 +223,17 @@ export default function App() {
         onChange={setLightboxIdx}
       />
 
+      {terminalOpen && (
+        <TerminalOverlay open onOpen={openTerminal} onClose={closeTerminal} />
+      )}
+
       <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
         {SECTIONS.map((sec, idx) => {
           const stickyMod =
-            sec.id === 'presence' || sec.id === 'dump' ? ' chapel-sticky--right'
+            sec.id === 'presence' || sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
               : sec.id === 'exit' ? ' chapel-sticky--exit'
                 : '';
+          const isActive = entered && activeIdx === idx && !terminalOpen;
           return (
             <section
               key={sec.id}
@@ -228,10 +242,9 @@ export default function App() {
               aria-label={`${sec.roman}. ${sec.name}`}
             >
               <div
-                className={`chapel-sticky${stickyMod}`}
-                style={{ opacity: entered && activeIdx === idx ? 1 : 0 }}
+                className={`chapel-sticky${stickyMod}${isActive ? '' : ' chapel-sticky--inactive'}`}
               >
-                {renderSectionContent(sec, idx)}
+                {renderSectionContent(sec)}
               </div>
             </section>
           );
