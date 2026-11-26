@@ -209,7 +209,8 @@ export default function DoorsOnboarding({ onEnterComplete }) {
     let crtFired = false;
 
     const tick = (now) => {
-      const dt = Math.min(Math.max(0, now - lastNow), 260);
+      // A long frame (shader compile, GC) should slow the swing, not skip it.
+      const dt = Math.min(Math.max(0, now - lastNow), 50);
       lastNow = now;
       elapsed += dt;
 
@@ -251,6 +252,16 @@ export default function DoorsOnboarding({ onEnterComplete }) {
 
     rafRef.current = requestAnimationFrame(tick);
   };
+
+  const soundBtnRef = useRef(null);
+  const silenceBtnRef = useRef(null);
+
+  // autoFocus only applies on mount, and the buttons mount disabled.
+  useEffect(() => {
+    if (!ready) return;
+    const preferSilence = prefs.returning && !prefs.preferSound;
+    (preferSilence ? silenceBtnRef : soundBtnRef).current?.focus({ preventScroll: true });
+  }, [ready, prefs.returning, prefs.preferSound]);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -308,8 +319,8 @@ export default function DoorsOnboarding({ onEnterComplete }) {
           <button
             type="button"
             className={`ink-trigger doors-choice ${prefs.returning && !prefs.preferSound ? 'is-secondary' : ''}`}
+            ref={soundBtnRef}
             disabled={!ready}
-            autoFocus={ready && (!prefs.returning || prefs.preferSound)}
             onClick={() => enter(true, false)}
           >
             <span className="ink-cross" aria-hidden="true">♰</span>
@@ -319,8 +330,8 @@ export default function DoorsOnboarding({ onEnterComplete }) {
           <button
             type="button"
             className={`ink-trigger doors-choice ${!prefs.returning || prefs.preferSound ? 'is-secondary' : ''}`}
+            ref={silenceBtnRef}
             disabled={!ready}
-            autoFocus={ready && prefs.returning && !prefs.preferSound}
             onClick={() => enter(false, false)}
           >
             <span>enter in silence</span>

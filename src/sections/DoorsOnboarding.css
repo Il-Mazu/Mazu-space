@@ -59,6 +59,10 @@
   transition: width 0.22s ease, opacity 0.45s ease, transform 0.6s ease;
 }
 
+.doors-screen:not(.is-opening) .doors-leaf {
+  transition: width 0.22s ease;
+}
+
 .doors-screen.is-ready .doors-seam-glow {
   animation: doors-seam-pulse 3.2s ease-in-out infinite;
 }
@@ -79,7 +83,8 @@
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 50%;
+  /* the leaves stop short of the center so the red slit shows through */
+  width: calc(50% - var(--slit-w, 2px) / 2);
   z-index: 2;
   background:
     radial-gradient(ellipse at 50% 50%, #0b090b 0%, #060607 82%);
