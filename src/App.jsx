@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { SECTIONS } from './data/content.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
+import { isWebGLAvailable } from './utils/webgl.js';
 import {
   sceneBus,
   setActiveSection,
@@ -26,6 +27,11 @@ import TerminalOverlay from './sections/TerminalOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
 const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
+const Fallback2D = lazy(() => import('./fallback/Fallback2D.jsx'));
+
+if (typeof window !== 'undefined') {
+  sceneBus.reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -44,6 +50,7 @@ export default function App() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [terminalOpen, setTerminalOpen] = useState(false);
+  const [webglOk, setWebglOk] = useState(() => isWebGLAvailable());
   const [entered, setEntered] = useState(() => {
     const skip = initialBootDone();
     if (skip) {
@@ -103,11 +110,25 @@ export default function App() {
 
       let nearest = 0;
       let bestDist = Infinity;
-      for (let i = 0; i < SECTIONS.length; i++) {
-        const d = Math.abs(progress - SECTIONS[i].scrollPos);
-        if (d < bestDist) {
-          bestDist = d;
-          nearest = i;
+      if (!webglOk) {
+        const midY = window.innerHeight * 0.45;
+        for (let i = 0; i < SECTIONS.length; i++) {
+          const el = document.getElementById(`chapel-${SECTIONS[i].id}`);
+          if (!el) continue;
+          const rect = el.getBoundingClientRect();
+          const d = Math.abs(rect.top + rect.height * 0.35 - midY);
+          if (d < bestDist) {
+            bestDist = d;
+            nearest = i;
+          }
+        }
+      } else {
+        for (let i = 0; i < SECTIONS.length; i++) {
+          const d = Math.abs(progress - SECTIONS[i].scrollPos);
+          if (d < bestDist) {
+            bestDist = d;
+            nearest = i;
+          }
         }
       }
       if (nearest !== sceneBus.activeSection) {
@@ -134,6 +155,15 @@ export default function App() {
           ? idOrIdx
           : SECTIONS.findIndex((s) => s.id === idOrIdx);
       const sec = SECTIONS[Math.max(0, Math.min(SECTIONS.length - 1, idx))];
+
+      if (!webglOk) {
+        const el = document.getElementById(`chapel-${sec.id}`);
+        el?.scrollIntoView({ behavior: sceneBus.reducedMotion ? 'auto' : 'smooth' });
+        setActiveSection(idx);
+        setActiveIdx(idx);
+        return;
+      }
+
       const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
       const targetY = sec.scrollPos * maxScroll;
 
@@ -157,7 +187,7 @@ export default function App() {
       lenisRef.current = null;
       reducedQuery.removeEventListener('change', syncReduced);
     };
-  }, []);
+  }, [webglOk]);
 
   const openTerminal = useCallback(() => {
     sceneBus.terminalOpen = true;
@@ -204,13 +234,16 @@ export default function App() {
         Skip to content
       </a>
 
-      <Suspense fallback={null}>
-        <CathedralCanvas
-          isMobile={isMobile}
-          onOpenLightbox={setLightboxIdx}
-          onOpenTerminal={openTerminal}
-        />
-      </Suspense>
+      {webglOk && (
+        <Suspense fallback={null}>
+          <CathedralCanvas
+            isMobile={isMobile}
+            onOpenLightbox={setLightboxIdx}
+            onOpenTerminal={openTerminal}
+            onContextLost={() => setWebglOk(false)}
+          />
+        </Suspense>
+      )}
       <CursorTrail />
 
       {!entered && <Preloader onEnterComplete={() => setEntered(true)} />}
@@ -227,29 +260,41 @@ export default function App() {
         <TerminalOverlay open onOpen={openTerminal} onClose={closeTerminal} />
       )}
 
-      <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
-        {SECTIONS.map((sec, idx) => {
-          const stickyMod =
-            sec.id === 'presence' || sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
-              : sec.id === 'exit' ? ' chapel-sticky--exit'
-                : '';
-          const isActive = entered && activeIdx === idx && !terminalOpen;
-          return (
-            <section
-              key={sec.id}
-              id={`chapel-${sec.id}`}
-              className="chapel-anchor"
-              aria-label={`${sec.roman}. ${sec.name}`}
-            >
-              <div
-                className={`chapel-sticky${stickyMod}${isActive ? '' : ' chapel-sticky--inactive'}`}
+      {!webglOk ? (
+        entered ? (
+          <Suspense fallback={null}>
+            <Fallback2D
+              lanyard={lanyard}
+              onOpenLightbox={setLightboxIdx}
+              onOpenTerminal={openTerminal}
+            />
+          </Suspense>
+        ) : null
+      ) : (
+        <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
+          {SECTIONS.map((sec, idx) => {
+            const stickyMod =
+              sec.id === 'presence' || sec.id === 'dump' || sec.id === 'terminal' ? ' chapel-sticky--right'
+                : sec.id === 'exit' ? ' chapel-sticky--exit'
+                  : '';
+            const isActive = entered && activeIdx === idx && !terminalOpen;
+            return (
+              <section
+                key={sec.id}
+                id={`chapel-${sec.id}`}
+                className="chapel-anchor"
+                aria-label={`${sec.roman}. ${sec.name}`}
               >
-                {renderSectionContent(sec)}
-              </div>
-            </section>
-          );
-        })}
-      </main>
+                <div
+                  className={`chapel-sticky${stickyMod}${isActive ? '' : ' chapel-sticky--inactive'}`}
+                >
+                  {renderSectionContent(sec)}
+                </div>
+              </section>
+            );
+          })}
+        </main>
+      )}
     </>
   );
 }

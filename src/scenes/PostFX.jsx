@@ -40,7 +40,7 @@ export default function PostFX({ perfTier }) {
     }
   });
 
-  if (perfTier === 'low') {
+  if (perfTier === 'low' || sceneBus.reducedMotion) {
     return (
       <EffectComposer multisampling={0}>
         <Bloom

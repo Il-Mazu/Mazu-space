@@ -28,7 +28,7 @@ function AudioSampler() {
   return null;
 }
 
-export default function CathedralCanvas({ isMobile, onOpenLightbox, onOpenTerminal }) {
+export default function CathedralCanvas({ isMobile, onOpenLightbox, onOpenTerminal, onContextLost }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
@@ -56,6 +56,12 @@ export default function CathedralCanvas({ isMobile, onOpenLightbox, onOpenTermin
           antialias: false,
           powerPreference: 'high-performance',
           toneMapping: THREE.NoToneMapping,
+        }}
+        onCreated={({ gl }) => {
+          gl.domElement.addEventListener('webglcontextlost', (e) => {
+            e.preventDefault();
+            onContextLost?.();
+          });
         }}
         eventSource={eventSource}
         eventPrefix="client"
