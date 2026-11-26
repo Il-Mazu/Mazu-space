@@ -76,8 +76,8 @@ export default function PresenceChapel({ isMobile }) {
   });
 
   const floorY = naveFloorY(-42);
-  const pos = isMobile ? [0, floorY + 0.95, -42] : [-1.25, floorY + 0.55, -42];
-  const scale = isMobile ? 0.76 : 1.08;
+  const pos = isMobile ? [0, floorY + 1.65, -42] : [-1.25, floorY + 0.55, -42];
+  const scale = isMobile ? 0.72 : 1.08;
 
   return (
     <group position={pos} scale={scale}>

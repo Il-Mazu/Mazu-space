@@ -18,6 +18,7 @@ import Preloader from './sections/Preloader.jsx';
 import HeroOverlay from './sections/HeroOverlay.jsx';
 import AboutOverlay from './sections/AboutOverlay.jsx';
 import PresenceOverlay from './sections/PresenceOverlay.jsx';
+import MusicOverlay from './sections/MusicOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
 const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
@@ -160,6 +161,8 @@ export default function App() {
         return <AboutOverlay />;
       case 'presence':
         return <PresenceOverlay lanyard={lanyard} />;
+      case 'music':
+        return <MusicOverlay lanyard={lanyard} />;
       case 'exit':
         return <ExitOverlay />;
       default:

@@ -15,6 +15,7 @@ import PostFX from './PostFX.jsx';
 import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
 import PresenceChapel from '../sections/PresenceChapel.jsx';
+import MusicChapel from '../sections/MusicChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
 
 function AudioSampler() {
@@ -25,10 +26,10 @@ function AudioSampler() {
 }
 
 function ChapelMarkers() {
-  // Temporary markers for chapels IV-VII until Phases 4-6 build them.
+  // Temporary markers for chapels V-VII until Phases 5-6 build them.
   return (
     <group>
-      {SECTIONS.slice(3, 7).map((sec) => (
+      {SECTIONS.slice(4, 7).map((sec) => (
         <mesh key={sec.id} position={[0, sec.lookAt[1] - 0.8, sec.z]}>
           <octahedronGeometry args={[0.26, 0]} />
           <meshBasicMaterial color={[1.6, 0.14, 0.25]} toneMapped={false} wireframe />
@@ -85,6 +86,7 @@ export default function CathedralCanvas({ isMobile }) {
         <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
         <AboutChapel isMobile={isMobile} />
         <PresenceChapel isMobile={isMobile} />
+        <MusicChapel isMobile={isMobile} />
         <ExitChapel isMobile={isMobile} />
         <ChapelMarkers />
 
