@@ -19,6 +19,9 @@ import HeroOverlay from './sections/HeroOverlay.jsx';
 import AboutOverlay from './sections/AboutOverlay.jsx';
 import PresenceOverlay from './sections/PresenceOverlay.jsx';
 import MusicOverlay from './sections/MusicOverlay.jsx';
+import DumpOverlay from './sections/DumpOverlay.jsx';
+import DumpLightbox from './sections/DumpLightbox.jsx';
+import GamesCryptOverlay from './sections/GamesCryptOverlay.jsx';
 import ExitOverlay from './sections/ExitOverlay.jsx';
 
 const CathedralCanvas = lazy(() => import('./scenes/CathedralCanvas.jsx'));
@@ -38,6 +41,7 @@ export default function App() {
   const progressBarRef = useRef(null);
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [lightboxIdx, setLightboxIdx] = useState(null);
   const [entered, setEntered] = useState(() => {
     const skip = initialBootDone();
     if (skip) {
@@ -153,6 +157,12 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    if (!lenisRef.current) return;
+    if (lightboxIdx !== null) lenisRef.current.stop();
+    else lenisRef.current.start();
+  }, [lightboxIdx]);
+
   const renderSectionContent = (sec, idx) => {
     switch (sec.id) {
       case 'hero':
@@ -163,6 +173,10 @@ export default function App() {
         return <PresenceOverlay lanyard={lanyard} />;
       case 'music':
         return <MusicOverlay lanyard={lanyard} />;
+      case 'dump':
+        return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
+      case 'games':
+        return <GamesCryptOverlay />;
       case 'exit':
         return <ExitOverlay />;
       default:
@@ -186,7 +200,7 @@ export default function App() {
       </a>
 
       <Suspense fallback={null}>
-        <CathedralCanvas isMobile={isMobile} />
+        <CathedralCanvas isMobile={isMobile} onOpenLightbox={setLightboxIdx} />
       </Suspense>
       <CursorTrail />
 
@@ -194,10 +208,16 @@ export default function App() {
 
       {entered && <Hud onProgressRef={setProgressEl} />}
 
+      <DumpLightbox
+        index={lightboxIdx}
+        onClose={() => setLightboxIdx(null)}
+        onChange={setLightboxIdx}
+      />
+
       <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
         {SECTIONS.map((sec, idx) => {
           const stickyMod =
-            sec.id === 'presence' ? ' chapel-sticky--right'
+            sec.id === 'presence' || sec.id === 'dump' ? ' chapel-sticky--right'
               : sec.id === 'exit' ? ' chapel-sticky--exit'
                 : '';
           return (

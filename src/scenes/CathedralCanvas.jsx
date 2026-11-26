@@ -16,6 +16,8 @@ import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
 import PresenceChapel from '../sections/PresenceChapel.jsx';
 import MusicChapel from '../sections/MusicChapel.jsx';
+import DumpChapel from '../sections/DumpChapel.jsx';
+import GamesChapel from '../sections/GamesChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
 
 function AudioSampler() {
@@ -26,10 +28,10 @@ function AudioSampler() {
 }
 
 function ChapelMarkers() {
-  // Temporary markers for chapels V-VII until Phases 5-6 build them.
+  // Temporary marker for chapel VII until Phase 6 builds the terminal confessional.
   return (
     <group>
-      {SECTIONS.slice(4, 7).map((sec) => (
+      {SECTIONS.slice(6, 7).map((sec) => (
         <mesh key={sec.id} position={[0, sec.lookAt[1] - 0.8, sec.z]}>
           <octahedronGeometry args={[0.26, 0]} />
           <meshBasicMaterial color={[1.6, 0.14, 0.25]} toneMapped={false} wireframe />
@@ -39,7 +41,7 @@ function ChapelMarkers() {
   );
 }
 
-export default function CathedralCanvas({ isMobile }) {
+export default function CathedralCanvas({ isMobile, onOpenLightbox }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
   const maxDpr = isMobile ? 1.5 : 2;
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
@@ -87,6 +89,8 @@ export default function CathedralCanvas({ isMobile }) {
         <AboutChapel isMobile={isMobile} />
         <PresenceChapel isMobile={isMobile} />
         <MusicChapel isMobile={isMobile} />
+        <DumpChapel isMobile={isMobile} onOpenLightbox={onOpenLightbox} />
+        <GamesChapel isMobile={isMobile} />
         <ExitChapel isMobile={isMobile} />
         <ChapelMarkers />
 
