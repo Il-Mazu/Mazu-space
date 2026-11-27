@@ -17,6 +17,7 @@ import AboutChapel from '../sections/AboutChapel.jsx';
 import LiveChapel from '../sections/LiveChapel.jsx';
 import WorksChapel from '../sections/WorksChapel.jsx';
 import ChronicleWall from '../sections/ChronicleWall.jsx';
+import CandleField from '../sections/CandleField.jsx';
 import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
@@ -82,7 +83,7 @@ function Precompile() {
   return null;
 }
 
-function ChapelScene({ chapel, isMobile, lanyard, music, workIdx, onOpenWork, onOpenLightbox, onOpenCrypt }) {
+function ChapelScene({ chapel, isMobile, lanyard, music, guestbook, workIdx, onOpenWork, onOpenLightbox, onOpenCrypt }) {
   switch (chapel.id) {
     case 'works':
       return <WorksChapel chapel={chapel} isMobile={isMobile} selected={workIdx} onOpenWork={onOpenWork} />;
@@ -100,7 +101,12 @@ function ChapelScene({ chapel, isMobile, lanyard, music, workIdx, onOpenWork, on
     case 'games':
       return <GamesChapel chapel={chapel} isMobile={isMobile} onOpenCrypt={onOpenCrypt} />;
     case 'exit':
-      return <ExitChapel chapel={chapel} isMobile={isMobile} />;
+      return (
+        <>
+          <ExitChapel chapel={chapel} isMobile={isMobile} />
+          <CandleField chapel={chapel} entries={guestbook.entries} justLit={guestbook.justLit} isMobile={isMobile} />
+        </>
+      );
     default:
       return null;
   }
@@ -111,6 +117,7 @@ export default function CathedralCanvas({
   entered = true,
   lanyard = null,
   music,
+  guestbook,
   workIdx = null,
   onOpenWork,
   onOpenLightbox,
@@ -183,6 +190,7 @@ export default function CathedralCanvas({
               isMobile={isMobile}
               lanyard={lanyard}
               music={music}
+              guestbook={guestbook}
               workIdx={workIdx}
               onOpenWork={onOpenWork}
               onOpenLightbox={onOpenLightbox}

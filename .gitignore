@@ -28,3 +28,6 @@ Thumbs.db
 
 # Local screenshots (scripts/shots.mjs)
 shots/
+
+# Playwright CLI session logs
+.playwright-cli/

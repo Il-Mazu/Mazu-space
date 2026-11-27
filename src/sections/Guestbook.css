@@ -1,0 +1,182 @@
+.gb-text {
+  width: min(400px, 100%);
+}
+
+.gb-count {
+  margin-bottom: 12px;
+}
+
+.gb-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-left: 14px;
+  border-left: 1px solid rgba(170, 32, 48, 0.4);
+}
+
+.gb-list li {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 10px;
+  align-items: baseline;
+  outline-offset: 4px;
+}
+
+.gb-list li:hover .gb-name,
+.gb-list li:focus-visible .gb-name {
+  color: #fff;
+  text-shadow: -2px 0 rgba(255, 51, 82, 0.92), 2px 0 rgba(239, 231, 220, 0.55);
+}
+
+.gb-name {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  line-height: 1.1;
+  color: var(--bone);
+  text-shadow: 0 2px 10px #000;
+}
+
+.gb-when {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.gb-msg {
+  grid-column: 1 / -1;
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  text-shadow: 0 1px 8px #000;
+  word-break: break-word;
+}
+
+.gb-list--all {
+  max-height: none;
+  margin-top: 4px;
+}
+
+.gb-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px 22px;
+}
+
+.gb-cancel {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--text-dim);
+  padding: 2px 0;
+}
+
+.gb-cancel:hover,
+.gb-cancel:focus-visible {
+  color: var(--bone);
+}
+
+/* The form is type on the scene: underlined fields, no boxes. */
+.gb-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gb-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  color: var(--text-dim);
+}
+
+.gb-field em {
+  font-style: normal;
+  float: right;
+  color: var(--accent-deep);
+}
+
+.gb-field span {
+  display: block;
+}
+
+.gb-field input,
+.gb-field textarea {
+  width: 100%;
+  padding: 4px 0 6px;
+  border-bottom: 1px solid rgba(138, 15, 31, 0.8);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  color: var(--bone);
+  resize: none;
+  text-shadow: 0 1px 8px #000;
+}
+
+.gb-field input:focus,
+.gb-field textarea:focus {
+  outline: none;
+  border-bottom-color: var(--accent);
+  box-shadow: 0 6px 14px -10px rgba(255, 51, 82, 0.8);
+}
+
+.gb-trap {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.gb-error {
+  min-height: 1.2em;
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  color: var(--accent);
+}
+
+.gb-error:empty {
+  min-height: 0;
+}
+
+.gb-note {
+  font-family: var(--font-body);
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.gb-note a {
+  color: var(--text);
+}
+
+/* hover label over a candle in the field */
+.candle-note {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  width: max-content;
+  max-width: 260px;
+  font-family: var(--font-body);
+  text-align: center;
+  text-shadow: 0 0 10px #000, 0 0 3px #000;
+  transform: translateY(-50%);
+}
+
+.candle-note-name {
+  font-size: 13px;
+  color: var(--bone);
+}
+
+.candle-note-when {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.candle-note-msg {
+  font-size: 11.5px;
+  line-height: 1.45;
+  color: var(--text);
+}

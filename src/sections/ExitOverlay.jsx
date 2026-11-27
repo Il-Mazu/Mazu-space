@@ -1,19 +1,29 @@
 import { commits, buildDate } from 'virtual:git-info';
 import { count as dumpCount } from 'virtual:dump-images';
 import { gamesCount } from '../data/games.js';
+import projects from 'virtual:projects';
 import { LINKS, SITE } from '../data/content.js';
 import { jumpToSection } from '../state/sceneBus.js';
 import { playClickHit, playHoverTick } from '../audio/AudioEngine.js';
 import './ExitOverlay.css';
 
-export default function ExitOverlay() {
+export default function ExitOverlay({ shown = true }) {
   const counters = [
+    ['works', projects.length],
     ['dump', dumpCount],
     ['games', gamesCount],
   ];
 
   return (
-    <article className="chapel-text exit-text ui-depth-plane" aria-labelledby="exit-heading">
+    <article
+      className={`chapel-text exit-text ui-depth-plane beat${shown ? '' : ' beat--off'}`}
+      aria-labelledby="exit-heading"
+      onFocus={(e) => {
+        if (shown) return;
+        e.stopPropagation();
+        jumpToSection({ id: 'exit', beat: 1 });
+      }}
+    >
       <div className="chapel-scrim" aria-hidden="true" />
       <h2 id="exit-heading" className="chapel-title exit-title">carved ledger</h2>
 

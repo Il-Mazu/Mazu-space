@@ -57,9 +57,14 @@ const CHAPEL_DEFS = [
   // },
   {
     id: 'exit',
-    name: 'ledger',
-    side: 'center',
-    beats: [{ cam: [0, 2.16, 9.5], look: [0, 1.96, -4.0] }],
+    name: 'guestbook',
+    side: 'left',
+    beats: [
+      // the candle field in front of the apse
+      { cam: [0.2, 3.3, 15.5], look: [0.6, 0.4, 6.4] },
+      // ledger, links and the closing eye
+      { cam: [0, 2.16, 9.5], look: [0, 1.96, -4.0], side: 'center' },
+    ],
   },
 ];
 

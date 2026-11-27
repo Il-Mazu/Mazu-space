@@ -58,8 +58,27 @@ Set these in the Vercel project (and in `.env.local` for `vercel dev`). None are
 | `LASTFM_API_KEY` | `api/music/now`, `api/music/stats` | From https://www.last.fm/api/account/create |
 | `LASTFM_USER` | same | Last.fm username |
 | `GITHUB_TOKEN` | build (`virtual:projects`) | Optional. Only lifts the GitHub API rate limit; without it the build still works and falls back to cached or curated data |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` | `api/guestbook` | Set by adding Upstash Redis from the Vercel Marketplace |
+| `IP_HASH_SALT` | `api/guestbook` | Long random string; salts the hashed IP used for rate limiting (the raw IP is never stored) |
+| `GUESTBOOK_ADMIN_TOKEN` | `api/guestbook/[id]` | Long random string; needed to delete entries from `/admin` |
 
-Without them the music routes return 503 and the Live chapel falls back to Lanyard only.
+Without the Last.fm pair the music routes return 503 and the Live chapel falls back to Lanyard only. Without the guestbook ones the guestbook says it isn't open yet and hides its form.
+
+## Guestbook
+
+Visitors light a candle in the last chapel: a name (24 characters) and a message (140). The API strips markup and links, drops anything a hidden honeypot field catches, filters Italian and English slurs, and allows one post per 10 minutes per salted IP hash. Entries are a Redis sorted set plus one hash each; the newest 100 are shown.
+
+To delete an entry, open `/admin` (not linked anywhere, `noindex`), paste `GUESTBOOK_ADMIN_TOKEN` and press delete. The token stays in that tab's session storage only.
+
+To try the API locally without an Upstash account, run Redis behind Upstash's REST emulator and point `KV_REST_API_URL` at it:
+
+```bash
+podman pod create --name gb -p 127.0.0.1:8079:80
+podman run -d --pod gb docker.io/library/redis:7-alpine
+podman run -d --pod gb -e SRH_MODE=env -e SRH_TOKEN=local -e SRH_CONNECTION_STRING=redis://localhost:6379 docker.io/hiett/serverless-redis-http:latest
+```
+
+Then `KV_REST_API_URL=http://127.0.0.1:8079` (not `localhost`, which may resolve to IPv6), `KV_REST_API_TOKEN=local` and an `IP_HASH_SALT` in `.env.local`, and `npx vercel dev`. Remove it with `podman pod rm -f gb`.
 
 ## Keyboard
 
@@ -68,7 +87,7 @@ Without them the music routes return 503 and the Live chapel falls back to Lanya
 | `Enter` | Enter the site from the threshold doors |
 | `Tab` / `Shift+Tab` | Move between HUD, chapel index, controls, and links |
 | `←` / `→` | Previous / next image in the Dump lightbox |
-| `Esc` | Close the Dump lightbox or the game crypt |
+| `Esc` | Close the Dump lightbox, the game crypt, a Works page or the guestbook list |
 
 ## Structure
 
@@ -82,7 +101,8 @@ Without them the music routes return 503 and the Live chapel falls back to Lanya
 | `src/hud/` | Pixel cursor trail |
 | `src/data/` | Chapel list, content, projects, ASCII art, and game dataset |
 | `src/music/` | `useMusic` and its providers (`lanyard` for live playback, `lastfm` for history) |
-| `api/` | Vercel functions (`music/now`, `music/stats`) |
+| `api/` | Vercel functions (`music/now`, `music/stats`, `guestbook`, `guestbook/[id]`) |
+| `src/guestbook/` | `useGuestbook`: loads entries and signs the book |
 | `src/fallback/` | Styled 2D gothic-punk fallback when WebGL is disabled or lost |
 
 ## Sound design and licenses

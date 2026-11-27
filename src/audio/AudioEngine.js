@@ -114,6 +114,11 @@ export function playLightboxTone(opening = true) {
   ensureGraph()?.cathedral.playLightboxTone(opening);
 }
 
+export function playCandleLit() {
+  if (!state.soundEnabled) return;
+  ensureGraph()?.cathedral.playCandleLit();
+}
+
 export function setSoundEnabled(next) {
   state.unlocked = true;
   state.soundEnabled = Boolean(next);

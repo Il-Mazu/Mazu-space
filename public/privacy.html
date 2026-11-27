@@ -10,6 +10,7 @@
     main { max-width: 42rem; margin: 0 auto; }
     h1 { font-size: 1.6rem; line-height: 1.25; }
     h2 { font-size: 1.1rem; margin-top: 2rem; }
+    h3 { font-size: 1rem; margin-top: 1.4rem; }
     a { color: #1c5cab; }
     .updated { color: #5b6779; font-size: 0.9rem; }
     @media (prefers-color-scheme: dark) { body { background: #10161f; color: #e6eaf0; } a { color: #7db3f0; } .updated { color: #9aa8bd; } }
@@ -18,7 +19,7 @@
 <body>
 <main>
   <h1>Informativa privacy per le attività che contatto</h1>
-  <p class="updated">Ultimo aggiornamento: 11 ottobre 2026</p>
+  <p class="updated">Ultimo aggiornamento: 27 novembre 2026</p>
 
   <p>Se hai ricevuto un mio messaggio in cui propongo di rifare il sito della tua attività, qui trovi quali dati ho, da dove li ho presi e come farmi smettere.</p>
 
@@ -45,6 +46,19 @@
 
   <h2>I tuoi diritti</h2>
   <p>Puoi chiedermi quali dati ho su di te, farli correggere o cancellare, e opporti al loro uso. Rispondo entro un mese. Se ritieni che abbia trattato male i tuoi dati puoi presentare reclamo al <a href="https://www.garanteprivacy.it">Garante per la protezione dei dati personali</a>.</p>
+
+  <h2 id="sito">Il sito mazu.is-a.dev</h2>
+  <p>Questa parte riguarda chi visita il mio sito personale, non le attività che contatto.</p>
+
+  <h3>Guestbook</h3>
+  <p>Se lasci un segno nel guestbook salvo il nome che scrivi, il messaggio e la data e l'ora in cui l'hai lasciato. Nome e messaggio sono pubblici sul sito. Per limitare lo spam (un messaggio ogni dieci minuti) calcolo un'impronta del tuo indirizzo IP mescolata a un valore segreto (un hash con sale): l'indirizzo vero non viene mai salvato, e l'impronta si cancella da sola dopo dieci minuti. I dati stanno su un database Upstash (Redis) collegato al mio progetto su Vercel.</p>
+  <p>Per far cancellare un tuo messaggio scrivimi a <a href="mailto:mazurekmarco06@gmail.com">mazurekmarco06@gmail.com</a> indicando il nome usato e, se lo ricordi, il giorno. Lo cancello entro pochi giorni.</p>
+
+  <h3>Cosa ascolto e cosa sto facendo</h3>
+  <p>Il sito mostra il mio stato su Discord e le mie attività (tramite Lanyard) e la musica che ascolto (Spotify, tramite Lanyard e Last.fm). Sono dati miei, non di chi visita: il sito non raccoglie quello che ascolti tu.</p>
+
+  <h3>Statistiche</h3>
+  <p>Uso Vercel Web Analytics e Speed Insights per contare le visite e misurare la velocità delle pagine, in forma aggregata e senza cookie.</p>
 </main>
 </body>
 </html>

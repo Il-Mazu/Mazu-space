@@ -9,9 +9,10 @@ import projects from 'virtual:projects';
 import DumpOverlay from '../sections/DumpOverlay.jsx';
 import GamesCryptOverlay from '../sections/GamesCryptOverlay.jsx';
 import ExitOverlay from '../sections/ExitOverlay.jsx';
+import GuestbookOverlay from '../sections/GuestbookOverlay.jsx';
 import './Fallback2D.css';
 
-function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt, onOpenWork }) {
+function renderChapel(id, { lanyard, music, guestbook, onOpenLightbox, onOpenCrypt, onOpenWork }) {
   switch (id) {
     case 'works':
       return (
@@ -78,7 +79,12 @@ function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt, onOpenW
     case 'games':
       return <GamesCryptOverlay onOpen={onOpenCrypt} />;
     case 'exit':
-      return <ExitOverlay />;
+      return (
+        <>
+          <GuestbookOverlay guestbook={guestbook} shown />
+          <ExitOverlay />
+        </>
+      );
     default:
       return null;
   }

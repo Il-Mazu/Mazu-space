@@ -22,6 +22,7 @@ export const sceneBus = {
   focus: null, // { pos: [x, y, z], look: [x, y, z] }
   focusT: 0,
   precompiling: false,
+  guestFocus: null, // guestbook entry id whose candle is highlighted
   audioMetrics: {
     rms: 0,
     bass: 0,

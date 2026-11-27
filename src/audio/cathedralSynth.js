@@ -524,4 +524,40 @@ export class CathedralAudioBus {
     osc.start(now);
     osc.stop(now + 0.18);
   }
+
+  // A guestbook candle catching: a soft match strike, then a low bell in the reverb.
+  playCandleLit() {
+    if (!this.enabled) return;
+    const { ctx } = this;
+    const now = ctx.currentTime;
+    const noise = ctx.createBufferSource();
+    noise.buffer = createNoiseBuffer(ctx, 0.4);
+    const bp = ctx.createBiquadFilter();
+    bp.type = 'bandpass';
+    bp.frequency.setValueAtTime(2600, now);
+    bp.frequency.exponentialRampToValueAtTime(700, now + 0.3);
+    const ng = ctx.createGain();
+    ng.gain.setValueAtTime(0.0001, now);
+    ng.gain.exponentialRampToValueAtTime(0.05, now + 0.02);
+    ng.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+    noise.connect(bp);
+    bp.connect(ng);
+    ng.connect(this.sfxDry);
+    noise.start(now);
+    noise.stop(now + 0.4);
+
+    [392, 587.3].forEach((f, i) => {
+      const osc = ctx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = f;
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0.0001, now + 0.08);
+      g.gain.exponentialRampToValueAtTime(i ? 0.012 : 0.03, now + 0.12);
+      g.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+      osc.connect(g);
+      g.connect(this.sfxWet);
+      osc.start(now + 0.08);
+      osc.stop(now + 2.3);
+    });
+  }
 }

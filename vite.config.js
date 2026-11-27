@@ -21,10 +21,12 @@ function gitInfoPlugin() {
         const run = (cmd) => { try { return execSync(cmd, { encoding: 'utf-8' }).trim(); } catch { return ''; } };
         const { VERCEL_GIT_REPO_OWNER: owner, VERCEL_GIT_REPO_SLUG: slug } = process.env;
         const remote = run('git remote get-url origin') || (owner && slug ? `https://github.com/${owner}/${slug}` : '');
-        const commits = run('git log --oneline -5').split('\n').filter(Boolean).map(line => {
+        // Phase/pass markers, wip and chores say nothing to a visitor: show real changes.
+        const noise = /^(v\d+ phase|pass \d|wip\b|chore|merge\b|bump\b)/i;
+        const commits = run('git log --oneline -60').split('\n').filter(Boolean).map(line => {
           const i = line.indexOf(' ');
           return { hash: line.slice(0, i), message: line.slice(i + 1) };
-        });
+        }).filter((c) => !noise.test(c.message)).slice(0, 5);
         const buildDate = new Date().toISOString().split('T')[0];
         return `
           export const commits = ${JSON.stringify(commits)};

@@ -8,6 +8,7 @@ import { worksLayout } from './sections/worksLayout.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
 import useMusic from './music/useMusic.js';
+import useGuestbook from './guestbook/useGuestbook.js';
 import { isWebGLAvailable } from './utils/webgl.js';
 import { playGlitchBurst } from './audio/AudioEngine.js';
 import {
@@ -27,6 +28,7 @@ import AboutOverlay from './sections/AboutOverlay.jsx';
 import LiveOverlay from './sections/LiveOverlay.jsx';
 import WorksOverlay from './sections/WorksOverlay.jsx';
 import WorksDetail from './sections/WorksDetail.jsx';
+import GuestbookOverlay from './sections/GuestbookOverlay.jsx';
 import DumpOverlay from './sections/DumpOverlay.jsx';
 import DumpLightbox from './sections/DumpLightbox.jsx';
 import GamesCryptOverlay, { GamesCryptModal } from './sections/GamesCryptOverlay.jsx';
@@ -53,6 +55,7 @@ export default function App() {
   const isMobile = mode === 'mobile';
   const lanyard = useLanyard();
   const music = useMusic(lanyard);
+  const guestbook = useGuestbook();
   const progressBarRef = useRef(null);
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
@@ -243,8 +246,15 @@ export default function App() {
         return <DumpOverlay onOpenLightbox={setLightboxIdx} />;
       case 'games':
         return <GamesCryptOverlay onOpen={openCrypt} />;
-      case 'exit':
-        return <ExitOverlay />;
+      case 'exit': {
+        const beat = CAMERA_STOPS[activeStop].chapel === sec.index ? CAMERA_STOPS[activeStop].beat : 0;
+        return (
+          <>
+            <GuestbookOverlay guestbook={guestbook} shown={beat === 0} />
+            <ExitOverlay shown={beat === 1} />
+          </>
+        );
+      }
       default:
         return null;
     }
@@ -263,6 +273,7 @@ export default function App() {
             entered={entered}
             lanyard={lanyard}
             music={music}
+            guestbook={guestbook}
             workIdx={workIdx}
             onOpenWork={openWork}
             onOpenLightbox={setLightboxIdx}
@@ -299,6 +310,7 @@ export default function App() {
             <Fallback2D
               lanyard={lanyard}
               music={music}
+              guestbook={guestbook}
               onOpenLightbox={setLightboxIdx}
               onOpenCrypt={openCrypt}
               onOpenWork={openWork}

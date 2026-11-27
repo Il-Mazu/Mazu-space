@@ -326,6 +326,19 @@ img {
 .chapel-sticky--right .chapel-text { transform-origin: right center; }
 .chapel-sticky--center .chapel-text { transform-origin: center bottom; }
 
+/* Chapels with two camera stops keep both texts in one sticky slot; the one
+   the camera is not on fades out. */
+.beat {
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+
+.chapel-text.beat--off {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate3d(0, 10px, 0);
+}
+
 .chapel-copy {
   font-family: var(--font-body);
   font-size: 13px;

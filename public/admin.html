@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>guestbook · admin</title>
+  <style>
+    @font-face { font-family: 'Departure Mono'; src: url('/fonts/departure-mono.woff2') format('woff2'); }
+    :root { color-scheme: dark; }
+    body { margin: 0; padding: 32px 20px 60px; background: #060607; color: #d4c9c2; font: 13px/1.55 'Departure Mono', ui-monospace, monospace; }
+    main { max-width: 760px; margin: 0 auto; }
+    h1 { font-size: 15px; color: #efe7dc; margin: 0 0 18px; }
+    form { display: flex; gap: 10px; margin-bottom: 18px; }
+    input { flex: 1; background: transparent; border: 0; border-bottom: 1px solid #8a0f1f; color: #efe7dc; font: inherit; padding: 6px 2px; }
+    input:focus { outline: none; border-bottom-color: #ff3352; }
+    button { background: none; border: 0; color: #efe7dc; font: inherit; cursor: pointer; padding: 4px 2px; border-bottom: 1px solid #ff3352; }
+    button:hover, button:focus-visible { color: #fff; outline: none; }
+    #status { color: #a88f94; min-height: 1.5em; margin-bottom: 12px; }
+    ol { list-style: none; padding: 0; margin: 0; }
+    li { display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; padding: 10px 0; border-top: 1px solid rgba(170, 32, 48, 0.28); }
+    .who { color: #efe7dc; }
+    .when { color: #a88f94; font-size: 11px; }
+    .msg { grid-column: 1; word-break: break-word; }
+    li button { grid-row: 1 / span 2; grid-column: 2; align-self: center; color: #ff3352; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>♰ guestbook · admin</h1>
+    <form id="auth">
+      <input id="token" type="password" placeholder="GUESTBOOK_ADMIN_TOKEN" autocomplete="off" aria-label="Admin token">
+      <button type="submit">use token</button>
+    </form>
+    <p id="status" role="status"></p>
+    <ol id="list"></ol>
+  </main>
+  <script>
+    const status = document.getElementById('status');
+    const list = document.getElementById('list');
+    const tokenInput = document.getElementById('token');
+    // kept for this tab only
+    tokenInput.value = sessionStorage.getItem('gb-admin') || '';
+
+    async function load() {
+      status.textContent = 'loading...';
+      const res = await fetch('/api/guestbook', { cache: 'no-store' });
+      if (!res.ok) {
+        status.textContent = `could not load (${res.status})`;
+        return;
+      }
+      const { entries } = await res.json();
+      list.replaceChildren(...entries.map(row));
+      status.textContent = `${entries.length} entries (the public list is cached for a few seconds)`;
+    }
+
+    function row(e) {
+      const li = document.createElement('li');
+      const who = document.createElement('span');
+      who.className = 'who';
+      who.textContent = e.name;
+      const when = document.createElement('span');
+      when.className = 'when';
+      when.textContent = ` ${new Date(e.createdAt).toLocaleString()}`;
+      who.append(when);
+      const msg = document.createElement('span');
+      msg.className = 'msg';
+      msg.textContent = e.message;
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = 'delete';
+      btn.addEventListener('click', async () => {
+        if (!confirm(`Delete the entry by "${e.name}"?`)) return;
+        const res = await fetch(`/api/guestbook/${encodeURIComponent(e.id)}`, {
+          method: 'DELETE',
+          headers: { authorization: `Bearer ${tokenInput.value}` },
+        });
+        if (res.ok) {
+          li.remove();
+          status.textContent = `deleted "${e.name}"`;
+        } else {
+          status.textContent = res.status === 401 ? 'wrong token' : `delete failed (${res.status})`;
+        }
+      });
+      li.append(who, btn, msg);
+      return li;
+    }
+
+    document.getElementById('auth').addEventListener('submit', (ev) => {
+      ev.preventDefault();
+      sessionStorage.setItem('gb-admin', tokenInput.value);
+      status.textContent = 'token set for this tab';
+    });
+
+    load();
+  </script>
+</body>
+</html>

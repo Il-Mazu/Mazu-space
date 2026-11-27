@@ -53,18 +53,6 @@
   text-shadow: 2px 0 16px rgba(255, 51, 82, 0.48), 0 2px 10px #000;
 }
 
-/* The two beats share one sticky slot; the one the camera is not on fades out. */
-.beat {
-  transition: opacity 0.35s ease, transform 0.35s ease;
-}
-
-.chapel-text.beat--off {
-  position: absolute;
-  opacity: 0;
-  pointer-events: none;
-  transform: translate3d(0, 10px, 0);
-}
-
 .chronicle-text {
   width: min(380px, 100%);
 }
