@@ -58,8 +58,7 @@ export default function ExitOverlay() {
                 <a
                   key={link.label}
                   href={link.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  {...(link.href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                   className="ink-trigger exit-link"
                   onMouseEnter={playHoverTick}
                   onClick={playClickHit}
