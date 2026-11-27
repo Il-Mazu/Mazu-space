@@ -58,34 +58,7 @@ export function getProceduralTextures() {
   });
   chromeRoughness.repeat.set(2, 2);
 
-  const floorRoughness = makeCanvas(256, (ctx, s) => {
-    ctx.fillStyle = '#787878';
-    ctx.fillRect(0, 0, s, s);
-    for (let ty = 0; ty < 4; ty++) {
-      for (let tx = 0; tx < 4; tx++) {
-        const shade = Math.floor(95 + hash2d(tx, ty, 71) * 70);
-        ctx.fillStyle = `rgb(${shade},${shade},${shade})`;
-        ctx.fillRect(tx * 64 + 3, ty * 64 + 3, 58, 58);
-      }
-    }
-    // Mortar seams are rougher/matte than worn stone tiles so lights don't streak down center seam.
-    ctx.strokeStyle = '#dcdcdc';
-    ctx.lineWidth = 4;
-    for (let i = 0; i <= 4; i++) {
-      ctx.beginPath();
-      ctx.moveTo(0, i * 64);
-      ctx.lineTo(s, i * 64);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(i * 64, 0);
-      ctx.lineTo(i * 64, s);
-      ctx.stroke();
-    }
-  });
-  floorRoughness.repeat.set(4, 48);
-
-  // Large worn slabs in running bond, for the reflective floor. Colour and
-  // roughness are drawn from the same layout so the seams stay matte and dark.
+  // Large worn slabs in running bond for the reflective floor.
   const slabRows = [];
   {
     let y = 0;
@@ -136,11 +109,6 @@ export function getProceduralTextures() {
     return `rgb(${g},${g - 1},${g + 2})`;
   }, '#040405');
   floorSlabColor.colorSpace = THREE.SRGBColorSpace;
-  const floorSlabRough = slabCanvas((v) => {
-    const g = 70 + Math.floor(v * 70);
-    return `rgb(${g},${g},${g})`;
-  }, '#f0f0f0');
-
   const ashSprite = makeCanvas(64, (ctx, s) => {
     const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     g.addColorStop(0, 'rgba(255,255,255,1)');
@@ -152,6 +120,6 @@ export function getProceduralTextures() {
   ashSprite.wrapS = THREE.ClampToEdgeWrapping;
   ashSprite.wrapT = THREE.ClampToEdgeWrapping;
 
-  cached = { stoneBump, chromeRoughness, floorRoughness, floorSlabColor, floorSlabRough, ashSprite };
+  cached = { stoneBump, chromeRoughness, floorSlabColor, ashSprite };
   return cached;
 }
