@@ -56,6 +56,7 @@ export default function App() {
   const progressBarRef = useRef(null);
   const lenisRef = useRef(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const [activeStop, setActiveStop] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [cryptOpen, setCryptOpen] = useState(false);
   const [workIdx, setWorkIdx] = useState(null);
@@ -135,13 +136,16 @@ export default function App() {
           }
         }
       } else {
+        let nearestStop = 0;
         for (let i = 0; i < CAMERA_STOPS.length; i++) {
           const d = Math.abs(progress - CAMERA_STOPS[i].scrollPos);
           if (d < bestDist) {
             bestDist = d;
-            nearest = CAMERA_STOPS[i].chapel;
+            nearestStop = i;
           }
         }
+        nearest = CAMERA_STOPS[nearestStop].chapel;
+        setActiveStop(nearestStop);
       }
       if (nearest !== sceneBus.activeSection) {
         setActiveSection(nearest);
@@ -161,12 +165,12 @@ export default function App() {
     window.addEventListener('scroll', onNativeScroll, { passive: true });
     updateProgress();
 
-    const unsubJump = subscribeJump((idOrIdx) => {
-      const idx =
-        typeof idOrIdx === 'number'
-          ? idOrIdx
-          : CHAPELS.findIndex((s) => s.id === idOrIdx);
+    // target: chapel index, chapel id, or { id, beat } for a later camera stop
+    const unsubJump = subscribeJump((target) => {
+      const id = typeof target === 'object' ? target.id : target;
+      const idx = typeof id === 'number' ? id : CHAPELS.findIndex((s) => s.id === id);
       const sec = CHAPELS[Math.max(0, Math.min(CHAPELS.length - 1, idx))];
+      const beat = sec.beats[typeof target === 'object' ? target.beat : 0] || sec.beats[0];
 
       if (!webglOk) {
         const el = document.getElementById(`chapel-${sec.id}`);
@@ -177,7 +181,7 @@ export default function App() {
       }
 
       const maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
-      const targetY = sec.scrollPos * maxScroll;
+      const targetY = beat.scrollPos * maxScroll;
 
       if (Math.abs(idx - sceneBus.activeSection) > 1) {
         triggerGlitch(0.75);
@@ -230,7 +234,7 @@ export default function App() {
       case 'hero':
         return <HeroOverlay ogMode={ogMode} />;
       case 'about':
-        return <AboutOverlay />;
+        return <AboutOverlay beat={CAMERA_STOPS[activeStop].chapel === sec.index ? CAMERA_STOPS[activeStop].beat : 0} />;
       case 'works':
         return <WorksOverlay onOpenWork={openWork} />;
       case 'live':
@@ -318,7 +322,7 @@ export default function App() {
                 }}
               >
                 <div
-                  className={`chapel-sticky chapel-sticky--${sec.side}${isActive ? '' : ' chapel-sticky--inactive'}`}
+                  className={`chapel-sticky chapel-sticky--${CAMERA_STOPS[activeStop].chapel === idx ? CAMERA_STOPS[activeStop].side : sec.side}${isActive ? '' : ' chapel-sticky--inactive'}`}
                 >
                   {renderSectionContent(sec)}
                 </div>

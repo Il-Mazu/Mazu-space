@@ -466,6 +466,10 @@ function bootShellPlugin() {
 }
 
 export default defineConfig(() => ({
+  define: {
+    // the CV link only renders once the file is actually there
+    __HAS_CV__: JSON.stringify(fs.existsSync(path.resolve(__dirname, 'public/cv.pdf'))),
+  },
   plugins: [
     react(),
     bootShellPlugin(),

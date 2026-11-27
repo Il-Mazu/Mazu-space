@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, events as pointerEvents, useFrame, useThree } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import { CAMERA_STOPS, CHAPELS } from '../data/chapels.js';
@@ -16,9 +16,31 @@ import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
 import LiveChapel from '../sections/LiveChapel.jsx';
 import WorksChapel from '../sections/WorksChapel.jsx';
+import ChronicleWall from '../sections/ChronicleWall.jsx';
 import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
+
+// The canvas listens on document.body so the DOM text on top doesn't block
+// it, which also means a click on a HUD button or link would hit whatever
+// 3D object is behind it. Those events don't reach the scene.
+const UI_TARGET = 'a, button, input, textarea, select, [role="dialog"]';
+// (R3F's eventPrefix prop would replace this compute, so client coordinates
+// are handled here.)
+function sceneEvents(store) {
+  return {
+    ...pointerEvents(store),
+    compute(event, state) {
+      state.pointer.set(
+        ((event.clientX - state.size.left) / state.size.width) * 2 - 1,
+        -((event.clientY - state.size.top) / state.size.height) * 2 + 1,
+      );
+      state.raycaster.setFromCamera(state.pointer, state.camera);
+      const overUi = event.target instanceof Element && event.target.closest(UI_TARGET);
+      state.raycaster.far = overUi ? 0 : Infinity;
+    },
+  };
+}
 
 function AudioSampler() {
   useFrame(() => {
@@ -65,7 +87,12 @@ function ChapelScene({ chapel, isMobile, lanyard, music, workIdx, onOpenWork, on
     case 'works':
       return <WorksChapel chapel={chapel} isMobile={isMobile} selected={workIdx} onOpenWork={onOpenWork} />;
     case 'about':
-      return <AboutChapel chapel={chapel} isMobile={isMobile} />;
+      return (
+        <>
+          <AboutChapel chapel={chapel} isMobile={isMobile} />
+          <ChronicleWall chapel={chapel} />
+        </>
+      );
     case 'live':
       return <LiveChapel chapel={chapel} isMobile={isMobile} lanyard={lanyard} music={music} />;
     case 'dump':
@@ -129,7 +156,7 @@ export default function CathedralCanvas({
           });
         }}
         eventSource={eventSource}
-        eventPrefix="client"
+        events={sceneEvents}
       >
         <color attach="background" args={['#060607']} />
         <fogExp2 attach="fog" args={['#060607', 0.045]} />

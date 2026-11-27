@@ -24,6 +24,40 @@ export const ABOUT = {
   motto: 'Never fade away',
 };
 
+// Oldest first. `start`/`end` (YYYY-MM) decide which candles still burn.
+export const CHRONICLE = [
+  {
+    when: 'superiori',
+    title: 'Informatica e Telecomunicazioni',
+    detail: 'high school, Puglia',
+  },
+  {
+    when: '2021 → 2024',
+    start: '2021-01',
+    end: '2024-12',
+    title: 'freelance web developer',
+    detail: 'sites for private clients',
+  },
+  {
+    when: 'nov 2025 → jun 2027',
+    start: '2025-11',
+    end: '2027-06',
+    title: 'ITS Academy Olivetti',
+    detail: 'Full Stack Development',
+  },
+  {
+    when: 'from jun 2026',
+    start: '2026-06',
+    title: 'stage at ENGIM srl',
+    detail: 'Modena · Ruby on Rails, PostgreSQL, Docker',
+  },
+];
+
+export function isOngoing(entry, now = new Date()) {
+  const month = now.toISOString().slice(0, 7);
+  return Boolean(entry.start && entry.start <= month && (!entry.end || entry.end >= month));
+}
+
 export const PRESENCE = {
   userId: '864941785666813992',
   statusColors: {

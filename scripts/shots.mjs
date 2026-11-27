@@ -30,11 +30,9 @@ for (const name of wanted) {
   await page.waitForTimeout(2500);
   const ids = await page.$$eval('.chapel-anchor', (els) => els.map((el) => el.id.replace('chapel-', '')));
   for (let i = 0; i < ids.length; i++) {
-    await page.evaluate((frac) => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      window.scrollTo(0, Math.round(frac * max));
-    }, ids.length > 1 ? i / (ids.length - 1) : 0);
-    await page.waitForTimeout(2200);
+    // the nav lands exactly on each chapel's first camera stop
+    await page.locator('.min-hud-num').nth(i).click();
+    await page.waitForTimeout(4000);
     const file = path.join(outDir, `${name}-${String(i + 1).padStart(2, '0')}-${ids[i]}.png`);
     await page.screenshot({ path: file, timeout: 90000 });
     console.log(file);

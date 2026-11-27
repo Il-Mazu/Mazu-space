@@ -3,7 +3,7 @@
 //
 // Camera beats are relative to the chapel: x is absolute, y is height above the
 // nave floor at the chapel, z is the offset from the chapel's own z.
-// `side` is where the chapel's text sits on screen.
+// `side` is where the chapel's text sits on screen; a beat can override it.
 
 export const CHAPEL_SPACING = 22;
 
@@ -18,7 +18,11 @@ const CHAPEL_DEFS = [
     id: 'about',
     name: 'whoami',
     side: 'left',
-    beats: [{ cam: [-1.8, 2.61, 8.5], look: [0.4, 2.31, 0] }],
+    beats: [
+      { cam: [-1.8, 2.61, 8.5], look: [0.4, 2.31, 0] },
+      // the chronicle: candles along the left wall, text on the right
+      { cam: [1.4, 2.3, -1.0], look: [-4.2, 1.85, -10.0], side: 'right' },
+    ],
   },
   {
     id: 'works',
@@ -78,6 +82,7 @@ export const CHAPELS = CHAPEL_DEFS.map((def, index) => {
     stopCursor += 1;
     return {
       scrollPos,
+      side: b.side || def.side,
       camPos: [b.cam[0], floorY + b.cam[1], z + b.cam[2]],
       lookAt: [b.look[0], floorY + b.look[1], z + b.look[2]],
     };
@@ -96,7 +101,7 @@ export const CHAPELS = CHAPEL_DEFS.map((def, index) => {
 });
 
 // Every camera stop in order. Scroll progress maps evenly onto these.
-export const CAMERA_STOPS = CHAPELS.flatMap((c) => c.beats.map((b) => ({ ...b, chapel: c.index })));
+export const CAMERA_STOPS = CHAPELS.flatMap((c) => c.beats.map((b, beat) => ({ ...b, chapel: c.index, beat })));
 
 export const NAVE_END_Z = CHAPELS[lastIndex].z - 14;
 
