@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
 import * as THREE from 'three';
+import { MeshReflectorMaterial } from '@react-three/drei';
 import { getProceduralTextures } from './proceduralTextures.js';
 import { NAVE_END_Z, naveFloorY } from '../data/chapels.js';
 
@@ -203,16 +204,22 @@ export default function GothicNave({ isMobile }) {
         receiveShadow
       >
         <planeGeometry args={[12.5, FLOOR_LEN]} />
-        {/* At grazing angles the glossy tiles mirrored the bone key lights as beige
-            patches. specularIntensity caps that grazing (F90) reflectance, and the
-            red specularColor keeps the head-on sheen in palette. */}
-        <meshPhysicalMaterial
-          color="#0e0e12"
+        {/* Wet stone slabs: blurred, depth-faded reflections of the red light and
+            the arches. Low resolution and heavy blur keep the cost down. */}
+        <MeshReflectorMaterial
+          resolution={isMobile ? 256 : 512}
+          blur={[240, 70]}
+          mixBlur={0.9}
+          mixStrength={4}
+          mixContrast={1.15}
+          mirror={0.8}
+          depthScale={1.1}
+          minDepthThreshold={0.3}
+          maxDepthThreshold={1.4}
+          map={textures.floorSlabColor}
+          roughness={1}
           metalness={0}
-          roughness={0.82}
-          roughnessMap={textures.floorRoughness}
-          specularColor="#ff3352"
-          specularIntensity={0.28}
+          color="#ffffff"
           envMapIntensity={0.04}
         />
       </mesh>

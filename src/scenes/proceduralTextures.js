@@ -84,6 +84,63 @@ export function getProceduralTextures() {
   });
   floorRoughness.repeat.set(4, 48);
 
+  // Large worn slabs in running bond, for the reflective floor. Colour and
+  // roughness are drawn from the same layout so the seams stay matte and dark.
+  const slabRows = [];
+  {
+    let y = 0;
+    let r = 0;
+    while (y < 1024) {
+      const h = 130 + Math.floor(hash2d(r, 3, 17) * 70);
+      const slabs = [];
+      let x = -Math.floor(hash2d(r, 5, 29) * 160);
+      let c = 0;
+      while (x < 512) {
+        const w = 170 + Math.floor(hash2d(c, r, 41) * 140);
+        slabs.push([x, w, hash2d(c, r, 53)]);
+        x += w;
+        c++;
+      }
+      slabRows.push([y, Math.min(h, 1024 - y), slabs]);
+      y += h;
+      r++;
+    }
+  }
+  const drawSlabs = (ctx, fill) => {
+    slabRows.forEach(([y, h, slabs]) => {
+      slabs.forEach(([x, w, v]) => {
+        ctx.fillStyle = fill(v);
+        ctx.fillRect(x + 3, y + 3, w - 6, h - 6);
+        if (x + w > 512) {
+          ctx.fillRect(x - 512 + 3, y + 3, w - 6, h - 6);
+        }
+      });
+    });
+  };
+  const slabCanvas = (fill, bg) => {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 1024;
+    const ctx = canvas.getContext('2d');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0, 0, 512, 1024);
+    drawSlabs(ctx, fill);
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.wrapS = THREE.RepeatWrapping;
+    tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 18);
+    return tex;
+  };
+  const floorSlabColor = slabCanvas((v) => {
+    const g = 14 + Math.floor(v * 9);
+    return `rgb(${g},${g - 1},${g + 2})`;
+  }, '#040405');
+  floorSlabColor.colorSpace = THREE.SRGBColorSpace;
+  const floorSlabRough = slabCanvas((v) => {
+    const g = 70 + Math.floor(v * 70);
+    return `rgb(${g},${g},${g})`;
+  }, '#f0f0f0');
+
   const ashSprite = makeCanvas(64, (ctx, s) => {
     const g = ctx.createRadialGradient(s / 2, s / 2, 0, s / 2, s / 2, s / 2);
     g.addColorStop(0, 'rgba(255,255,255,1)');
@@ -95,6 +152,6 @@ export function getProceduralTextures() {
   ashSprite.wrapS = THREE.ClampToEdgeWrapping;
   ashSprite.wrapT = THREE.ClampToEdgeWrapping;
 
-  cached = { stoneBump, chromeRoughness, floorRoughness, ashSprite };
+  cached = { stoneBump, chromeRoughness, floorRoughness, floorSlabColor, floorSlabRough, ashSprite };
   return cached;
 }
