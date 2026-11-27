@@ -72,5 +72,6 @@ export const LINKS = [
   { label: 'github', href: 'https://github.com/Il-Mazu' },
   { label: 'instagram', href: 'https://www.instagram.com/ilmazu_' },
   { label: 'spotify', href: 'https://open.spotify.com/user/tudoxdeeiu9fvtotla7tl1scj' },
+  { label: 'linkedin', href: 'https://www.linkedin.com/in/marco-mazurek-54508b3b3/' },
   { label: 'email', href: 'mailto:mazurekmarco06@gmail.com' },
 ];
