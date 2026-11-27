@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { PerformanceMonitor } from '@react-three/drei';
 import * as THREE from 'three';
 import { CAMERA_STOPS, CHAPELS } from '../data/chapels.js';
@@ -24,6 +24,39 @@ function AudioSampler() {
   useFrame(() => {
     sampleAudio();
   });
+  return null;
+}
+
+// Compiles every chapel's shaders and uploads its textures once, right after
+// entering. Otherwise each chapel stalls the first frame it comes into view.
+function Precompile() {
+  const { gl, scene, camera } = useThree();
+  useEffect(() => {
+    let cancelled = false;
+    const id = setTimeout(() => {
+      sceneBus.precompiling = true;
+      scene.traverse((o) => {
+        if (o.userData.chapelStage) o.visible = true;
+      });
+      const textures = new Set();
+      scene.traverseVisible((o) => {
+        [].concat(o.material || []).forEach((m) => {
+          Object.values(m).forEach((v) => v?.isTexture && textures.add(v));
+          Object.values(m.uniforms || {}).forEach((u) => u.value?.isTexture && textures.add(u.value));
+        });
+      });
+      textures.forEach((t) => !t.isVideoTexture && t.image && gl.initTexture(t));
+      // compileAsync never settles here (three r170 trips over a material
+      // without a program), so take the one synchronous stall up front.
+      gl.compile(scene, camera);
+      if (!cancelled) sceneBus.precompiling = false;
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(id);
+      sceneBus.precompiling = false;
+    };
+  }, [gl, scene, camera]);
   return null;
 }
 
@@ -58,7 +91,11 @@ export default function CathedralCanvas({
   onContextLost,
 }) {
   const [perfTier, setPerfTier] = useState(isMobile ? 'medium' : 'high');
-  const maxDpr = isMobile ? 1.5 : 2;
+  // Resolution follows the measured frame rate: down to 0.75x on weak GPUs
+  // (the film grain hides the upscale), up to 1.5x on fast ones.
+  const minDpr = 0.75;
+  const maxDpr = Math.min(typeof window !== 'undefined' ? window.devicePixelRatio : 1, 1.5);
+  const [dpr, setDpr] = useState(Math.min(1, maxDpr));
   const eventSource = typeof document !== 'undefined' ? document.body : undefined;
 
   useEffect(() => {
@@ -78,7 +115,7 @@ export default function CathedralCanvas({
   return (
     <div id="canvas-root" aria-hidden="true">
       <Canvas
-        dpr={[1, perfTier === 'low' ? 1 : maxDpr]}
+        dpr={dpr}
         camera={{ position: CAMERA_STOPS[0].camPos, fov: isMobile ? 56 : 44, near: 0.1, far: 130 }}
         gl={{
           antialias: false,
@@ -97,7 +134,10 @@ export default function CathedralCanvas({
         <color attach="background" args={['#060607']} />
         <fogExp2 attach="fog" args={['#060607', 0.045]} />
 
-        <PerformanceMonitor onDecline={downgrade} />
+        <PerformanceMonitor
+          onChange={({ factor }) => setDpr(Math.round((minDpr + (maxDpr - minDpr) * factor) * 20) / 20)}
+          onFallback={downgrade}
+        />
         <AudioSampler />
         <CameraRig isMobile={isMobile} />
         <CathedralLighting isMobile={isMobile} />
@@ -108,6 +148,7 @@ export default function CathedralCanvas({
         <ChapelStage chapel={CHAPELS[0]}>
           <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
         </ChapelStage>
+        {entered && <Precompile />}
         {entered && CHAPELS.slice(1).map((chapel) => (
           <ChapelStage key={chapel.id} chapel={chapel}>
             <ChapelScene

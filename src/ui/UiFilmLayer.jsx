@@ -4,7 +4,9 @@ import './UiFilmLayer.css';
 
 export default function UiFilmLayer() {
   useEffect(() => {
-    const root = document.documentElement;
+    // Scoped to the chapel text: a custom property on :root restyles the whole
+    // document every frame.
+    const root = document.querySelector('.scroll-stage') || document.documentElement;
     let raf = 0;
     let curX = 0;
     let curY = 0;
@@ -22,10 +24,11 @@ export default function UiFilmLayer() {
       }
       const tx = sceneBus.pointer.x || 0;
       const ty = sceneBus.pointer.y || 0;
+      if (Math.abs(tx - curX) < 0.002 && Math.abs(ty - curY) < 0.002) return;
       curX += (tx - curX) * 0.08;
       curY += (ty - curY) * 0.08;
-      root.style.setProperty('--ui-px', curX.toFixed(4));
-      root.style.setProperty('--ui-py', curY.toFixed(4));
+      root.style.setProperty('--ui-px', curX.toFixed(3));
+      root.style.setProperty('--ui-py', curY.toFixed(3));
     };
 
     if (!sceneBus.reducedMotion) {

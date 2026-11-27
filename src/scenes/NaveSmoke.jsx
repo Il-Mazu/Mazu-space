@@ -67,8 +67,15 @@ export default function NaveSmoke({ isMobile }) {
 
   const ashRef = useRef(null);
 
+  const plumeRefs = useRef([]);
+
   useFrame((state, rawDelta) => {
     const dt = Math.min(rawDelta, 0.05);
+    // Fog hides plumes past ~30 units; skip shading them.
+    const camZ = state.camera.position.z;
+    plumeRefs.current.forEach((m, i) => {
+      if (m) m.visible = Math.abs(plumes[i].pos[2] - camZ) < 30;
+    });
     const t = sceneBus.reducedMotion ? 0 : state.clock.elapsedTime;
     const bass = sceneBus.audioMetrics.bass;
 
@@ -96,7 +103,7 @@ export default function NaveSmoke({ isMobile }) {
   return (
     <group>
       {plumes.map((p, i) => (
-        <mesh key={i} position={p.pos} rotation={[0, p.rotY, 0]} scale={p.scale} material={materials[i]}>
+        <mesh key={i} ref={(m) => { plumeRefs.current[i] = m; }} position={p.pos} rotation={[0, p.rotY, 0]} scale={p.scale} material={materials[i]}>
           <planeGeometry args={[1, 1]} />
         </mesh>
       ))}

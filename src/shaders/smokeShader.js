@@ -35,7 +35,7 @@ export const smokeFragmentShader = /* glsl */ `
   float fbm(vec2 p) {
     float v = 0.0;
     float a = 0.5;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 3; i++) {
       v += a * noise(p);
       p = p * 2.03 + vec2(17.1, 31.7);
       a *= 0.5;

@@ -51,11 +51,13 @@ export default function CursorTrail() {
         life: 1,
       });
       if (particles.length > MAX_PARTICLES) particles.shift();
+      if (!raf) raf = requestAnimationFrame(tick);
     };
 
+    // Runs only while particles are alive: an idle full-screen canvas that is
+    // cleared every frame still costs a compositor upload per frame.
     let raf = 0;
     const tick = () => {
-      raf = requestAnimationFrame(tick);
       ctx.clearRect(0, 0, width, height);
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
@@ -68,8 +70,8 @@ export default function CursorTrail() {
         ctx.fillStyle = `rgba(255, 51, 82, ${(p.life * 0.42).toFixed(3)})`;
         ctx.fillRect(Math.round(p.x), Math.round(p.y), p.size, p.size);
       }
+      raf = particles.length ? requestAnimationFrame(tick) : 0;
     };
-    tick();
 
     window.addEventListener('resize', resize);
     window.addEventListener('pointermove', onMove, { passive: true });
