@@ -56,10 +56,43 @@ function makePlaqueTexture(game) {
   return tex;
 }
 
+// Stone tablet under each relic: the vote is the review, so it is the
+// biggest thing on it, with one lit cross per 20 points.
+function voteTexture(vote) {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#111115';
+  ctx.fillRect(0, 0, 256, 128);
+  ctx.strokeStyle = '#2a2a32';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(6, 6, 244, 116);
+  ctx.fillStyle = vote <= 45 ? '#ff3352' : '#e9e4da';
+  ctx.font = `86px ${MONO}`;
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillText(String(vote), 18, 100);
+  const w = ctx.measureText(String(vote)).width;
+  ctx.font = `20px ${MONO}`;
+  const lit = Math.round(vote / 20);
+  for (let i = 0; i < 5; i++) {
+    ctx.fillStyle = i < lit ? '#ff3352' : '#3a0a10';
+    ctx.fillText('♰', 30 + w + i * 22, 56);
+  }
+  ctx.fillStyle = '#80808a';
+  ctx.font = `18px ${MONO}`;
+  ctx.fillText('/100', 30 + w, 98);
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
 function RelicCase({ game, position, rotationY, textures, loadedEnabled, onOpenCrypt }) {
   const groupRef = useRef(null);
   const fontsReady = useFontsReady();
   const plaqueTex = useMemo(() => makePlaqueTexture(game), [game, fontsReady]);
+  const voteTex = useMemo(() => (game.vote !== undefined ? voteTexture(game.vote) : null), [game, fontsReady]);
+  useEffect(() => () => voteTex?.dispose(), [voteTex]);
   const [coverTex, setCoverTex] = useState(null);
 
   useEffect(() => {
@@ -119,26 +152,38 @@ function RelicCase({ game, position, rotationY, textures, loadedEnabled, onOpenC
         <boxGeometry args={[0.94, 0.025, 0.12]} />
         <meshBasicMaterial color={[1.6, 0.12, 0.25]} toneMapped={false} />
       </mesh>
+      {voteTex && (
+        <group position={[0, -0.95, 0.02]}>
+          <mesh position={[0, 0, -0.03]}>
+            <boxGeometry args={[0.96, 0.5, 0.06]} />
+            <meshStandardMaterial color="#141418" metalness={0.3} roughness={0.8} />
+          </mesh>
+          <mesh position={[0, 0, 0.002]}>
+            <planeGeometry args={[0.92, 0.46]} />
+            <meshStandardMaterial map={voteTex} roughness={0.85} emissive="#ffffff" emissiveMap={voteTex} emissiveIntensity={0.35} />
+          </mesh>
+        </group>
+      )}
     </group>
   );
 }
 
 function makePlayingLabelTexture(name) {
   const canvas = document.createElement('canvas');
-  canvas.width = 256;
-  canvas.height = 96;
+  canvas.width = 512;
+  canvas.height = 192;
   const ctx = canvas.getContext('2d');
   ctx.fillStyle = '#09090c';
-  ctx.fillRect(0, 0, 256, 96);
-  ctx.strokeStyle = '#ff3352';
-  ctx.lineWidth = 3;
-  ctx.strokeRect(4, 4, 248, 88);
+  ctx.fillRect(0, 0, 512, 192);
+  ctx.strokeStyle = '#8a0f1f';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(6, 6, 500, 180);
   ctx.fillStyle = '#ff3352';
-  ctx.font = `14px ${MONO}`;
-  ctx.fillText('♰ playing', 16, 28);
+  ctx.font = `30px ${MONO}`;
+  ctx.fillText('♰ playing', 30, 62);
   ctx.fillStyle = '#e9e4da';
-  ctx.font = `18px ${MONO}`;
-  ctx.fillText(name.slice(0, 18), 16, 62);
+  ctx.font = `46px ${MONO}`;
+  ctx.fillText(name, 30, 136, 452);
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.needsUpdate = true;
@@ -157,7 +202,7 @@ function PlayingBeacon({ game, position }) {
         <meshBasicMaterial color={[1.6, 0.12, 0.24]} toneMapped={false} side={THREE.DoubleSide} />
       </mesh>
       <mesh position={[0, 0.28, -0.08]} rotation={[-0.2, 0, 0]}>
-        <planeGeometry args={[0.84, 0.32]} />
+        <planeGeometry args={[0.9, 0.34]} />
         <meshBasicMaterial map={tex} />
       </mesh>
     </group>
@@ -195,7 +240,7 @@ export default function GamesChapel({ chapel, isMobile, onOpenCrypt }) {
       {/* Curved upper arc of 8 Favorite Relics */}
       {favorites.map((game, i) => {
         const angle = ((i / (favorites.length - 1)) - 0.5) * 1.15;
-        const rowOffset = i % 2 === 0 ? 3.15 : 1.85;
+        const rowOffset = i % 2 === 0 ? 3.95 : 1.95;
         const radius = isMobile ? 2.6 : 3.8;
         const x = centerX + Math.sin(angle) * radius;
         const z = chapelZ - 0.5 - (1 - Math.cos(angle)) * 2.2;

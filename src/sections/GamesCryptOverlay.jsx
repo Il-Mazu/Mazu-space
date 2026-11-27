@@ -46,6 +46,17 @@ export default function GamesCryptOverlay({ onOpen }) {
   );
 }
 
+// Five crosses, one lit per 20 points.
+export function Marks({ vote }) {
+  const lit = Math.round(vote / 20);
+  return (
+    <span className="crypt-marks" aria-hidden="true">
+      {'♰'.repeat(lit)}
+      <span className="crypt-marks-dim">{'♰'.repeat(5 - lit)}</span>
+    </span>
+  );
+}
+
 export function GamesCryptModal({ open, onClose }) {
   const mode = useScreenMode();
   const isMobile = mode === 'mobile';
@@ -234,25 +245,25 @@ export function GamesCryptModal({ open, onClose }) {
                       </div>
 
                       <div className="crypt-item-meta">
-                        <div className="crypt-item-info">
-                          <div className="crypt-item-name" title={game.name}>{game.name}</div>
-                          <div className="crypt-item-sub">
-                            {year}
-                            {data?.genres?.length ? ` / ${data.genres.slice(0, 2).join(', ')}` : ''}
+                        {hasVote ? (
+                          <div className="crypt-verdict">
+                            <span className="crypt-vote">{game.vote}</span>
+                            <span className="crypt-verdict-side">
+                              <Marks vote={game.vote} />
+                              <span className="crypt-vote-max">/100</span>
+                            </span>
+                            <span className="sr-only">out of 100</span>
                           </div>
-                        </div>
-
-                        <div className="crypt-item-foot">
-                          <div className="crypt-vote-wrap">
-                            <span className="crypt-vote">{hasVote ? game.vote : '--'}</span>
-                            <span className="crypt-vote-max">/100</span>
+                        ) : (
+                          <div className="crypt-verdict crypt-verdict--open">
+                            <span className="ink-cross" aria-hidden="true">♰</span> still playing, no verdict yet
                           </div>
-
-                          {condemned ? (
-                            <span className="crypt-stamp">♰ condemned</span>
-                          ) : game.category === 'playing' ? (
-                            <span className="crypt-playing">▶ playing</span>
-                          ) : null}
+                        )}
+                        <div className="crypt-item-name" title={game.name}>{game.name}</div>
+                        <div className="crypt-item-sub">
+                          {year}
+                          {data?.genres?.length ? ` / ${data.genres.slice(0, 2).join(', ')}` : ''}
+                          {condemned && <span className="crypt-stamp"> · condemned</span>}
                         </div>
                       </div>
                     </div>

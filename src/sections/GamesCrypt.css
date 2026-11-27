@@ -176,12 +176,13 @@
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 6px;
   background: linear-gradient(
     180deg,
-    rgba(6, 6, 7, 0.06) 0%,
-    rgba(6, 6, 7, 0.26) 44%,
-    rgba(6, 4, 5, 0.94) 100%
+    rgba(6, 6, 7, 0.04) 0%,
+    rgba(6, 6, 7, 0.2) 34%,
+    rgba(6, 4, 5, 0.86) 60%,
+    rgba(6, 4, 5, 0.97) 100%
   );
   border-bottom: 1px solid rgba(170, 32, 48, 0.35);
 }
@@ -203,24 +204,52 @@
   text-overflow: ellipsis;
 }
 
-.crypt-item-foot {
+/* The vote is the review: it leads the card. */
+.crypt-verdict {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  align-items: flex-end;
+  gap: 10px;
+  margin-bottom: 4px;
 }
 
 .crypt-vote {
   font-family: var(--font-body);
-  font-size: 30px;
-  line-height: 1;
+  font-size: clamp(44px, 4.4vw, 60px);
+  line-height: 0.82;
+  letter-spacing: -0.02em;
   color: var(--bone);
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.95);
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95), 2px 0 18px rgba(255, 51, 82, 0.35);
+}
+
+.crypt-verdict-side {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-bottom: 2px;
+}
+
+.crypt-marks {
+  font-size: 13px;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  text-shadow: 0 0 8px rgba(255, 51, 82, 0.6);
+}
+
+.crypt-marks-dim {
+  color: rgba(138, 15, 31, 0.6);
+  text-shadow: none;
 }
 
 .crypt-vote-max {
   font-size: 10px;
   color: var(--text-dim);
+}
+
+.crypt-verdict--open {
+  font-family: var(--font-body);
+  font-size: 11px;
+  color: var(--text);
+  margin-bottom: 6px;
 }
 
 .crypt-item.condemned::after {
@@ -244,10 +273,9 @@
   color: var(--accent);
 }
 
-.crypt-stamp,
-.crypt-playing {
+/* low votes: the number itself turns red and the line strikes the cover */
+.crypt-stamp {
   color: var(--accent);
-  font-size: 10.5px;
 }
 
 .crypt-sigil {
