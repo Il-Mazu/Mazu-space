@@ -21,6 +21,12 @@ const CHAPEL_DEFS = [
     beats: [{ cam: [-1.8, 2.61, 8.5], look: [0.4, 2.31, 0] }],
   },
   {
+    id: 'works',
+    name: 'works',
+    side: 'center',
+    beats: [{ cam: [0, 2.55, 9.8], look: [0, 2.05, -1.5] }],
+  },
+  {
     id: 'live',
     name: 'live',
     side: 'left',

@@ -4,6 +4,7 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { GAMES } from './src/data/games.js';
+import { GITHUB_OWNER, PROJECTS } from './src/data/projects.js';
 
 function gitInfoPlugin() {
   const VIRTUAL_ID = 'virtual:git-info';
@@ -370,6 +371,89 @@ function gameCoversPlugin() {
   };
 }
 
+// Merges src/data/projects.js with live GitHub repo data at build time.
+// GITHUB_TOKEN is optional (it only lifts the rate limit); if GitHub is
+// unreachable the build carries on with the curated fields alone.
+function projectsPlugin() {
+  const VIRTUAL_ID = 'virtual:projects';
+  const RESOLVED_ID = '\0' + VIRTUAL_ID;
+  const CACHE_PATH = path.resolve(__dirname, 'node_modules/.cache/mazu-projects.json');
+  const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
+  async function fetchRepo(repo) {
+    const headers = { Accept: 'application/vnd.github+json', 'User-Agent': 'mazu-space-build' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const res = await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${repo}`, {
+      headers,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) throw new Error(`${repo}: ${res.status}`);
+    const r = await res.json();
+    return {
+      description: r.description,
+      language: r.language,
+      stars: r.stargazers_count,
+      topics: r.topics || [],
+      homepage: r.homepage || null,
+      pushedAt: r.pushed_at,
+    };
+  }
+
+  async function loadGithub() {
+    let cached = {};
+    try {
+      cached = JSON.parse(fs.readFileSync(CACHE_PATH, 'utf-8'));
+    } catch {
+      // first build
+    }
+    const fresh = Date.now() - (cached.fetchedAt || 0) < CACHE_TTL_MS;
+    const data = { ...(cached.repos || {}) };
+    if (fresh && PROJECTS.every((p) => data[p.repo])) return data;
+
+    const results = await Promise.allSettled(PROJECTS.map((p) => fetchRepo(p.repo)));
+    let fetched = 0;
+    results.forEach((r, i) => {
+      if (r.status === 'fulfilled') {
+        data[PROJECTS[i].repo] = r.value;
+        fetched++;
+      } else {
+        console.warn(`[projects] ${r.reason?.message || r.reason}; using cached/curated data`);
+      }
+    });
+    console.log(`[projects] fetched ${fetched}/${PROJECTS.length} repos from GitHub`);
+    if (fetched) {
+      fs.mkdirSync(path.dirname(CACHE_PATH), { recursive: true });
+      fs.writeFileSync(CACHE_PATH, JSON.stringify({ fetchedAt: Date.now(), repos: data }));
+    }
+    return data;
+  }
+
+  return {
+    name: 'projects',
+    resolveId(id) {
+      if (id === VIRTUAL_ID) return RESOLVED_ID;
+    },
+    async load(id) {
+      if (id !== RESOLVED_ID) return;
+      const gh = await loadGithub();
+      const projects = PROJECTS.map((p) => {
+        const g = gh[p.repo] || {};
+        return {
+          ...p,
+          description: p.blurb || g.description || '',
+          language: g.language || null,
+          stars: g.stars ?? null,
+          topics: g.topics || [],
+          pushedAt: g.pushedAt || null,
+          live: p.live || g.homepage || null,
+          url: `https://github.com/${GITHUB_OWNER}/${p.repo}`,
+        };
+      });
+      return `export default ${JSON.stringify(projects)};`;
+    },
+  };
+}
+
 // Minimal pitch-black closed-doors shell painted before JS runs.
 function bootShellPlugin() {
   return {
@@ -388,6 +472,7 @@ export default defineConfig(() => ({
     gitInfoPlugin(),
     dumpImagesPlugin(),
     gameCoversPlugin(),
+    projectsPlugin(),
   ],
   build: {
     rollupOptions: {

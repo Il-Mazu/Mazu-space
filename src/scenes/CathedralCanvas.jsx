@@ -15,6 +15,7 @@ import PostFX from './PostFX.jsx';
 import HeroEye from '../sections/HeroEye.jsx';
 import AboutChapel from '../sections/AboutChapel.jsx';
 import LiveChapel from '../sections/LiveChapel.jsx';
+import WorksChapel from '../sections/WorksChapel.jsx';
 import DumpChapel from '../sections/DumpChapel.jsx';
 import GamesChapel from '../sections/GamesChapel.jsx';
 import ExitChapel from '../sections/ExitChapel.jsx';
@@ -26,8 +27,10 @@ function AudioSampler() {
   return null;
 }
 
-function ChapelScene({ chapel, isMobile, lanyard, music, onOpenLightbox, onOpenCrypt }) {
+function ChapelScene({ chapel, isMobile, lanyard, music, workIdx, onOpenWork, onOpenLightbox, onOpenCrypt }) {
   switch (chapel.id) {
+    case 'works':
+      return <WorksChapel chapel={chapel} isMobile={isMobile} selected={workIdx} onOpenWork={onOpenWork} />;
     case 'about':
       return <AboutChapel chapel={chapel} isMobile={isMobile} />;
     case 'live':
@@ -48,6 +51,8 @@ export default function CathedralCanvas({
   entered = true,
   lanyard = null,
   music,
+  workIdx = null,
+  onOpenWork,
   onOpenLightbox,
   onOpenCrypt,
   onContextLost,
@@ -110,6 +115,8 @@ export default function CathedralCanvas({
               isMobile={isMobile}
               lanyard={lanyard}
               music={music}
+              workIdx={workIdx}
+              onOpenWork={onOpenWork}
               onOpenLightbox={onOpenLightbox}
               onOpenCrypt={onOpenCrypt}
             />

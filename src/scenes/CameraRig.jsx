@@ -21,6 +21,8 @@ export default function CameraRig({ isMobile }) {
   const targetLook = useRef(new THREE.Vector3(...CAMERA_STOPS[0].lookAt));
   const currentLook = useRef(new THREE.Vector3(...CAMERA_STOPS[0].lookAt));
   const parallax = useRef(new THREE.Vector2(0, 0));
+  const focusPos = useRef(new THREE.Vector3());
+  const focusLook = useRef(new THREE.Vector3());
 
   useEffect(() => {
     const targetFov = isMobile ? 56 : 44;
@@ -50,6 +52,17 @@ export default function CameraRig({ isMobile }) {
       parallax.current.y = THREE.MathUtils.damp(parallax.current.y, pyTarget, 5.0, dt);
       targetPos.current.x += parallax.current.x;
       targetPos.current.y += parallax.current.y;
+    }
+
+    const wantFocus = sceneBus.focus ? 1 : 0;
+    sceneBus.focusT = sceneBus.reducedMotion ? wantFocus : THREE.MathUtils.damp(sceneBus.focusT, wantFocus, 4.5, dt);
+    if (sceneBus.focus) {
+      focusPos.current.fromArray(sceneBus.focus.pos);
+      focusLook.current.fromArray(sceneBus.focus.look);
+    }
+    if (sceneBus.focusT > 0.001) {
+      targetPos.current.lerp(focusPos.current, sceneBus.focusT);
+      targetLook.current.lerp(focusLook.current, sceneBus.focusT);
     }
 
     if (sceneBus.reducedMotion) {

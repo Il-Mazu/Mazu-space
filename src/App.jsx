@@ -1,8 +1,10 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { CAMERA_STOPS, CHAPELS } from './data/chapels.js';
+import projects from 'virtual:projects';
+import { CAMERA_STOPS, CHAPELS, chapelById } from './data/chapels.js';
+import { worksLayout } from './sections/worksLayout.js';
 import useScreenMode from './hooks/useScreenMode.js';
 import useLanyard from './hooks/useLanyard.js';
 import useMusic from './music/useMusic.js';
@@ -23,6 +25,8 @@ import DoorsOnboarding from './sections/DoorsOnboarding.jsx';
 import HeroOverlay from './sections/HeroOverlay.jsx';
 import AboutOverlay from './sections/AboutOverlay.jsx';
 import LiveOverlay from './sections/LiveOverlay.jsx';
+import WorksOverlay from './sections/WorksOverlay.jsx';
+import WorksDetail from './sections/WorksDetail.jsx';
 import DumpOverlay from './sections/DumpOverlay.jsx';
 import DumpLightbox from './sections/DumpLightbox.jsx';
 import GamesCryptOverlay, { GamesCryptModal } from './sections/GamesCryptOverlay.jsx';
@@ -54,6 +58,7 @@ export default function App() {
   const [activeIdx, setActiveIdx] = useState(0);
   const [lightboxIdx, setLightboxIdx] = useState(null);
   const [cryptOpen, setCryptOpen] = useState(false);
+  const [workIdx, setWorkIdx] = useState(null);
   const [webglOk, setWebglOk] = useState(() => isWebGLAvailable());
   const [{ og: ogMode }] = useState(() => initialFlags());
   const [entered, setEntered] = useState(() => {
@@ -202,9 +207,23 @@ export default function App() {
 
   useEffect(() => {
     if (!lenisRef.current) return;
-    if (lightboxIdx !== null || cryptOpen) lenisRef.current.stop();
+    if (lightboxIdx !== null || cryptOpen || workIdx !== null) lenisRef.current.stop();
     else lenisRef.current.start();
-  }, [lightboxIdx, cryptOpen]);
+  }, [lightboxIdx, cryptOpen, workIdx]);
+
+  const worksSlots = useMemo(() => worksLayout(chapelById('works'), projects.length, isMobile), [isMobile]);
+
+  const openWork = useCallback((i) => {
+    jumpToSection('works');
+    setWorkIdx(i);
+  }, []);
+  const closeWork = useCallback(() => setWorkIdx(null), []);
+
+  // Glide the camera to the open niche, back to the scroll path when closed.
+  useEffect(() => {
+    const slot = workIdx !== null ? worksSlots[workIdx] : null;
+    sceneBus.focus = slot ? { pos: slot.camPos, look: slot.camLook } : null;
+  }, [workIdx, worksSlots]);
 
   const renderSectionContent = (sec) => {
     switch (sec.id) {
@@ -212,6 +231,8 @@ export default function App() {
         return <HeroOverlay ogMode={ogMode} />;
       case 'about':
         return <AboutOverlay />;
+      case 'works':
+        return <WorksOverlay onOpenWork={openWork} />;
       case 'live':
         return <LiveOverlay lanyard={lanyard} music={music} compact={isMobile} />;
       case 'dump':
@@ -238,6 +259,8 @@ export default function App() {
             entered={entered}
             lanyard={lanyard}
             music={music}
+            workIdx={workIdx}
+            onOpenWork={openWork}
             onOpenLightbox={setLightboxIdx}
             onOpenCrypt={openCrypt}
             onContextLost={() => setWebglOk(false)}
@@ -259,6 +282,13 @@ export default function App() {
 
       <GamesCryptModal open={cryptOpen} onClose={closeCrypt} />
 
+      <WorksDetail
+        index={workIdx}
+        side={workIdx !== null ? worksSlots[workIdx].side : -1}
+        onClose={closeWork}
+        onChange={setWorkIdx}
+      />
+
       {!webglOk ? (
         entered ? (
           <Suspense fallback={null}>
@@ -267,13 +297,14 @@ export default function App() {
               music={music}
               onOpenLightbox={setLightboxIdx}
               onOpenCrypt={openCrypt}
+              onOpenWork={openWork}
             />
           </Suspense>
         ) : null
       ) : (
         <main id="main-content" className="scroll-stage" aria-hidden={!entered}>
           {CHAPELS.map((sec, idx) => {
-            const overlayBlocking = cryptOpen || lightboxIdx !== null;
+            const overlayBlocking = cryptOpen || lightboxIdx !== null || workIdx !== null;
             const isActive = entered && activeIdx === idx && !overlayBlocking;
             return (
               <section

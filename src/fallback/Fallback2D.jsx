@@ -4,13 +4,29 @@ import { CHAPELS } from '../data/chapels.js';
 import HeroOverlay from '../sections/HeroOverlay.jsx';
 import AboutOverlay from '../sections/AboutOverlay.jsx';
 import LiveOverlay from '../sections/LiveOverlay.jsx';
+import WorksOverlay from '../sections/WorksOverlay.jsx';
+import projects from 'virtual:projects';
 import DumpOverlay from '../sections/DumpOverlay.jsx';
 import GamesCryptOverlay from '../sections/GamesCryptOverlay.jsx';
 import ExitOverlay from '../sections/ExitOverlay.jsx';
 import './Fallback2D.css';
 
-function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt }) {
+function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt, onOpenWork }) {
   switch (id) {
+    case 'works':
+      return (
+        <>
+          <WorksOverlay onOpenWork={onOpenWork} />
+          <div className="fb2d-works">
+            {projects.map((p, i) => (
+              <button key={p.repo} type="button" className="fb2d-work" onClick={() => onOpenWork(i)}>
+                <img src={p.media.image || p.media.poster} alt="" loading="lazy" />
+                <span>{p.name}</span>
+              </button>
+            ))}
+          </div>
+        </>
+      );
     case 'hero':
       return (
         <>
@@ -68,7 +84,7 @@ function renderChapel(id, { lanyard, music, onOpenLightbox, onOpenCrypt }) {
   }
 }
 
-const FULL_WIDTH = new Set(['games', 'exit']);
+const FULL_WIDTH = new Set(['works', 'games', 'exit']);
 
 export default function Fallback2D(props) {
   return (

@@ -12,6 +12,7 @@ Personal portfolio rebuilt as a continuous dark gothic-punk 3D cathedral nave. V
 - Gothic doors onboarding with red seam loading light, dust motes, returning-visitor shortcut (`localStorage`), door push-in, and CRT Eye power-on shader sequence.
 - Live chapel: Discord presence via Lanyard (status halo, wings, current activities) over a turntable altar that plays what I'm listening to. Live playback and progress come from Lanyard's Spotify activity; history, top tracks and the scrobble count come from Last.fm through `/api/music/*`.
 - Procedural Web Audio sound bed whose analyser drives bloom, light flicker and floor smoke.
+- Works chapel: projects from `src/data/projects.js` merged with live GitHub data at build time, shown as stone niches playing their media (dithered to the palette until hovered). Clicking one moves the camera to it and opens a manuscript page. The showcase videos in `public/works/` were rendered with [DemoMaker](https://github.com/Il-Mazu/DemoMaker).
 - Automatic `public/Dump/` stained-glass gallery with fullscreen lightbox, plus a virtualized 110-game crypt modal with category filters, sorting, condemned badges, and build-time Wikipedia metadata (no API key required).
 - Mobile camera/layout tuning, `prefers-reduced-motion` support, keyboard navigation, and a full 2D fallback when WebGL is unavailable.
 
@@ -56,6 +57,7 @@ Set these in the Vercel project (and in `.env.local` for `vercel dev`). None are
 | --- | --- | --- |
 | `LASTFM_API_KEY` | `api/music/now`, `api/music/stats` | From https://www.last.fm/api/account/create |
 | `LASTFM_USER` | same | Last.fm username |
+| `GITHUB_TOKEN` | build (`virtual:projects`) | Optional. Only lifts the GitHub API rate limit; without it the build still works and falls back to cached or curated data |
 
 Without them the music routes return 503 and the Live chapel falls back to Lanyard only.
 
@@ -78,7 +80,7 @@ Without them the music routes return 503 and the Live chapel falls back to Lanya
 | `src/shaders/` | Custom GLSL for CRT eye (with power-on sweep), smoke, chain sway, stained glass, and glitch cuts |
 | `src/audio/` | Web Audio engine, procedural cathedral convolution reverb synth, `AnalyserNode` sampling, and SFX |
 | `src/hud/` | Pixel cursor trail |
-| `src/data/` | Chapel list, content, ASCII art, and game dataset |
+| `src/data/` | Chapel list, content, projects, ASCII art, and game dataset |
 | `src/music/` | `useMusic` and its providers (`lanyard` for live playback, `lastfm` for history) |
 | `api/` | Vercel functions (`music/now`, `music/stats`) |
 | `src/fallback/` | Styled 2D gothic-punk fallback when WebGL is disabled or lost |

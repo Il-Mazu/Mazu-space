@@ -131,3 +131,33 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.fb2d-works {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.fb2d-work {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+  font-family: var(--font-display);
+  font-size: 1.4rem;
+  color: var(--bone);
+}
+
+.fb2d-work img {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  filter: grayscale(0.6) sepia(0.2);
+  transition: filter 0.2s ease;
+}
+
+.fb2d-work:hover img,
+.fb2d-work:focus-visible img {
+  filter: none;
+}

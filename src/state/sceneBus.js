@@ -18,6 +18,9 @@ export const sceneBus = {
   reducedMotion: false,
   soundEnabled: false,
   listening: false,
+  // Close-up target the camera glides to (a Works niche). null = follow the scroll path.
+  focus: null, // { pos: [x, y, z], look: [x, y, z] }
+  focusT: 0,
   audioMetrics: {
     rms: 0,
     bass: 0,
