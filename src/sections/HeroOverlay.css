@@ -5,7 +5,7 @@
 .hero-title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(3rem, 5.6vw, 5rem);
+  font-size: clamp(2.6rem, 4.8vw, 5rem);
   line-height: 0.9;
   color: var(--bone);
   text-shadow:

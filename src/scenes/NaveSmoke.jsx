@@ -41,7 +41,6 @@ export default function NaveSmoke({ isMobile }) {
     const colors = new Float32Array(ashCount * 3);
     const vel = new Float32Array(ashCount);
     const bone = new THREE.Color('#e9e4da');
-    const red = new THREE.Color('#ff3352');
 
     for (let i = 0; i < ashCount; i++) {
       const z = 8 - Math.random() * (8 - NAVE_END_Z);
@@ -51,7 +50,8 @@ export default function NaveSmoke({ isMobile }) {
       positions[i * 3 + 2] = z;
       vel[i] = 0.15 + Math.random() * 0.35;
 
-      const c = Math.random() < 0.24 ? red : bone;
+      // dust only: red specks read as stray dots on the chapel text
+      const c = bone;
       colors[i * 3] = c.r;
       colors[i * 3 + 1] = c.g;
       colors[i * 3 + 2] = c.b;

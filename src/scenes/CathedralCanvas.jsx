@@ -83,6 +83,14 @@ function Precompile() {
   return null;
 }
 
+// On narrower landscape screens (4:3, 5:4) the CRT slides right so the hero
+// title beside it never touches its frame.
+function HeroCrt({ isMobile }) {
+  const aspect = useThree((s) => s.size.width / s.size.height);
+  const x = isMobile ? 1.15 : 1.15 + Math.max(0, 1.6 - aspect) * 1.1;
+  return <HeroEye position={[x, 1.65, -0.8]} scale={1} isMobile={isMobile} />;
+}
+
 function ChapelScene({ chapel, isMobile, lanyard, music, guestbook, workIdx, onOpenWork, onOpenLightbox, onOpenCrypt }) {
   switch (chapel.id) {
     case 'works':
@@ -180,7 +188,7 @@ export default function CathedralCanvas({
         <NaveSmoke isMobile={isMobile} />
 
         <ChapelStage chapel={CHAPELS[0]}>
-          <HeroEye position={[1.15, 1.65, -0.8]} scale={1} isMobile={isMobile} />
+          <HeroCrt isMobile={isMobile} />
         </ChapelStage>
         {entered && <Precompile />}
         {entered && CHAPELS.slice(1).map((chapel) => (

@@ -195,6 +195,11 @@ img {
   transition: transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
 }
 
+/* text CTAs show focus through their underline glow, not a box */
+.ink-trigger:focus-visible {
+  outline: none;
+}
+
 .ink-trigger:hover,
 .ink-trigger:focus-visible {
   color: #fff;
@@ -364,7 +369,7 @@ img {
   margin-bottom: 10px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-aspect-ratio: 4/5) {
   .ui-depth-plane {
     transform: none;
   }

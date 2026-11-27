@@ -24,24 +24,23 @@ function savePrefs(soundOn) {
   }
 }
 
-function DoorRelief({ side }) {
-  const isLeft = side === 'left';
+// One door leaf: planks, two carved recessed panels, three iron strap hinges
+// running from the hinge side, a ring knocker near the seam, and the red rim
+// light along the inner edge. Built from boxes so nothing stretches with the
+// viewport.
+function DoorLeaf({ side, leafRef }) {
   return (
-    <svg
-      className={`door-relief door-relief--${side}`}
-      viewBox="0 0 500 1000"
-      preserveAspectRatio="none"
-      aria-hidden="true"
-    >
-      {/* Tall dark pointed lancet moldings recessed into the door */}
-      <path d="M 55 940 L 55 240 Q 95 100 250 45 Q 405 100 445 240 L 445 940 Z" />
-      <path d="M 92 900 L 92 260 Q 130 140 250 92 Q 370 140 408 260 L 408 900 Z" />
-      <line x1="250" y1="92" x2="250" y2="900" />
-      {/* Iron strap hinges and center lock plate */}
-      <path d="M 0 230 L 385 230 M 0 510 L 455 510 M 0 790 L 385 790" />
-      <circle cx={isLeft ? 430 : 70} cy="510" r="14" />
-      <path d={`M ${isLeft ? 430 : 70} 470 L ${isLeft ? 430 : 70} 550`} />
-    </svg>
+    <div ref={leafRef} className={`doors-leaf doors-leaf--${side}`} aria-hidden="true">
+      <div className="door-arch">
+        <div className="door-panel door-panel--arch" />
+      </div>
+      <div className="door-panel door-panel--low" />
+      <div className="door-strap" style={{ top: '17%' }} />
+      <div className="door-strap" style={{ top: '49%' }} />
+      <div className="door-strap" style={{ top: '81%' }} />
+      <div className="door-knocker" />
+      <div className="door-rim" />
+    </div>
   );
 }
 
@@ -294,12 +293,8 @@ export default function DoorsOnboarding({ onEnterComplete }) {
       <div className="doors-floor-leak" aria-hidden="true" />
       <div ref={seamRef} className="doors-seam-glow" aria-hidden="true" />
 
-      <div ref={leftDoorRef} className="doors-leaf doors-leaf--left" aria-hidden="true">
-        <DoorRelief side="left" />
-      </div>
-      <div ref={rightDoorRef} className="doors-leaf doors-leaf--right" aria-hidden="true">
-        <DoorRelief side="right" />
-      </div>
+      <DoorLeaf side="left" leafRef={leftDoorRef} />
+      <DoorLeaf side="right" leafRef={rightDoorRef} />
 
       <canvas ref={dustRef} className="doors-dust" aria-hidden="true" />
 

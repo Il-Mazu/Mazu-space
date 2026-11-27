@@ -48,7 +48,7 @@
   );
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-aspect-ratio: 4/5) {
   .ui-film-grain {
     animation: none;
   }

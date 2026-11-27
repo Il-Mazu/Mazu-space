@@ -185,7 +185,7 @@
   font-size: 12px;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-aspect-ratio: 4/5) {
   .manuscript,
   .manuscript--left,
   .manuscript--right {
