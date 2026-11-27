@@ -147,6 +147,11 @@ export default function CandleField({ chapel, entries, justLit, isMobile }) {
               }
             }}
             onPointerOut={() => setHovered(null)}
+            // touch has no hover: a tap toggles the note
+            onClick={(e) => {
+              e.stopPropagation();
+              setHovered((cur) => (cur === e.instanceId ? null : e.instanceId));
+            }}
           >
             <cylinderGeometry args={[0.13, 0.13, 0.6, 8]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />

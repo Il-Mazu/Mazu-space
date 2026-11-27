@@ -105,7 +105,7 @@ function buildCrossGeometry() {
   });
 }
 
-export default function GothicNave({ isMobile }) {
+export default function GothicNave({ isMobile, perfTier = 'high' }) {
   const textures = useMemo(() => getProceduralTextures(), []);
   const stepZ = isMobile ? 16 : 12;
 
@@ -205,23 +205,28 @@ export default function GothicNave({ isMobile }) {
       >
         <planeGeometry args={[12.5, FLOOR_LEN]} />
         {/* Wet stone slabs: blurred, depth-faded reflections of the red light and
-            the arches. Low resolution and heavy blur keep the cost down. */}
-        <MeshReflectorMaterial
-          resolution={isMobile ? 256 : 512}
-          blur={[240, 70]}
-          mixBlur={0.9}
-          mixStrength={4}
-          mixContrast={1.15}
-          mirror={0.8}
-          depthScale={1.1}
-          minDepthThreshold={0.3}
-          maxDepthThreshold={1.4}
-          map={textures.floorSlabColor}
-          roughness={1}
-          metalness={0}
-          color="#ffffff"
-          envMapIntensity={0.04}
-        />
+            the arches. The reflection redraws the scene, so the lowest tier gets
+            the same slabs matte. */}
+        {perfTier === 'low' ? (
+          <meshStandardMaterial map={textures.floorSlabColor} roughness={0.92} metalness={0} envMapIntensity={0.04} />
+        ) : (
+          <MeshReflectorMaterial
+            resolution={isMobile ? 256 : 512}
+            blur={[240, 70]}
+            mixBlur={0.9}
+            mixStrength={4}
+            mixContrast={1.15}
+            mirror={0.8}
+            depthScale={1.1}
+            minDepthThreshold={0.3}
+            maxDepthThreshold={1.4}
+            map={textures.floorSlabColor}
+            roughness={1}
+            metalness={0}
+            color="#ffffff"
+            envMapIntensity={0.04}
+          />
+        )}
       </mesh>
 
       {/* Recessed center crimson aisle veins */}

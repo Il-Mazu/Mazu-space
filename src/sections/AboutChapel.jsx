@@ -98,8 +98,8 @@ export default function AboutChapel({ chapel, isMobile }) {
 
   const { floorY, z } = chapel;
   // On mobile the text takes the lower half of the screen, so the altar sits higher.
-  const pos = isMobile ? [0.4, floorY + 1.7, z - 0.6] : [1.25, floorY, z];
-  const scale = isMobile ? 0.6 : 1;
+  const pos = isMobile ? [1.1, floorY + 3.3, z + 0.2] : [1.25, floorY, z];
+  const scale = isMobile ? 0.45 : 1;
 
   return (
     <group position={pos} scale={scale}>

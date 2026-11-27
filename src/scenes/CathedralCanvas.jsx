@@ -176,14 +176,18 @@ export default function CathedralCanvas({
         <color attach="background" args={['#060607']} />
         <fogExp2 attach="fog" args={['#060607', 0.045]} />
 
+        {/* Resolution follows the frame rate first; if it is already at the
+            floor and still declining, or keeps swinging, drop a tier. */}
         <PerformanceMonitor
+          flipflops={3}
           onChange={({ factor }) => setDpr(Math.round((minDpr + (maxDpr - minDpr) * factor) * 20) / 20)}
+          onDecline={({ factor }) => factor <= 0.05 && downgrade()}
           onFallback={downgrade}
         />
         <AudioSampler />
         <CameraRig isMobile={isMobile} />
         <CathedralLighting isMobile={isMobile} />
-        <GothicNave isMobile={isMobile} />
+        <GothicNave isMobile={isMobile} perfTier={perfTier} />
         <HangingChains isMobile={isMobile} />
         <NaveSmoke isMobile={isMobile} />
 
